@@ -1,0 +1,139 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>PlanningSystem.API</name>
+    </assembly>
+    <members>
+        <member name="T:PlanningSystem.API.Controllers.OrganizationController">
+            <summary>
+            Controller for organization management
+            </summary>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.GetUserOrganizations">
+            <summary>
+            Get all organizations for the current user
+            </summary>
+            <returns>List of organizations the user belongs to</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.GetOrganization(System.Int32)">
+            <summary>
+            Get organization by ID
+            </summary>
+            <param name="id">Organization ID</param>
+            <returns>Organization details</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.CreateOrganization(PlanningSystem.Models.Request.OrganizationCreateRequest)">
+            <summary>
+            Create a new organization
+            </summary>
+            <param name="request">Organization creation data</param>
+            <returns>Created organization</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.UpdateOrganization(System.Int32,PlanningSystem.Models.Request.OrganizationUpdateRequest)">
+            <summary>
+            Update an organization (requires Admin or Manager role)
+            </summary>
+            <param name="id">Organization ID</param>
+            <param name="request">Organization update data</param>
+            <returns>Updated organization</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.DeleteOrganization(System.Int32)">
+            <summary>
+            Delete an organization (requires Admin role)
+            </summary>
+            <param name="id">Organization ID</param>
+            <returns>Success status</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.GetOrganizationUsers(System.Int32)">
+            <summary>
+            Get all users in an organization
+            </summary>
+            <param name="id">Organization ID</param>
+            <returns>List of users in the organization</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.AddUserToOrganization(System.Int32,PlanningSystem.Models.Request.OrganizationAddUserRequest)">
+            <summary>
+            Add a user to an organization (requires Admin or Manager role)
+            </summary>
+            <param name="id">Organization ID</param>
+            <param name="request">User and role information</param>
+            <returns>Success status</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.OrganizationController.RemoveUserFromOrganization(System.Int32,System.Int32)">
+            <summary>
+            Remove a user from an organization (requires Admin or Manager role)
+            </summary>
+            <param name="id">Organization ID</param>
+            <param name="userId">User ID to remove</param>
+            <returns>Success status</returns>
+        </member>
+        <member name="T:PlanningSystem.API.Controllers.ShiftController">
+            <summary>
+            Controller for shift/roster management
+            </summary>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.ShiftController.GetShifts(PlanningSystem.Models.Request.ShiftFilterRequest)">
+            <summary>
+            Get shifts with optional filters (organization, worker, date range, status)
+            </summary>
+            <param name="filter">Filter criteria</param>
+            <returns>List of shifts matching the filters</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.ShiftController.GetShift(System.Guid)">
+            <summary>
+            Get shift by ID
+            </summary>
+            <param name="id">Shift ID (Guid)</param>
+            <returns>Shift details</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.ShiftController.CreateShift(PlanningSystem.Models.Request.ShiftCreateRequest)">
+            <summary>
+            Create a new shift
+            </summary>
+            <param name="request">Shift creation data</param>
+            <returns>Created shift</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.ShiftController.UpdateShift(System.Guid,PlanningSystem.Models.Request.ShiftUpdateRequest)">
+            <summary>
+            Update a shift (requires Admin, Manager role, or be the assigned worker)
+            </summary>
+            <param name="id">Shift ID (Guid)</param>
+            <param name="request">Shift update data</param>
+            <returns>Updated shift</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.ShiftController.DeleteShift(System.Guid)">
+            <summary>
+            Delete a shift (requires Admin, Manager role, or be the assigned worker)
+            </summary>
+            <param name="id">Shift ID (Guid)</param>
+            <returns>Success status</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.ShiftController.UpdateShiftStatus(System.Guid,PlanningSystem.Models.Request.ShiftStatusUpdateRequest)">
+            <summary>
+            Update shift status (scheduled, finished, missed)
+            </summary>
+            <param name="id">Shift ID (Guid)</param>
+            <param name="request">Status update data</param>
+            <returns>Updated shift</returns>
+        </member>
+        <member name="T:PlanningSystem.API.Controllers.UserController">
+            <summary>
+            Controller for user management and authentication
+            </summary>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.UserController.CreateUser(PlanningSystem.Models.Request.UserAddRequest)">
+            <summary>
+            Create a new user account
+            </summary>
+            <param name="request">User registration information</param>
+            <returns>Created user information</returns>
+        </member>
+        <member name="M:PlanningSystem.API.Controllers.UserController.AuthenticateUser(PlanningSystem.Models.Request.UserAuthRequest)">
+            <summary>
+            Authenticate user and get JWT token
+            </summary>
+            <param name="request">Login credentials</param>
+            <returns>JWT token and user information</returns>
+        </member>
+    </members>
+</doc>

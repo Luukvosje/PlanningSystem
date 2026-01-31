@@ -1,0 +1,29 @@
+# Nuxt dev/build outputs
+.output
+.data
+.nuxt
+.nitro
+.cache
+dist
+
+# Node dependencies
+node_modules
+
+# Logs
+logs
+*.log
+
+# Misc
+.DS_Store
+.fleet
+.idea
+
+# Local env files
+.env
+.env.*
+!.env.example
+
+# pnpm v8-compile-cache dependency
+# - https://github.com/pnpm/pnpm/issues/7330#issuecomment-2708137623
+v8-compile-cache*/
+node-compile-cache/
