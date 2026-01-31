@@ -63,8 +63,7 @@
               "ViewState": "AgIAAB8AAAAAAAAAAAAlwCcAAABUAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-12T16:20:22.8Z",
-              "IsPinned": true,
-              "EditorCaption": ""
+              "IsPinned": true
             },
             {
               "$type": "Bookmark",
@@ -104,8 +103,7 @@
               "RelativeToolTip": "PlanningSystem.DAL\\AppDBContext.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAFAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:55:17.702Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T18:55:17.702Z"
             },
             {
               "$type": "Document",
@@ -117,8 +115,7 @@
               "RelativeToolTip": "PlanningSystem.Interfaces\\DAL\\IAppSettings.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwAkAAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:55:13.86Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-22T18:55:13.86Z"
             },
             {
               "$type": "Document",
