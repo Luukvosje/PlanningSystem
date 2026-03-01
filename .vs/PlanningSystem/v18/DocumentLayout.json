@@ -1,0 +1,78 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.api\\controllers\\organizationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|solutionrelative:planningsystem.api\\controllers\\organizationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.api\\controllers\\shiftcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|solutionrelative:planningsystem.api\\controllers\\shiftcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|solutionrelative:planningsystem.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Program.cs",
+              "RelativeDocumentMoniker": "PlanningSystem.API\\Program.cs",
+              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Program.cs",
+              "RelativeToolTip": "PlanningSystem.API\\Program.cs",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAlwCAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-01T14:40:54.917Z",
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ShiftController.cs",
+              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "RelativeDocumentMoniker": "PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "RelativeToolTip": "PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAIwFQAAAAmAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-01T14:40:54.935Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "OrganizationController.cs",
+              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "RelativeDocumentMoniker": "PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "RelativeToolTip": "PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABsAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-01T14:40:54.935Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
