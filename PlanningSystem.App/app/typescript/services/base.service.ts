@@ -1,5 +1,5 @@
 import axios,  { type AxiosInstance,type AxiosRequestConfig, type AxiosResponse, AxiosError } from 'axios';
-import { ResultObject } from '../types';
+import type { ResultObject } from '../types';
 
 export class BaseService {
   protected axiosInstance: AxiosInstance;

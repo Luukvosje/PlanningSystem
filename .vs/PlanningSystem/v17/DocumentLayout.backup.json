@@ -3,44 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|solutionrelative:planningsystem.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.api\\controllers\\organizationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|solutionrelative:planningsystem.api\\controllers\\organizationcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.api\\controllers\\shiftcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|solutionrelative:planningsystem.api\\controllers\\shiftcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{2D2B900C-A160-45B1-85C1-4993AEB69C58}|PlanningSystem.API\\PlanningSystem.API.csproj|solutionrelative:planningsystem.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.dal\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|solutionrelative:planningsystem.dal\\appdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{2A3845D6-1350-4F1B-8B8F-CA6E6704E826}|PlanningSystem.Interfaces\\PlanningSystem.Interfaces.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.interfaces\\dal\\iappsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2A3845D6-1350-4F1B-8B8F-CA6E6704E826}|PlanningSystem.Interfaces\\PlanningSystem.Interfaces.csproj|solutionrelative:planningsystem.interfaces\\dal\\iappsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7016A77E-BBDC-4620-B1B4-66CBD61BFF38}|PlanningSystem.BLL\\PlanningSystem.BLL.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.bll\\factory\\bllfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{7016A77E-BBDC-4620-B1B4-66CBD61BFF38}|PlanningSystem.BLL\\PlanningSystem.BLL.csproj|solutionrelative:planningsystem.bll\\factory\\bllfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.dal\\repositories\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|solutionrelative:planningsystem.dal\\repositories\\genericrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.dal\\repositories\\baserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|solutionrelative:planningsystem.dal\\repositories\\baserepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.dal\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|solutionrelative:planningsystem.dal\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.dal\\appsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|solutionrelative:planningsystem.dal\\appsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|c:\\users\\devos\\gtihub\\planningsystem\\planningsystem\\planningsystem.dal\\dalfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{8294F72B-201C-4C3F-A2E1-418848BA3E7E}|PlanningSystem.DAL\\PlanningSystem.DAL.csproj|solutionrelative:planningsystem.dal\\dalfactory.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,17 +22,17 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Program.cs",
               "RelativeDocumentMoniker": "PlanningSystem.API\\Program.cs",
               "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Program.cs",
               "RelativeToolTip": "PlanningSystem.API\\Program.cs",
-              "ViewState": "AgIAAB8AAAAAAAAAAAAlwCcAAABUAAAAAAAAAA==",
+              "ViewState": "AgIAAAoAAAAAAAAAAAAlwCAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-08-12T16:20:22.8Z",
               "IsPinned": true,
@@ -72,114 +44,29 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "UserRepository.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\Repositories\\UserRepository.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.DAL\\Repositories\\UserRepository.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\Repositories\\UserRepository.cs",
-              "RelativeToolTip": "PlanningSystem.DAL\\Repositories\\UserRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAwAAAApAAAAAAAAAA==",
+              "DocumentIndex": 1,
+              "Title": "ShiftController.cs",
+              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "RelativeDocumentMoniker": "PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "RelativeToolTip": "PlanningSystem.API\\Controllers\\ShiftController.cs",
+              "ViewState": "AgIAABwAAAAAAAAAAAAIwFQAAAAmAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:58:29.66Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "BaseRepository.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\Repositories\\BaseRepository.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.DAL\\Repositories\\BaseRepository.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\Repositories\\BaseRepository.cs",
-              "RelativeToolTip": "PlanningSystem.DAL\\Repositories\\BaseRepository.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAAAIwBIAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:56:33.39Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "AppDBContext.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\AppDBContext.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.DAL\\AppDBContext.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\AppDBContext.cs",
-              "RelativeToolTip": "PlanningSystem.DAL\\AppDBContext.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:55:17.702Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "IAppSettings.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.Interfaces\\DAL\\IAppSettings.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.Interfaces\\DAL\\IAppSettings.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.Interfaces\\DAL\\IAppSettings.cs",
-              "RelativeToolTip": "PlanningSystem.Interfaces\\DAL\\IAppSettings.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwAkAAAAVAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:55:13.86Z",
+              "WhenOpened": "2026-03-01T13:34:29.253Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "UserController.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\UserController.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.API\\Controllers\\UserController.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\UserController.cs",
-              "RelativeToolTip": "PlanningSystem.API\\Controllers\\UserController.cs",
-              "ViewState": "AgIAABIAAAAAAAAAAAAcwCQAAAAfAAAAAAAAAA==",
+              "Title": "OrganizationController.cs",
+              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "RelativeDocumentMoniker": "PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "RelativeToolTip": "PlanningSystem.API\\Controllers\\OrganizationController.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAAABkAAAA7AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:46:23.777Z",
+              "WhenOpened": "2026-03-01T13:33:41.809Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "GenericRepository.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\Repositories\\GenericRepository.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.DAL\\Repositories\\GenericRepository.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\Repositories\\GenericRepository.cs",
-              "RelativeToolTip": "PlanningSystem.DAL\\Repositories\\GenericRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBAAAAAJAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:58:32.888Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "AppSettings.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\AppSettings.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.DAL\\AppSettings.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\AppSettings.cs",
-              "RelativeToolTip": "PlanningSystem.DAL\\AppSettings.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwA8AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T19:00:54.22Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "BllFactory.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.BLL\\Factory\\BllFactory.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.BLL\\Factory\\BllFactory.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.BLL\\Factory\\BllFactory.cs",
-              "RelativeToolTip": "PlanningSystem.BLL\\Factory\\BllFactory.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAkAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T19:07:13.46Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "DalFactory.cs",
-              "DocumentMoniker": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\DalFactory.cs",
-              "RelativeDocumentMoniker": "PlanningSystem.DAL\\DalFactory.cs",
-              "ToolTip": "C:\\Users\\devos\\Gtihub\\PlanningSystem\\PlanningSystem\\PlanningSystem.DAL\\DalFactory.cs",
-              "RelativeToolTip": "PlanningSystem.DAL\\DalFactory.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAnAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-22T18:51:42.12Z"
             }
           ]
         }

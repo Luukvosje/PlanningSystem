@@ -9,7 +9,7 @@
     "Parameters": [],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[System.Collections.Generic.List\u00601[[PlanningSystem.Models.Models.Organization, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[System.Collections.Generic.List\u00601[[PlanningSystem.Domain.Entities.Organization, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -35,7 +35,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.Organization, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.Organization, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -69,13 +69,13 @@
       },
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.OrganizationUpdateRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.OrganizationUpdateRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.Organization, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.Organization, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -128,7 +128,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -172,7 +172,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[System.Collections.Generic.List\u00601[[PlanningSystem.Models.Models.User, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[System.Collections.Generic.List\u00601[[PlanningSystem.Domain.Entities.User, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -206,13 +206,13 @@
       },
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.OrganizationAddUserRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.OrganizationAddUserRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -270,7 +270,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -308,13 +308,13 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.OrganizationCreateRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.OrganizationCreateRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.Organization, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.Organization, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -369,7 +369,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[System.Collections.Generic.List\u00601[[PlanningSystem.Models.Models.Shift, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[System.Collections.Generic.List\u00601[[PlanningSystem.Domain.Entities.Shift, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -395,7 +395,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.Shift, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.Shift, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -429,13 +429,13 @@
       },
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.ShiftUpdateRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.ShiftUpdateRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.Shift, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.Shift, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -488,7 +488,7 @@
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[System.Boolean, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -531,13 +531,13 @@
       },
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.ShiftStatusUpdateRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.ShiftStatusUpdateRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.Shift, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.Shift, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -584,13 +584,13 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.ShiftCreateRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.ShiftCreateRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.Shift, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.Shift, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -619,13 +619,13 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.UserAddRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.UserAddRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Models.User, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Domain.Entities.User, PlanningSystem.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",
@@ -654,13 +654,13 @@
     "Parameters": [
       {
         "Name": "request",
-        "Type": "PlanningSystem.Models.Request.UserAuthRequest",
+        "Type": "PlanningSystem.Application.DTOs.Requests.UserAuthRequest",
         "IsRequired": true
       }
     ],
     "ReturnTypes": [
       {
-        "Type": "PlanningSystem.Models.Models.ResultObject\u00601[[PlanningSystem.Models.Request.UserAuthResponse, PlanningSystem.Models, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "Type": "PlanningSystem.Application.Common.ResultObject\u00601[[PlanningSystem.Application.DTOs.Requests.UserAuthResponse, PlanningSystem.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
         "MediaTypes": [
           "text/plain",
           "application/json",

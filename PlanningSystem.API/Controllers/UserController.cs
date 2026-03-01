@@ -1,66 +1,50 @@
 using Microsoft.AspNetCore.Mvc;
-using PlanningSystem.DAL;
-using PlanningSystem.Models;
-using PlanningSystem.Models.Models;
-using PlanningSystem.Models.Request;
+using PlanningSystem.Application.Common;
+using PlanningSystem.Application.DTOs.Requests;
+using PlanningSystem.Application.Interfaces;
+using PlanningSystem.Domain.Entities;
 
-namespace PlanningSystem.API.Controllers
+namespace PlanningSystem.API.Controllers;
+
+[ApiController]
+[Route("user")]
+public class UserController : BaseController
 {
-    /// <summary>
-    /// Controller for user management and authentication
-    /// </summary>
-    [ApiController]
-    [Route("user")]
-    public class UserController : BaseController
+    private readonly IUserApplicationService _userService;
+    private readonly IConfiguration _configuration;
+
+    public UserController(IUserApplicationService userService, IConfiguration configuration)
     {
-        public UserController(AppDbContext dbContext, IConfiguration configuration, IBllFactory bllFactory)
-          : base(dbContext, configuration, bllFactory)
-        {
-        }
+        _userService = userService;
+        _configuration = configuration;
+    }
 
-        /// <summary>
-        /// Create a new user account
-        /// </summary>
-        /// <param name="request">User registration information</param>
-        /// <returns>Created user information</returns>
-        [HttpPost("create")]
-        [ProducesResponseType(typeof(ResultObject<Models.Models.User>), 200)]
-        [ProducesResponseType(400)]
-        public IActionResult CreateUser([FromBody] UserAddRequest request)
-        {
-            if (request == null)
-            {
-                return BadRequest("Request body is required");
-            }
+    [HttpPost("create")]
+    [ProducesResponseType(typeof(ResultObject<User>), 200)]
+    [ProducesResponseType(400)]
+    public IActionResult CreateUser([FromBody] UserAddRequest request)
+    {
+        if (request == null)
+            return BadRequest("Request body is required");
 
-            var res = BllFactory.UserLogic.CreateUser(request);
-            return HandleResult(res);
-        }
+        var res = _userService.CreateUser(request);
+        return HandleResult(res);
+    }
 
-        /// <summary>
-        /// Authenticate user and get JWT token
-        /// </summary>
-        /// <param name="request">Login credentials</param>
-        /// <returns>JWT token and user information</returns>
-        [HttpPost("login")]
-        [ProducesResponseType(typeof(ResultObject<UserAuthResponse>), 200)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(401)]
-        public IActionResult AuthenticateUser([FromBody] UserAuthRequest request)
-        {
-            if (request == null)
-            {
-                return BadRequest("Request body is required");
-            }
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(ResultObject<UserAuthResponse>), 200)]
+    [ProducesResponseType(400)]
+    [ProducesResponseType(401)]
+    public IActionResult AuthenticateUser([FromBody] UserAuthRequest request)
+    {
+        if (request == null)
+            return BadRequest("Request body is required");
 
-            var jwtKey = _jwtKey;
-            if (string.IsNullOrEmpty(jwtKey))
-            {
-                return StatusCode(500, "JWT configuration is missing");
-            }
+        var jwtKey = _configuration["Jwt:Key"];
+        if (string.IsNullOrEmpty(jwtKey))
+            return StatusCode(500, "JWT configuration is missing");
 
-            var res = BllFactory.UserLogic.AuthenticateUser(request, jwtKey);
-            return HandleResult(res);
-        }
+        var res = _userService.AuthenticateUser(request, jwtKey);
+        return HandleResult(res);
     }
 }

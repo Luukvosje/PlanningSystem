@@ -1,0 +1,48 @@
+{
+  "auth": {
+    "login": "Login",
+    "loginSubtitle": "Log in om je dashboard te openen.",
+    "email": "Email",
+    "password": "Wachtwoord",
+    "loginFailed": "Login mislukt.",
+    "noAccount": "Geen account?",
+    "register": "Registreer",
+    "registerSubtitle": "Maak een account aan om te starten.",
+    "name": "Naam",
+    "registerFailed": "Registratie mislukt.",
+    "hasAccount": "Al een account?"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "yourOrganizations": "Jouw organisaties",
+    "organizations": "Organisaties",
+    "noOrganizations": "Geen organisaties gevonden.",
+    "loadFailed": "Kon organisaties niet laden."
+  },
+  "organization": {
+    "back": "Terug",
+    "organizationId": "Organisatie #{id}",
+    "inviteUsers": "Gebruikers uitnodigen",
+    "users": "Gebruikers",
+    "invite": "Uitnodigen",
+    "inviteError": "Vul email en gebruikersnaam in.",
+    "inviteFailed": "Uitnodiging mislukt.",
+    "notFound": "Organisatie niet gevonden.",
+    "loadFailed": "Kon gegevens niet laden.",
+    "noUsers": "Geen gebruikers in deze organisatie.",
+    "passwordGenerated": "Wachtwoord gegenereerd",
+    "passwordGeneratedHint": "Stuur dit wachtwoord naar de uitgenodigde gebruiker. Ze kunnen daarmee inloggen.",
+    "copy": "Kopiëren",
+    "close": "Sluiten",
+    "inviteFooter": "Er wordt een wachtwoord gegenereerd. Stuur dit handmatig naar de uitgenodigde gebruiker.",
+    "emailPlaceholder": "emailvoorbeeld.nl",
+    "username": "Gebruikersnaam"
+  },
+  "layout": {
+    "appName": "PlanningSystem",
+    "logout": "Logout"
+  },
+  "common": {
+    "loading": "Laden..."
+  }
+}

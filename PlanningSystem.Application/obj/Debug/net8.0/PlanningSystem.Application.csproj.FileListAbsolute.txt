@@ -1,0 +1,16 @@
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\bin\Debug\net8.0\PlanningSystem.Application.deps.json
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\bin\Debug\net8.0\PlanningSystem.Application.dll
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\bin\Debug\net8.0\PlanningSystem.Application.pdb
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\bin\Debug\net8.0\PlanningSystem.Domain.dll
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\bin\Debug\net8.0\PlanningSystem.Domain.pdb
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.csproj.AssemblyReference.cache
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.AssemblyInfoInputs.cache
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.AssemblyInfo.cs
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.csproj.CoreCompileInputs.cache
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.sourcelink.json
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\Planning.EED4A06E.Up2Date
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.dll
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\refint\PlanningSystem.Application.dll
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\PlanningSystem.Application.pdb
+C:\Users\devos\Gtihub\PlanningSystem\PlanningSystem\PlanningSystem.Application\obj\Debug\net8.0\ref\PlanningSystem.Application.dll

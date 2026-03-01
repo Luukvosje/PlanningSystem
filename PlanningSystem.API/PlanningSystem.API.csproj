@@ -24,9 +24,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PlanningSystem.BLL\PlanningSystem.BLL.csproj" />
-    <ProjectReference Include="..\PlanningSystem.DAL\PlanningSystem.DAL.csproj" />
-    <ProjectReference Include="..\PlanningSystem.Models\PlanningSystem.Models.csproj" />
+    <ProjectReference Include="..\PlanningSystem.Application\PlanningSystem.Application.csproj" />
+    <ProjectReference Include="..\PlanningSystem.Domain\PlanningSystem.Domain.csproj" />
+    <ProjectReference Include="..\PlanningSystem.Infrastructure\PlanningSystem.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

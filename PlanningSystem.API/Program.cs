@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using PlanningSystem;
-using PlanningSystem.DAL;
-using PlanningSystem.Interfaces.DAL;
+using PlanningSystem.API.Services;
+using PlanningSystem.Application.Interfaces;
+using PlanningSystem.Application.Services;
+using PlanningSystem.Infrastructure;
 using System.Text;
 using System.Text.Json;
 
@@ -12,46 +12,42 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
-        builder =>
+        policy =>
         {
-            builder.AllowAnyHeader()
+            policy.AllowAnyHeader()
                    .AllowAnyMethod()
                    .SetIsOriginAllowed((x) => true)
                    .AllowCredentials();
         });
 });
 
-var connString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-builder.Services.AddSingleton<IAppSettings>(new AppSettings(connString));
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IUserApplicationService, UserApplicationService>();
+builder.Services.AddScoped<IOrganizationApplicationService, OrganizationApplicationService>();
+builder.Services.AddScoped<IShiftApplicationService, ShiftApplicationService>();
+builder.Services.AddInfrastructure(connString);
+builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
-builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
-{
-    var settings = serviceProvider.GetRequiredService<IAppSettings>();
-    options.UseSqlServer(settings.ConnectionString);
-});
-
-
-var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
+var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"] ?? "");
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 });
-builder.Services.AddScoped<IDalFactory, DalFactory>();
-builder.Services.AddScoped<IBllFactory, BllFactory>();
-builder.Services.AddControllers();
 
 builder.Services
     .AddAuthentication(x =>
     {
-        x.DefaultAuthenticateScheme =  JwtBearerDefaults.AuthenticationScheme;
+        x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
         x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     })
     .AddJwtBearer(x =>
     {
-        x.Events = new JwtBearerEvents()
+        x.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
@@ -59,10 +55,8 @@ builder.Services
                 if (string.IsNullOrEmpty(accessToken))
                     accessToken = context.Request.Query["token"].ToString();
 
-                // If the request is for our hub...
                 if (!string.IsNullOrEmpty(accessToken))
                 {
-                    // Read the token out of the query string
                     context.Token = accessToken;
                 }
                 return Task.CompletedTask;
@@ -91,7 +85,6 @@ builder.Services.AddSwaggerGen(c =>
         Description = "API for managing employee shifts and organizations"
     });
 
-    // Add JWT authentication to Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
@@ -116,7 +109,6 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
-    // Include XML comments
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     if (File.Exists(xmlPath))
@@ -133,9 +125,8 @@ var webSocketOptions = new WebSocketOptions
 };
 
 app.UseWebSockets(webSocketOptions);
-
 app.UseCors("AllowFrontend");
-// Configure the HTTP request pipeline.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -145,7 +136,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
