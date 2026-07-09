@@ -1,0 +1,188 @@
+using Planning.Application.Common;
+using Planning.Application.Modules;
+using Planning.Domain.Auth;
+using Planning.Domain.Enums;
+using Planning.Domain.Invites;
+using Planning.Domain.Organizations;
+using Planning.Domain.Users;
+using System.Security.Cryptography;
+
+namespace Planning.Application.Invites;
+
+public class InviteService : IInviteService
+{
+    private static readonly TimeSpan InviteValidity = TimeSpan.FromHours(24);
+
+    private readonly IOrganizationInviteRepository _inviteRepository;
+    private readonly IOrganizationRepository _organizationRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly IAccountRepository _accountRepository;
+    private readonly ICurrentUserContext _currentUserContext;
+    private readonly IModuleService _moduleService;
+
+    public InviteService(
+        IOrganizationInviteRepository inviteRepository,
+        IOrganizationRepository organizationRepository,
+        IUserRepository userRepository,
+        IAccountRepository accountRepository,
+        ICurrentUserContext currentUserContext,
+        IModuleService moduleService)
+    {
+        _inviteRepository = inviteRepository;
+        _organizationRepository = organizationRepository;
+        _userRepository = userRepository;
+        _accountRepository = accountRepository;
+        _currentUserContext = currentUserContext;
+        _moduleService = moduleService;
+    }
+
+    public async Task<Result<InviteResponse>> CreateAsync(
+        CreateInviteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_currentUserContext.HasOrganization || _currentUserContext.UserId is null)
+        {
+            return Result<InviteResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+        }
+
+        if (_currentUserContext.Role is not (UserRole.Owner or UserRole.Admin))
+        {
+            return Result<InviteResponse>.Failure("Only owners and admins can create invites.", "FORBIDDEN");
+        }
+
+        var utcNow = DateTime.UtcNow;
+        var code = GenerateInviteCode();
+
+        var invite = OrganizationInvite.Create(
+            _currentUserContext.OrganizationId!.Value,
+            code,
+            UserRole.Employee,
+            _currentUserContext.UserId.Value,
+            utcNow,
+            InviteValidity);
+
+        await _inviteRepository.AddAsync(invite, cancellationToken);
+
+        return Result<InviteResponse>.Success(
+            new InviteResponse(invite.Code, invite.ExpiresAtUtc));
+    }
+
+    public async Task<Result<AcceptInviteResponse>> AcceptAsync(
+        AcceptInviteRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_currentUserContext.IsAuthenticated)
+        {
+            return Result<AcceptInviteResponse>.Failure("Not authenticated.", "UNAUTHORIZED");
+        }
+
+        var invite = await _inviteRepository.GetByCodeAsync(request.Code, cancellationToken);
+
+        if (invite is null)
+        {
+            return Result<AcceptInviteResponse>.Failure("Invite not found.", "NOT_FOUND");
+        }
+
+        var utcNow = DateTime.UtcNow;
+
+        if (invite.UsedAtUtc is not null)
+        {
+            return Result<AcceptInviteResponse>.Failure("Invite has already been used.", "CONFLICT");
+        }
+
+        if (!invite.IsValid(utcNow))
+        {
+            return Result<AcceptInviteResponse>.Failure("Invite has expired.", "EXPIRED");
+        }
+
+        if (await _userRepository.ExistsInOrganizationAsync(
+                _currentUserContext.AccountId,
+                invite.OrganizationId,
+                cancellationToken))
+        {
+            return Result<AcceptInviteResponse>.Failure(
+                "You are already a member of this organization.",
+                "CONFLICT");
+        }
+
+        var account = await _accountRepository.GetByIdAsync(_currentUserContext.AccountId, cancellationToken);
+
+        if (account is null)
+        {
+            return Result<AcceptInviteResponse>.Failure("Account not found.", "NOT_FOUND");
+        }
+
+        var firstName = account.FirstName;
+        var lastName = account.LastName;
+
+        try
+        {
+            var user = User.Create(
+                _currentUserContext.AccountId,
+                invite.OrganizationId,
+                firstName,
+                lastName,
+                account.Email,
+                invite.Role,
+                utcNow);
+
+            await _userRepository.AddAsync(user, cancellationToken);
+            await _moduleService.InitializeUserModulesFromOrganizationAsync(
+                user.Id,
+                invite.OrganizationId,
+                cancellationToken);
+            invite.MarkUsed(user.Id, utcNow);
+            await _inviteRepository.UpdateAsync(invite, cancellationToken);
+
+            return Result<AcceptInviteResponse>.Success(
+                new AcceptInviteResponse(user.Id, user.OrganizationId));
+        }
+        catch (ArgumentException ex)
+        {
+            return Result<AcceptInviteResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Result<AcceptInviteResponse>.Failure(ex.Message, "CONFLICT");
+        }
+    }
+
+    public async Task<Result<InvitePreviewResponse>> GetPreviewAsync(
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        var invite = await _inviteRepository.GetByCodeAsync(code, cancellationToken);
+
+        if (invite is null)
+        {
+            return Result<InvitePreviewResponse>.Failure("Invite not found.", "NOT_FOUND");
+        }
+
+        var organization = await _organizationRepository.GetByIdAsync(invite.OrganizationId, cancellationToken);
+
+        if (organization is null)
+        {
+            return Result<InvitePreviewResponse>.Failure("Organization not found.", "NOT_FOUND");
+        }
+
+        return Result<InvitePreviewResponse>.Success(new InvitePreviewResponse(
+            organization.Name,
+            invite.ExpiresAtUtc,
+            invite.IsValid(DateTime.UtcNow)));
+    }
+
+    private static string GenerateInviteCode()
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+        Span<byte> bytes = stackalloc byte[8];
+        RandomNumberGenerator.Fill(bytes);
+
+        var code = new char[8];
+        for (var i = 0; i < 8; i++)
+        {
+            code[i] = chars[bytes[i] % chars.Length];
+        }
+
+        return new string(code);
+    }
+}

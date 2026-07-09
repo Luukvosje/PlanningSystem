@@ -1,0 +1,118 @@
+<script setup lang="ts">
+import { loginCredentialsSchema, selectOrganizationSchema } from '~/schemas/auth.schema'
+import type { OrganizationMembership } from '~/types/api-error'
+
+definePageMeta({ layout: 'auth' })
+
+const FormView = resolveComponent('FormView')
+
+const auth = useAuthStore()
+const router = useRouter()
+const route = useRoute()
+
+const memberships = ref<OrganizationMembership[]>([])
+const showOrgPicker = ref(false)
+
+async function navigateAfterLogin() {
+  const redirect = route.query.redirect as string | undefined
+  const inviteCode = route.query.code as string | undefined
+  const defaultPath = auth.hasOrganization ? '/dashboard' : (inviteCode ? '/join' : '/organizations/new')
+  const target = redirect ?? defaultPath
+  await router.push(inviteCode && target === '/join' ? { path: target, query: { code: inviteCode } } : target)
+}
+
+const credentialsForm = useForm({
+  schema: loginCredentialsSchema,
+  initialState: { email: '', password: '' },
+  controls: [
+    {
+      name: 'email',
+      label: 'E-mail',
+      type: 'email',
+      required: true,
+      props: { autocomplete: 'email' },
+    },
+    {
+      name: 'password',
+      label: 'Wachtwoord',
+      type: 'password',
+      required: true,
+      props: { autocomplete: 'current-password' },
+    },
+  ],
+  submit: { label: 'Inloggen', block: true },
+  onSubmit: async (data) => {
+    const result = await auth.login(data)
+
+    if (result.requiresOrganizationSelection && result.memberships?.length) {
+      memberships.value = result.memberships
+      orgForm.reset({
+        organizationId: result.memberships[0]?.organizationId ?? '',
+      })
+      showOrgPicker.value = true
+      return
+    }
+
+    await auth.fetchMe()
+    await navigateAfterLogin()
+  },
+})
+
+const orgOptions = computed(() =>
+  memberships.value.map(m => ({
+    label: m.organizationName ?? 'Onbekend',
+    value: m.organizationId,
+  })),
+)
+
+const orgForm = useForm({
+  schema: selectOrganizationSchema,
+  initialState: { organizationId: '' },
+  controls: computed(() => [
+    {
+      name: 'organizationId',
+      label: 'Organisatie',
+      type: 'select',
+      required: true,
+      props: { items: orgOptions.value },
+    },
+  ]),
+  submit: { label: 'Doorgaan', block: true },
+  onSubmit: async (data) => {
+    await auth.selectOrganization(data.organizationId)
+    await auth.fetchMe()
+    await navigateAfterLogin()
+  },
+})
+</script>
+
+<template>
+  <UCard class="w-full">
+    <template #header>
+      <h1 class="text-xl font-semibold">
+        Inloggen
+      </h1>
+    </template>
+
+    <component
+      :is="FormView"
+      v-if="!showOrgPicker"
+      :form="credentialsForm"
+    />
+
+    <component
+      :is="FormView"
+      v-else
+      :form="orgForm"
+    />
+
+    <template #footer>
+      <p class="text-sm text-muted text-center">
+        Nog geen account?
+        <NuxtLink to="/register" class="text-primary font-medium">
+          Registreren
+        </NuxtLink>
+      </p>
+    </template>
+  </UCard>
+</template>

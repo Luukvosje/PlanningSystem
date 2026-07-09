@@ -1,0 +1,51 @@
+@Planning.Api_HostAddress = http://localhost:5289
+
+### Create organization (anonymous)
+POST {{Planning.Api_HostAddress}}/api/organizations
+Content-Type: application/json
+
+{
+  "name": "Acme Planning BV",
+  "email": "info@acme.com"
+}
+
+### Get development JWT
+# @name auth
+POST {{Planning.Api_HostAddress}}/api/auth/token
+Content-Type: application/json
+
+{
+  "subject": "dev-user",
+  "email": "owner@acme.com",
+  "organizationId": "00000000-0000-0000-0000-000000000001"
+}
+
+### Create user
+POST {{Planning.Api_HostAddress}}/api/users
+Authorization: Bearer {{auth.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "organizationId": "00000000-0000-0000-0000-000000000001",
+  "firstName": "Luuk",
+  "lastName": "Planner",
+  "email": "luuk@acme.com",
+  "role": "Planner"
+}
+
+### Create customer
+POST {{Planning.Api_HostAddress}}/api/customers
+Authorization: Bearer {{auth.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "organizationId": "00000000-0000-0000-0000-000000000001",
+  "name": "Customer One",
+  "email": "customer@example.com",
+  "phoneNumber": "+31612345678",
+  "notes": "Preferred morning appointments"
+}
+
+### Get week planning
+GET {{Planning.Api_HostAddress}}/api/planning/week?organizationId=00000000-0000-0000-0000-000000000001&weekStartUtc=2026-06-23T00:00:00Z
+Authorization: Bearer {{auth.response.body.accessToken}}

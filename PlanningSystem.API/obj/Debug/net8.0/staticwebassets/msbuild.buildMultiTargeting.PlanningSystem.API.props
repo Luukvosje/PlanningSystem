@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\PlanningSystem.API.props" />
-</Project>
