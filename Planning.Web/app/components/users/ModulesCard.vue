@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import type { AppModule, UserResponse } from '~/generated/models'
-import { modulesFromSettings, modulesToRequest } from '~/utils/modules'
+import {
+  getUserModuleToggleStates,
+  modulesFromSettings,
+  modulesToRequest,
+} from '~/utils/modules'
 
 const props = defineProps<{
   user: UserResponse
@@ -11,12 +15,24 @@ const { updateUserModules } = useModulesApi()
 
 const moduleState = ref<Record<AppModule, boolean>>(modulesFromSettings([]))
 
-const orgModuleState = computed(() => modulesFromSettings(organization.value?.modules))
+const toggleStates = computed(() =>
+  getUserModuleToggleStates(
+    props.user.role,
+    props.user.modules,
+    organization.value?.modules,
+  ),
+)
 
 watch(
-  () => props.user.modules,
-  (modules) => {
-    moduleState.value = modulesFromSettings(modules)
+  () => [props.user.modules, props.user.role, organization.value?.modules] as const,
+  () => {
+    const states = toggleStates.value
+    moduleState.value = ALL_MODULES.reduce((result, module) => {
+      result[module] = states[module].disabled
+        ? states[module].checked
+        : modulesFromSettings(props.user.modules)[module]
+      return result
+    }, {} as Record<AppModule, boolean>)
   },
   { immediate: true },
 )
@@ -48,7 +64,7 @@ function save() {
 
     <ModulesToggles
       v-model="moduleState"
-      :disabled-modules="orgModuleState"
+      :toggle-states="toggleStates"
       :saving="updateUserModules.isPending.value"
       @save="save"
     />

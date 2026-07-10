@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlanningRecord } from '~/types/planning'
-import type { AvailabilityEntry } from '~/types/availability'
+import type { UnavailablePeriod } from '~/types/availability'
 import MixedTimelineBlock from './MixedTimelineBlock.vue'
 import MixedTimelineHeader from './MixedTimelineHeader.vue'
 import AvailabilityOverlay from '../timeline/AvailabilityOverlay.vue'
@@ -11,7 +11,7 @@ import { timeToMixedPx } from '~/utils/planning/mixedTimelineMath'
 const props = defineProps<{
   records: PlanningRecord[]
   isLoading?: boolean
-  availabilityEntries?: AvailabilityEntry[]
+  availabilityPeriods?: UnavailablePeriod[]
 }>()
 
 const store = usePlanningStore()
@@ -30,15 +30,16 @@ const {
 const dayTabFormatter = new Intl.DateTimeFormat('nl-NL', { weekday: 'short', day: 'numeric' })
 
 const mixedAvailabilityOverlays = computed(() => {
-  if (!props.availabilityEntries?.length) return []
+  if (!props.availabilityPeriods?.length) return []
 
   const userIds = [...new Set(dayRecords.value.map(record => record.assignedUserId).filter(Boolean))]
   return userIds.flatMap(userId =>
     getUnavailableOverlaysForMixed(
-      props.availabilityEntries!,
+      [],
       userId,
       store.mixedSelectedDay,
       timeToMixedPx,
+      props.availabilityPeriods,
     ),
   )
 })
@@ -105,7 +106,7 @@ const mixedAvailabilityOverlays = computed(() => {
             :record="record"
             :layout="getBlockLayout(record)!"
             :selected="store.selectedPlanningId === record.id"
-            :availability-entries="availabilityEntries"
+            :availability-periods="availabilityPeriods"
           />
         </div>
       </div>

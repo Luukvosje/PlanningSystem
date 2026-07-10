@@ -24,7 +24,8 @@ export const queryKeys = {
     detail: (id: string) => ['planning', 'detail', id] as const,
   },
   availability: {
-    week: (start?: string, userId?: string, userIds?: string) =>
-      ['availability', 'week', start, userId, userIds] as const,
+    rules: (employeeId?: string) => ['availability', 'rules', employeeId] as const,
+    planning: (start?: string, end?: string, employeeIds?: string) =>
+      ['availability', 'planning', start, end, employeeIds] as const,
   },
 } as const

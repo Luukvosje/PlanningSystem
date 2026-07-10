@@ -1,7 +1,6 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 import { AppModule } from '~/generated/models'
-
-const beheerRoutes = ['/users', '/organizations', '/invites']
+import { canAccessModule } from '~/utils/modules'
 
 export function useAppNavigation() {
   const route = useRoute()
@@ -18,7 +17,7 @@ export function useAppNavigation() {
       },
     ]
 
-    if (hasModule(modules.value, AppModule.Planning)) {
+    if (canAccessModule(AppModule.Planning, modules.value)) {
       main.push({
         label: 'Planning',
         icon: 'i-lucide-calendar-range',
@@ -31,7 +30,7 @@ export function useAppNavigation() {
       })
     }
 
-    if (hasModule(modules.value, AppModule.Klant)) {
+    if (canAccessModule(AppModule.Klant, modules.value)) {
       main.push({
         label: 'Klanten',
         icon: 'i-lucide-contact',
@@ -44,7 +43,7 @@ export function useAppNavigation() {
     if (canManageOrganization(auth.currentUser?.role)) {
       const children: NavigationMenuItem[] = []
 
-      if (hasModule(modules.value, AppModule.Beheer)) {
+      if (canAccessModule(AppModule.Beheer, modules.value)) {
         children.push({
           label: 'Team',
           icon: 'i-lucide-users',
@@ -60,13 +59,7 @@ export function useAppNavigation() {
 
       groups.push([
         { label: 'Beheer', type: 'label' },
-        {
-          label: 'Beheer',
-          icon: 'i-lucide-settings-2',
-          type: 'trigger',
-          defaultOpen: beheerRoutes.some(path => route.path.startsWith(path)),
-          children,
-        },
+        ...children,
       ])
     }
 
@@ -83,6 +76,7 @@ export function useAppNavigation() {
       '/users': 'Team',
       '/organizations': 'Organisaties',
       '/invites': 'Uitnodigen',
+      '/settings': 'Instellingen',
     }
 
     for (const [path, title] of Object.entries(titles)) {

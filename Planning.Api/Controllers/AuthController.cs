@@ -15,15 +15,18 @@ public class AuthController : ApiControllerBase
     private readonly IAuthService _authService;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
+    private readonly IValidator<UpdateProfileRequest> _updateProfileValidator;
 
     public AuthController(
         IAuthService authService,
         IValidator<RegisterRequest> registerValidator,
-        IValidator<LoginRequest> loginValidator)
+        IValidator<LoginRequest> loginValidator,
+        IValidator<UpdateProfileRequest> updateProfileValidator)
     {
         _authService = authService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
+        _updateProfileValidator = updateProfileValidator;
     }
 
     [HttpGet]
@@ -67,4 +70,16 @@ public class AuthController : ApiControllerBase
         var result = await _authService.GetCurrentUserAsync(HttpContext.RequestAborted);
         return result.ToActionResult(this);
     }
+
+    [HttpPut("me")]
+    [Authorize]
+    [ProducesResponseType(typeof(UpdateProfileResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status401Unauthorized)]
+    public Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request) =>
+        ValidateAndExecuteAsync(request, _updateProfileValidator, async () =>
+        {
+            var result = await _authService.UpdateProfileAsync(request, HttpContext.RequestAborted);
+            return result.ToActionResult(this);
+        });
 }

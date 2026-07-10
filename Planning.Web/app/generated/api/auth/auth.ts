@@ -10,7 +10,9 @@ import type {
   LoginRequest,
   LoginResponse,
   RegisterRequest,
-  RegisterResponse
+  RegisterResponse,
+  UpdateProfileRequest,
+  UpdateProfileResponse
 } from '../../models';
 
 import { customFetch } from '../../../utils/apiClient';
@@ -93,6 +95,27 @@ export const getApiAuthMe = async ( options?: RequestInit): Promise<CurrentUserR
     method: 'GET'
     
     
+  }
+);}
+
+
+export const getPutApiAuthMeUrl = () => {
+
+
+  
+
+  return `/api/auth/me`
+}
+
+export const putApiAuthMe = async (updateProfileRequest: UpdateProfileRequest, options?: RequestInit): Promise<UpdateProfileResponse> => {
+  
+  return customFetch<UpdateProfileResponse>(getPutApiAuthMeUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateProfileRequest,)
   }
 );}
 

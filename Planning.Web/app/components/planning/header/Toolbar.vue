@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import type { DateValue } from '@internationalized/date'
+import { fromDate, getLocalTimeZone, toCalendarDate } from '@internationalized/date'
 import type { PlanningViewMode, PlanningRowMode, TimelineZoom } from '~/types/planning'
-import { formatDayHeader } from '~/utils/planning/dateUtils'
+import { formatDayHeader, getMonday } from '~/utils/planning/dateUtils'
 import { computeDateRange } from '~/utils/planning/timelineMath'
 
 const store = usePlanningStore()
@@ -36,36 +38,41 @@ const rangeLabel = computed(() => {
   return `${formatDayHeader(start)} – ${formatDayHeader(endDay)}`
 })
 
+const calendarOpen = ref(false)
+
+const calendarDefaultDate = computed(() =>
+  toCalendarDate(fromDate(store.currentDate, getLocalTimeZone())),
+)
+
+function onCalendarDateSelect(
+  value: DateValue | { start?: DateValue, end?: DateValue } | DateValue[] | null | undefined,
+) {
+  if (!value || Array.isArray(value) || !('day' in value)) return
+  const date = value.toDate(getLocalTimeZone())
+  if (store.viewMode === 'daily') {
+    store.currentDate = date
+  }
+  else if (store.viewMode === 'monthly') {
+    store.currentDate = new Date(date.getFullYear(), date.getMonth(), 1)
+  }
+  else {
+    store.currentDate = getMonday(date)
+  }
+  calendarOpen.value = false
+}
+
+function goToTodayAndClose() {
+  store.goToToday()
+  calendarOpen.value = false
+}
+
 const emit = defineEmits<{
   create: []
 }>()
 </script>
 
 <template>
-  <div class="flex flex-col gap-3 border-b border-default pb-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-semibold">
-          Planning
-        </h1>
-        <p class="text-sm text-muted">
-          {{ rangeLabel }}
-        </p>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-2">
-        <UButton
-          v-if="canManage"
-          icon="i-lucide-plus"
-          label="Nieuw"
-          @click="() => { emit('create') }"
-        />
-        <UButton variant="outline" icon="i-lucide-chevron-left" @click="() => { store.navigatePrevious() }" />
-        <UButton variant="outline" label="Vandaag" @click="() => { store.goToToday() }" />
-        <UButton variant="outline" icon="i-lucide-chevron-right" @click="() => { store.navigateNext() }" />
-      </div>
-    </div>
-
+  <div class="flex justify-between border-b border-default pb-4">
     <div class="flex flex-wrap items-center gap-2">
       <UFieldGroup>
         <UButton
@@ -97,6 +104,42 @@ const emit = defineEmits<{
         label-key="label"
         class="w-24"
         size="sm"
+      />
+    </div>
+    <div class="flex flex-wrap items-center gap-2">
+      <UFieldGroup
+        >
+        <UButton variant="outline" icon="i-lucide-chevron-left" @click="() => { store.navigatePrevious() }" />
+          <UPopover v-model:open="calendarOpen">
+        <UButton
+ variant="outline"
+          :label="rangeLabel"
+        />
+
+        <template #content>
+          <div class="flex flex-col gap-2 p-2">
+            <UCalendar
+              v-if="calendarOpen"
+              :default-value="calendarDefaultDate"
+              color="secondary"
+              @update:model-value="onCalendarDateSelect"
+            />
+            <UButton
+              variant="outline"
+              label="Vandaag"
+              block
+              @click="goToTodayAndClose"
+            />
+          </div>
+        </template>
+      </UPopover>
+        <UButton variant="outline" icon="i-lucide-chevron-right" @click="() => { store.navigateNext() }" />
+      </UFieldGroup>
+      <UButton
+      v-if="canManage"
+      icon="i-lucide-plus"
+      label="Nieuw"
+      @click="() => { emit('create') }"
       />
     </div>
   </div>

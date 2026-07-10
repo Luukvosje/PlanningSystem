@@ -3,7 +3,7 @@ import type { TimelineRow } from '~/types/planning'
 
 const store = usePlanningStore()
 const { records, isLoading, error } = usePlanning()
-const { availabilityEntries } = usePlanningAvailability(records)
+const { availabilityPeriods } = usePlanningAvailability(records)
 const { message } = useApiError(error)
 const { data: users } = useUsers()
 const { data: customers } = useCustomers()
@@ -67,7 +67,7 @@ function openCreate() {
       <PlanningTimeline
         :rows="timelineRows"
         :is-loading="isLoading"
-        :availability-entries="availabilityEntries"
+        :availability-periods="availabilityPeriods"
       />
     </div>
 

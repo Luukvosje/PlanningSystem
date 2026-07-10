@@ -1,11 +1,19 @@
 <script setup lang="ts">
 import type { AppModule } from '~/generated/models'
-import { modulesFromSettings, modulesToRequest } from '~/utils/modules'
+import {
+  getOrganizationModuleToggleStates,
+  modulesFromSettings,
+  modulesToOrganizationRequest,
+} from '~/utils/modules'
 
 const { data: organization, isLoading } = useCurrentOrganization()
 const { updateOrganizationModules } = useModulesApi()
 
 const moduleState = ref<Record<AppModule, boolean>>(modulesFromSettings([]))
+
+const toggleStates = computed(() =>
+  getOrganizationModuleToggleStates(organization.value?.modules),
+)
 
 watch(
   () => organization.value?.modules,
@@ -16,7 +24,7 @@ watch(
 )
 
 function save() {
-  updateOrganizationModules.mutate(modulesToRequest(moduleState.value))
+  updateOrganizationModules.mutate(modulesToOrganizationRequest(moduleState.value))
 }
 </script>
 
@@ -38,6 +46,7 @@ function save() {
     <ModulesToggles
       v-else
       v-model="moduleState"
+      :toggle-states="toggleStates"
       :saving="updateOrganizationModules.isPending.value"
       @save="save"
     />

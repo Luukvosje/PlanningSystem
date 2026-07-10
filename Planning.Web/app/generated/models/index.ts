@@ -36,6 +36,8 @@ export * from './registerResponse';
 export * from './updateCustomerRequest';
 export * from './updateModulesRequest';
 export * from './updatePlanningRequest';
+export * from './updateProfileRequest';
+export * from './updateProfileResponse';
 export * from './updateUserRoleRequest';
 export * from './userResponse';
 export * from './userRole';

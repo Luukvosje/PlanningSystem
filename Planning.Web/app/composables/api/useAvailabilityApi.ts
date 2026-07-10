@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import {
-  deleteAvailability,
-  upsertDayPartAvailability,
-  upsertTimeBlockAvailability,
+  createAvailabilityRule,
+  deleteAvailabilityRule,
+  updateAvailabilityRule,
 } from '~/utils/availabilityClient'
-import { queryKeys } from '~/utils/queryKeys'
-import type { UpsertDayPartRequest, UpsertTimeBlockRequest } from '~/types/availability'
+import type { CreateAvailabilityRuleRequest, UpdateAvailabilityRuleRequest } from '~/types/availability'
 
 export function useAvailabilityApi() {
   const queryClient = useQueryClient()
@@ -15,39 +14,43 @@ export function useAvailabilityApi() {
     return queryClient.invalidateQueries({ queryKey: ['availability'] })
   }
 
-  const upsertDayPart = useMutation({
-    mutationFn: (request: UpsertDayPartRequest) => upsertDayPartAvailability(request),
+  const create = useMutation({
+    mutationFn: (request: CreateAvailabilityRuleRequest) => createAvailabilityRule(request),
     onSuccess: async () => {
       await invalidateAvailability()
+      toast.add({ title: 'Regel opgeslagen', color: 'success' })
     },
     onError: () => {
-      toast.add({ title: 'Beschikbaarheid opslaan mislukt', color: 'error' })
+      toast.add({ title: 'Regel opslaan mislukt', color: 'error' })
     },
   })
 
-  const upsertTimeBlock = useMutation({
-    mutationFn: (request: UpsertTimeBlockRequest) => upsertTimeBlockAvailability(request),
+  const update = useMutation({
+    mutationFn: ({ id, request }: { id: string, request: UpdateAvailabilityRuleRequest }) =>
+      updateAvailabilityRule(id, request),
     onSuccess: async () => {
       await invalidateAvailability()
+      toast.add({ title: 'Regel bijgewerkt', color: 'success' })
     },
     onError: () => {
-      toast.add({ title: 'Tijdsblok opslaan mislukt', color: 'error' })
+      toast.add({ title: 'Regel bijwerken mislukt', color: 'error' })
     },
   })
 
   const remove = useMutation({
-    mutationFn: (id: string) => deleteAvailability(id),
+    mutationFn: (id: string) => deleteAvailabilityRule(id),
     onSuccess: async () => {
       await invalidateAvailability()
+      toast.add({ title: 'Regel verwijderd', color: 'success' })
     },
     onError: () => {
-      toast.add({ title: 'Tijdsblok verwijderen mislukt', color: 'error' })
+      toast.add({ title: 'Regel verwijderen mislukt', color: 'error' })
     },
   })
 
   return {
-    upsertDayPart,
-    upsertTimeBlock,
+    create,
+    update,
     remove,
     invalidateAvailability,
   }

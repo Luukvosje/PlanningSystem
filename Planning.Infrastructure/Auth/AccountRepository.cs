@@ -27,6 +27,12 @@ public class AccountRepository : IAccountRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task UpdateAsync(Account account, CancellationToken cancellationToken = default)
+    {
+        _context.Accounts.Update(account);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default) =>
         await _context.Accounts.AnyAsync(
             x => x.Email == email.Trim().ToLowerInvariant(),

@@ -1,21 +1,13 @@
-import type { AvailabilityEntry, DayPart } from '~/types/availability'
+import type {
+  AvailabilityRule,
+  UnavailablePeriod,
+  Weekday,
+} from '~/types/availability'
 import { MIXED_END_HOUR, MIXED_START_HOUR } from '~/utils/planning/mixedTimelineMath'
 import { timeToPx } from '~/utils/planning/timelineMath'
 
-export const DAY_PART_LABELS: Record<DayPart, string> = {
-  Morning: 'Ochtend',
-  Afternoon: 'Middag',
-  Evening: 'Avond',
-}
-
-export const DAY_PART_RANGES: Record<DayPart, { startHour: number, endHour: number }> = {
-  Morning: { startHour: 6, endHour: 12 },
-  Afternoon: { startHour: 12, endHour: 17 },
-  Evening: { startHour: 17, endHour: 23 },
-}
-
-export interface UnavailablePeriod {
-  userId: string
+export interface UnavailablePeriodView {
+  employeeId: string
   start: Date
   end: Date
   label: string
@@ -26,6 +18,16 @@ export interface UnavailableOverlay {
   leftPx: number
   widthPx: number
   tooltip: string
+}
+
+const JS_DAY_TO_WEEKDAY: Record<number, Weekday> = {
+  0: 'Sunday',
+  1: 'Monday',
+  2: 'Tuesday',
+  3: 'Wednesday',
+  4: 'Thursday',
+  5: 'Friday',
+  6: 'Saturday',
 }
 
 function parseTimeParts(time: string): { hours: number, minutes: number } {
@@ -46,76 +48,116 @@ export function createLocalDateTime(dateKey: string, time: string): Date {
   return new Date(year!, month! - 1, day, hours, minutes, 0, 0)
 }
 
-function buildTooltip(entry: AvailabilityEntry, periodLabel: string): string {
-  const parts = ['Niet beschikbaar', periodLabel]
-  if (entry.source === 'Manager') {
-    parts.push(`Aangepast door ${entry.lastModifiedByName}`)
+function weekdayFromDate(date: Date): Weekday {
+  return JS_DAY_TO_WEEKDAY[date.getDay()]!
+}
+
+function expandRuleForDate(rule: AvailabilityRule, date: Date): UnavailablePeriod | null {
+  const dateKey = toDateKey(date)
+
+  if (rule.type === 'Weekly') {
+    if (rule.weekday !== weekdayFromDate(date)) {
+      return null
+    }
   }
-  if (entry.note) {
-    parts.push(entry.note)
+  else if (rule.date !== dateKey) {
+    return null
+  }
+
+  if (rule.status !== 'Unavailable') {
+    return null
+  }
+
+  return {
+    employeeId: rule.employeeId,
+    date: dateKey,
+    startTime: rule.startTime,
+    endTime: rule.endTime,
+    status: rule.status,
+    reason: rule.reason,
+    ruleId: rule.id,
+  }
+}
+
+export function expandRulesForDate(
+  rules: AvailabilityRule[],
+  employeeId: string,
+  day: Date,
+): UnavailablePeriod[] {
+  return rules
+    .filter(rule => rule.employeeId === employeeId)
+    .map(rule => expandRuleForDate(rule, day))
+    .filter((period): period is UnavailablePeriod => period !== null)
+}
+
+export function expandPlanningPeriodsForDate(
+  periods: UnavailablePeriod[],
+  employeeId: string,
+  day: Date,
+): UnavailablePeriod[] {
+  const dateKey = toDateKey(day)
+  return periods.filter(period =>
+    period.employeeId === employeeId
+    && period.date === dateKey
+    && period.status === 'Unavailable',
+  )
+}
+
+function buildTooltip(period: UnavailablePeriod, periodLabel: string): string {
+  const parts = ['Niet beschikbaar', periodLabel]
+  if (period.reason) {
+    parts.push(period.reason)
   }
   return parts.join(' · ')
 }
 
-export function getUnavailablePeriodsForDay(
-  entries: AvailabilityEntry[],
-  userId: string,
-  day: Date,
-): UnavailablePeriod[] {
+function periodToView(period: UnavailablePeriod, day: Date): UnavailablePeriodView {
   const dateKey = toDateKey(day)
-  const periods: UnavailablePeriod[] = []
-
-  for (const entry of entries) {
-    if (entry.userId !== userId || entry.date !== dateKey || entry.isAvailable) {
-      continue
-    }
-
-    if (entry.type === 'DayPart' && entry.dayPart) {
-      const range = DAY_PART_RANGES[entry.dayPart]
-      const start = new Date(day)
-      start.setHours(range.startHour, 0, 0, 0)
-      const end = new Date(day)
-      end.setHours(range.endHour, 0, 0, 0)
-      periods.push({
-        userId,
-        start,
-        end,
-        label: DAY_PART_LABELS[entry.dayPart],
-        tooltip: buildTooltip(entry, DAY_PART_LABELS[entry.dayPart]),
-      })
-      continue
-    }
-
-    if (entry.type === 'TimeBlock' && entry.startTime && entry.endTime) {
-      const start = createLocalDateTime(dateKey, entry.startTime)
-      const end = createLocalDateTime(dateKey, entry.endTime)
-      const timeLabel = `${entry.startTime.slice(0, 5)}–${entry.endTime.slice(0, 5)}`
-      periods.push({
-        userId,
-        start,
-        end,
-        label: timeLabel,
-        tooltip: buildTooltip(entry, timeLabel),
-      })
-    }
+  const start = createLocalDateTime(dateKey, period.startTime)
+  const end = createLocalDateTime(dateKey, period.endTime)
+  const timeLabel = `${period.startTime.slice(0, 5)}–${period.endTime.slice(0, 5)}`
+  return {
+    employeeId: period.employeeId,
+    start,
+    end,
+    label: timeLabel,
+    tooltip: buildTooltip(period, timeLabel),
   }
+}
 
-  return periods
+export function getUnavailablePeriodsForDayFromRules(
+  rules: AvailabilityRule[],
+  employeeId: string,
+  day: Date,
+): UnavailablePeriodView[] {
+  return expandRulesForDate(rules, employeeId, day).map(period => periodToView(period, day))
+}
+
+export function getUnavailablePeriodsForDayFromPlanning(
+  periods: UnavailablePeriod[],
+  employeeId: string,
+  day: Date,
+): UnavailablePeriodView[] {
+  return expandPlanningPeriodsForDate(periods, employeeId, day).map(period => periodToView(period, day))
 }
 
 export function getUnavailableOverlaysForMatrix(
-  entries: AvailabilityEntry[],
-  userId: string,
+  rules: AvailabilityRule[],
+  employeeId: string,
   rangeStart: Date,
   rangeEnd: Date,
   dayWidth: number,
+  planningPeriods?: UnavailablePeriod[],
 ): UnavailableOverlay[] {
   const overlays: UnavailableOverlay[] = []
   const cursor = new Date(rangeStart)
   cursor.setHours(0, 0, 0, 0)
 
   while (cursor < rangeEnd) {
-    const periods = getUnavailablePeriodsForDay(entries, userId, cursor)
+    const periods = planningPeriods
+      ? getUnavailablePeriodsForDayFromPlanning(planningPeriods, employeeId, cursor)
+      : getUnavailablePeriodsForDayFromRules(rules, employeeId, cursor)
+
     for (const period of periods) {
       overlays.push({
         leftPx: timeToPx(period.start.toISOString(), rangeStart, dayWidth),
@@ -130,12 +172,17 @@ export function getUnavailableOverlaysForMatrix(
 }
 
 export function getUnavailableOverlaysForMixed(
-  entries: AvailabilityEntry[],
-  userId: string,
+  rules: AvailabilityRule[],
+  employeeId: string,
   day: Date,
   timeToMixedPx: (utcIso: string) => number,
+  planningPeriods?: UnavailablePeriod[],
 ): UnavailableOverlay[] {
-  return getUnavailablePeriodsForDay(entries, userId, day).map((period) => {
+  const periods = planningPeriods
+    ? getUnavailablePeriodsForDayFromPlanning(planningPeriods, employeeId, day)
+    : getUnavailablePeriodsForDayFromRules(rules, employeeId, day)
+
+  return periods.map((period) => {
     const leftPx = Math.max(timeToMixedPx(period.start.toISOString()), 0)
     const rightPx = Math.min(
       timeToMixedPx(period.end.toISOString()),
@@ -149,88 +196,96 @@ export function getUnavailableOverlaysForMixed(
   })
 }
 
-/**
- * Overlap-detectie tussen een dienst en onbeschikbare periodes.
- * Twee tijdsintervallen overlappen als: shiftStart < unavailableEnd && shiftEnd > unavailableStart
- */
 export function hasAvailabilityConflict(
-  userId: string,
+  employeeId: string,
   startUtc: string,
   endUtc: string,
-  entries: AvailabilityEntry[],
-  userName?: string,
+  rules: AvailabilityRule[],
+  employeeName?: string,
+  planningPeriods?: UnavailablePeriod[],
 ): { hasConflict: boolean, message?: string } {
   const shiftStart = new Date(startUtc)
   const shiftEnd = new Date(endUtc)
   const day = new Date(shiftStart)
   day.setHours(0, 0, 0, 0)
 
-  const periods = getUnavailablePeriodsForDay(entries, userId, day)
-  const conflict = periods.find(period =>
-    shiftStart < period.end && shiftEnd > period.start,
-  )
+  const periods = planningPeriods
+    ? expandPlanningPeriodsForDate(planningPeriods, employeeId, day)
+    : expandRulesForDate(rules, employeeId, day)
+
+  const conflict = periods.find((period) => {
+    const periodStart = createLocalDateTime(period.date, period.startTime)
+    const periodEnd = createLocalDateTime(period.date, period.endTime)
+    return shiftStart < periodEnd && shiftEnd > periodStart
+  })
 
   if (!conflict) {
     return { hasConflict: false }
   }
 
-  const name = userName ?? 'Medewerker'
+  const name = employeeName ?? 'Medewerker'
   return {
     hasConflict: true,
-    message: `${name} heeft aangegeven niet beschikbaar te zijn op dit tijdstip`,
+    message: `${name} is volgens zijn beschikbaarheid niet beschikbaar.`,
   }
 }
 
-export function getDayPartAvailability(
-  entries: AvailabilityEntry[],
-  userId: string,
-  dateKey: string,
-  dayPart: DayPart,
-): AvailabilityEntry | undefined {
-  const dayPartEntry = entries.find(entry =>
-    entry.userId === userId
-    && entry.date === dateKey
-    && entry.type === 'DayPart'
-    && entry.dayPart === dayPart,
-  )
-
-  if (dayPartEntry) {
-    return dayPartEntry
+export function formatRuleTimeRange(startTime: string, endTime: string): string {
+  const start = startTime.slice(0, 5)
+  const end = endTime.slice(0, 5)
+  if (start === '00:00' && (end === '23:59' || end === '24:00')) {
+    return 'hele dag'
   }
-
-  return entries.find(entry =>
-    entry.userId === userId
-    && entry.date === dateKey
-    && entry.type === 'TimeBlock'
-    && entry.startTime
-    && entry.endTime
-    && !entry.isAvailable
-    && timeBlockCoversDayPart(entry.startTime, entry.endTime, dayPart),
-  )
+  if (start === '00:00') {
+    return `tot ${end}`
+  }
+  if (end === '23:59' || end === '24:00') {
+    return `na ${start}`
+  }
+  return `${start}–${end}`
 }
 
-function timeToMinutes(time: string): number {
-  const { hours, minutes } = parseTimeParts(time)
-  return hours * 60 + minutes
+export function formatWeeklyRuleLabel(
+  weekday: Weekday,
+  startTime: string,
+  endTime: string,
+): string {
+  const dayLabel = {
+    Monday: 'maandag',
+    Tuesday: 'dinsdag',
+    Wednesday: 'woensdag',
+    Thursday: 'donderdag',
+    Friday: 'vrijdag',
+    Saturday: 'zaterdag',
+    Sunday: 'zondag',
+  }[weekday]
+
+  const timeLabel = formatRuleTimeRange(startTime, endTime)
+  if (timeLabel === 'hele dag') {
+    return `Iedere ${dayLabel} niet beschikbaar`
+  }
+  if (timeLabel.startsWith('na ')) {
+    return `Iedere ${dayLabel} ${timeLabel}`
+  }
+  if (timeLabel.startsWith('tot ')) {
+    return `Iedere ${dayLabel} ${timeLabel}`
+  }
+  return `Iedere ${dayLabel} ${timeLabel} niet beschikbaar`
 }
 
-function timeBlockCoversDayPart(startTime: string, endTime: string, dayPart: DayPart): boolean {
-  const range = DAY_PART_RANGES[dayPart]
-  const blockStart = timeToMinutes(startTime)
-  const blockEnd = timeToMinutes(endTime)
-  const partStart = range.startHour * 60
-  const partEnd = range.endHour * 60
-  return blockStart <= partStart && blockEnd >= partEnd
-}
-
-export function getTimeBlocksForDay(
-  entries: AvailabilityEntry[],
-  userId: string,
-  dateKey: string,
-): AvailabilityEntry[] {
-  return entries.filter(entry =>
-    entry.userId === userId
-    && entry.date === dateKey
-    && entry.type === 'TimeBlock',
-  )
+export function formatOneTimeRuleLabel(
+  date: string,
+  startTime: string,
+  endTime: string,
+  reason?: string | null,
+): string {
+  const dateLabel = new Date(`${date}T12:00:00`).toLocaleDateString('nl-NL', {
+    day: 'numeric',
+    month: 'long',
+  })
+  const timeLabel = formatRuleTimeRange(startTime, endTime)
+  const base = timeLabel === 'hele dag'
+    ? dateLabel
+    : `${dateLabel} ${timeLabel}`
+  return reason ? `${base} · ${reason}` : base
 }

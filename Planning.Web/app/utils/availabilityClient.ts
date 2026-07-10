@@ -1,72 +1,82 @@
 import { customFetch } from './apiClient'
 import type {
-  AvailabilityEntry,
-  UpsertDayPartRequest,
-  UpsertTimeBlockRequest,
-  WeekAvailabilityResponse,
+  AvailabilityRule,
+  AvailabilityRulesListResponse,
+  CreateAvailabilityRuleRequest,
+  PlanningAvailabilityResponse,
+  UpdateAvailabilityRuleRequest,
 } from '~/types/availability'
 
-function normalizeEntry(raw: Record<string, unknown>): AvailabilityEntry {
+function normalizeRule(raw: Record<string, unknown>): AvailabilityRule {
   return {
     id: String(raw.id ?? raw.Id),
-    userId: String(raw.userId ?? raw.UserId),
-    date: String(raw.date ?? raw.Date).slice(0, 10),
-    type: (raw.type ?? raw.Type) as AvailabilityEntry['type'],
-    dayPart: (raw.dayPart ?? raw.DayPart) as AvailabilityEntry['dayPart'],
-    startTime: (raw.startTime ?? raw.StartTime) as string | null | undefined,
-    endTime: (raw.endTime ?? raw.EndTime) as string | null | undefined,
-    isAvailable: Boolean(raw.isAvailable ?? raw.IsAvailable),
-    source: (raw.source ?? raw.Source) as AvailabilityEntry['source'],
-    lastModifiedByUserId: String(raw.lastModifiedByUserId ?? raw.LastModifiedByUserId),
-    lastModifiedByName: String(raw.lastModifiedByName ?? raw.LastModifiedByName ?? 'Onbekend'),
-    note: (raw.note ?? raw.Note) as string | null | undefined,
+    employeeId: String(raw.employeeId ?? raw.EmployeeId),
+    type: (raw.type ?? raw.Type) as AvailabilityRule['type'],
+    weekday: (raw.weekday ?? raw.Weekday) as AvailabilityRule['weekday'],
+    date: raw.date ?? raw.Date ? String(raw.date ?? raw.Date).slice(0, 10) : null,
+    startTime: String(raw.startTime ?? raw.StartTime).slice(0, 8),
+    endTime: String(raw.endTime ?? raw.EndTime).slice(0, 8),
+    status: (raw.status ?? raw.Status) as AvailabilityRule['status'],
+    reason: (raw.reason ?? raw.Reason) as string | null | undefined,
     createdAtUtc: (raw.createdAtUtc ?? raw.CreatedAtUtc) as string | undefined,
     updatedAtUtc: (raw.updatedAtUtc ?? raw.UpdatedAtUtc) as string | undefined,
   }
 }
 
-function normalizeWeekResponse(raw: Record<string, unknown>): WeekAvailabilityResponse {
-  const items = (raw.items ?? raw.Items ?? []) as Record<string, unknown>[]
+function normalizePeriod(raw: Record<string, unknown>) {
   return {
-    items: items.map(normalizeEntry),
-    rangeStart: String(raw.rangeStart ?? raw.RangeStart).slice(0, 10),
-    rangeEnd: String(raw.rangeEnd ?? raw.RangeEnd).slice(0, 10),
+    employeeId: String(raw.employeeId ?? raw.EmployeeId),
+    date: String(raw.date ?? raw.Date).slice(0, 10),
+    startTime: String(raw.startTime ?? raw.StartTime).slice(0, 8),
+    endTime: String(raw.endTime ?? raw.EndTime).slice(0, 8),
+    status: (raw.status ?? raw.Status) as PlanningAvailabilityResponse['periods'][number]['status'],
+    reason: (raw.reason ?? raw.Reason) as string | null | undefined,
+    ruleId: String(raw.ruleId ?? raw.RuleId),
   }
 }
 
-export interface WeekAvailabilityParams {
-  weekStartUtc: string
-  userId?: string
-  userIds?: string
-}
-
-export function getAvailabilityWeek(params: WeekAvailabilityParams) {
-  return customFetch<WeekAvailabilityResponse>('/api/availability/week', {
-    params: {
-      WeekStartUtc: params.weekStartUtc,
-      UserId: params.userId,
-      UserIds: params.userIds,
-    },
-  }).then(response => normalizeWeekResponse(response as unknown as Record<string, unknown>))
-}
-
-export function upsertDayPartAvailability(request: UpsertDayPartRequest) {
-  return customFetch<AvailabilityEntry | null>('/api/availability/day-parts', {
-    method: 'PUT',
-    body: JSON.stringify(request),
+export function getAvailabilityRules(employeeId: string) {
+  return customFetch<AvailabilityRulesListResponse>('/api/availability/rules', {
+    params: { EmployeeId: employeeId },
   }).then((response) => {
-    if (!response) return null
-    return normalizeEntry(response as unknown as Record<string, unknown>)
+    const raw = response as unknown as Record<string, unknown>
+    const items = (raw.items ?? raw.Items ?? []) as Record<string, unknown>[]
+    return { items: items.map(normalizeRule) }
   })
 }
 
-export function upsertTimeBlockAvailability(request: UpsertTimeBlockRequest) {
-  return customFetch<AvailabilityEntry>('/api/availability/time-blocks', {
-    method: 'PUT',
-    body: JSON.stringify(request),
-  }).then(response => normalizeEntry(response as unknown as Record<string, unknown>))
+export function getPlanningAvailability(params: {
+  startDate: string
+  endDate: string
+  employeeIds?: string
+}) {
+  return customFetch<PlanningAvailabilityResponse>('/api/availability/rules/for-planning', {
+    params: {
+      StartDate: params.startDate,
+      EndDate: params.endDate,
+      EmployeeIds: params.employeeIds,
+    },
+  }).then((response) => {
+    const raw = response as unknown as Record<string, unknown>
+    const periods = (raw.periods ?? raw.Periods ?? []) as Record<string, unknown>[]
+    return { periods: periods.map(normalizePeriod) }
+  })
 }
 
-export function deleteAvailability(id: string) {
-  return customFetch<void>(`/api/availability/${id}`, { method: 'DELETE' })
+export function createAvailabilityRule(request: CreateAvailabilityRuleRequest) {
+  return customFetch<AvailabilityRule>('/api/availability/rules', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  }).then(response => normalizeRule(response as unknown as Record<string, unknown>))
+}
+
+export function updateAvailabilityRule(id: string, request: UpdateAvailabilityRuleRequest) {
+  return customFetch<AvailabilityRule>(`/api/availability/rules/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(request),
+  }).then(response => normalizeRule(response as unknown as Record<string, unknown>))
+}
+
+export function deleteAvailabilityRule(id: string) {
+  return customFetch<void>(`/api/availability/rules/${id}`, { method: 'DELETE' })
 }

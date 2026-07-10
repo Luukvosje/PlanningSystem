@@ -12,11 +12,16 @@ public class ModuleService : IModuleService
         [AppModule.Planning, AppModule.Klant, AppModule.Beheer];
 
     private readonly IModuleRepository _moduleRepository;
+    private readonly IUserRepository _userRepository;
     private readonly ICurrentUserContext _currentUserContext;
 
-    public ModuleService(IModuleRepository moduleRepository, ICurrentUserContext currentUserContext)
+    public ModuleService(
+        IModuleRepository moduleRepository,
+        IUserRepository userRepository,
+        ICurrentUserContext currentUserContext)
     {
         _moduleRepository = moduleRepository;
+        _userRepository = userRepository;
         _currentUserContext = currentUserContext;
     }
 
@@ -41,20 +46,17 @@ public class ModuleService : IModuleService
         Guid organizationId,
         CancellationToken cancellationToken = default)
     {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+
+        if (user is null)
+        {
+            return [];
+        }
+
         var orgModules = await _moduleRepository.GetOrganizationModulesAsync(organizationId, cancellationToken);
         var userModules = await _moduleRepository.GetUserModulesAsync(userId, cancellationToken);
 
-        var orgByKey = orgModules.ToDictionary(x => x.Module);
-        var userByKey = userModules.ToDictionary(x => x.Module);
-
-        return AllModules
-            .Select(module =>
-            {
-                var orgEnabled = orgByKey.TryGetValue(module, out var orgModule) && orgModule.IsEnabled;
-                var userEnabled = userByKey.TryGetValue(module, out var userModule) && userModule.IsEnabled;
-                return new ModuleSettingResponse(module, orgEnabled && userEnabled);
-            })
-            .ToList();
+        return ToEffectiveResponses(user.Role, orgModules, userModules);
     }
 
     public async Task InitializeOrganizationModulesAsync(
@@ -106,7 +108,10 @@ public class ModuleService : IModuleService
         }
 
         var organizationId = _currentUserContext.OrganizationId!.Value;
-        var updates = ToDictionary(request);
+        var updates = new Dictionary<AppModule, bool>(ToDictionary(request))
+        {
+            [AppModule.Beheer] = true,
+        };
 
         await _moduleRepository.UpdateOrganizationModulesAsync(organizationId, updates, cancellationToken);
 
@@ -134,19 +139,44 @@ public class ModuleService : IModuleService
         }
 
         var organizationId = _currentUserContext.OrganizationId!.Value;
+        var targetUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
+
+        if (targetUser is null || targetUser.OrganizationId != organizationId)
+        {
+            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
+                "User not found.",
+                "NOT_FOUND");
+        }
+
         var orgModules = await _moduleRepository.GetOrganizationModulesAsync(organizationId, cancellationToken);
         var orgByKey = orgModules.ToDictionary(x => x.Module);
-        var updates = ToDictionary(request);
+        var updates = new Dictionary<AppModule, bool>(ToDictionary(request));
 
-        foreach (var (module, isEnabled) in updates)
+        foreach (var module in AllModules)
         {
-            if (isEnabled
-                && orgByKey.TryGetValue(module, out var orgModule)
-                && !orgModule.IsEnabled)
+            if (!orgByKey.TryGetValue(module, out var orgModule))
             {
-                return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
-                    $"Module '{module}' is disabled at organization level.",
-                    "VALIDATION_ERROR");
+                continue;
+            }
+
+            var orgEnabled = ModulePermissions.GetOrganizationEffectiveEnabled(module, orgModule.IsEnabled);
+
+            if (!orgEnabled)
+            {
+                if (updates.TryGetValue(module, out var isEnabled) && isEnabled)
+                {
+                    return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
+                        $"Module '{module}' is disabled at organization level.",
+                        "VALIDATION_ERROR");
+                }
+
+                updates[module] = false;
+                continue;
+            }
+
+            if (ModulePermissions.IsAdminRole(targetUser.Role))
+            {
+                updates[module] = true;
             }
         }
 
@@ -156,12 +186,52 @@ public class ModuleService : IModuleService
         return Result<IReadOnlyList<ModuleSettingResponse>>.Success(modules);
     }
 
-    public Task<bool> HasEffectiveModuleAsync(
+    public async Task<bool> HasEffectiveModuleAsync(
         Guid userId,
         Guid organizationId,
         AppModule module,
-        CancellationToken cancellationToken = default) =>
-        _moduleRepository.HasEffectiveModuleAsync(userId, organizationId, module, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+
+        if (user is null)
+        {
+            return false;
+        }
+
+        var orgModules = await _moduleRepository.GetOrganizationModulesAsync(organizationId, cancellationToken);
+        var userModules = await _moduleRepository.GetUserModulesAsync(userId, cancellationToken);
+
+        var orgByKey = orgModules.ToDictionary(x => x.Module);
+        var userByKey = userModules.ToDictionary(x => x.Module);
+
+        var orgDbEnabled = orgByKey.TryGetValue(module, out var orgModule) && orgModule.IsEnabled;
+        var orgEnabled = ModulePermissions.GetOrganizationEffectiveEnabled(module, orgDbEnabled);
+        var userEnabled = userByKey.TryGetValue(module, out var userModule) && userModule.IsEnabled;
+
+        return ModulePermissions.HasEffectiveAccess(user.Role, orgEnabled, userEnabled);
+    }
+
+    private static IReadOnlyList<ModuleSettingResponse> ToEffectiveResponses(
+        UserRole role,
+        IEnumerable<OrganizationModule> orgModules,
+        IEnumerable<UserModule> userModules)
+    {
+        var orgByKey = orgModules.ToDictionary(x => x.Module);
+        var userByKey = userModules.ToDictionary(x => x.Module);
+
+        return AllModules
+            .Select(module =>
+            {
+                var orgDbEnabled = orgByKey.TryGetValue(module, out var orgModule) && orgModule.IsEnabled;
+                var orgEnabled = ModulePermissions.GetOrganizationEffectiveEnabled(module, orgDbEnabled);
+                var userEnabled = userByKey.TryGetValue(module, out var userModule) && userModule.IsEnabled;
+                return new ModuleSettingResponse(
+                    module,
+                    ModulePermissions.HasEffectiveAccess(role, orgEnabled, userEnabled));
+            })
+            .ToList();
+    }
 
     private static IReadOnlyDictionary<AppModule, bool> ToDictionary(UpdateModulesRequest request) =>
         new Dictionary<AppModule, bool>

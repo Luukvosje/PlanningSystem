@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlanningRecord } from '~/types/planning'
-import type { AvailabilityEntry } from '~/types/availability'
+import type { UnavailablePeriod } from '~/types/availability'
 import { formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils'
 import { isOpenShift } from '~/utils/planning/mixedTimelineMath'
 
@@ -8,15 +8,14 @@ const props = defineProps<{
   record: PlanningRecord
   layout: { leftPx: number, widthPx: number, topPx: number, heightPx: number }
   selected?: boolean
-  availabilityEntries?: AvailabilityEntry[]
+  availabilityPeriods?: UnavailablePeriod[]
 }>()
 
 const store = usePlanningStore()
 const { data: users } = useUsers()
-const { checkRecord } = useAvailabilityWarning(
-  computed(() => props.availabilityEntries ?? []),
-  users,
-)
+const { checkRecord } = useAvailabilityWarning(users, {
+  planningPeriods: computed(() => props.availabilityPeriods ?? []),
+})
 
 const isOpen = computed(() => isOpenShift(props.record))
 const blockColor = computed(() =>

@@ -43,7 +43,7 @@ public static class DependencyInjection
         services.AddScoped<IOrganizationInviteRepository, OrganizationInviteRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IPlanningRecordRepository, PlanningRecordRepository>();
-        services.AddScoped<IEmployeeAvailabilityRepository, EmployeeAvailabilityRepository>();
+        services.AddScoped<IAvailabilityRuleRepository, AvailabilityRuleRepository>();
         services.AddScoped<IModuleRepository, ModuleRepository>();
 
         return services;

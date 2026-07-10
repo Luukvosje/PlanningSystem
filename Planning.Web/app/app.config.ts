@@ -14,5 +14,10 @@ export default defineAppConfig({
         color: 'secondary',
       },
     },
+    table: {
+      slots: {
+        root: 'border border-default rounded-xl',
+      },
+    },
   },
 })

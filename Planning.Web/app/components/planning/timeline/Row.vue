@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlanningRecord } from '~/types/planning'
-import type { AvailabilityEntry } from '~/types/availability'
+import type { UnavailablePeriod } from '~/types/availability'
 import AvailabilityOverlay from './AvailabilityOverlay.vue'
 import { getRowHeight, layoutOverlappingBlocks } from '~/utils/planning/overlapLayout'
 import { SNAP_MINUTES, snapPx } from '~/utils/planning/timelineMath'
@@ -11,7 +11,7 @@ const props = defineProps<{
   label: string
   records: PlanningRecord[]
   rowCustomerId?: string | null
-  availabilityEntries?: AvailabilityEntry[]
+  availabilityPeriods?: UnavailablePeriod[]
 }>()
 
 const { timeToPx, timelineWidth, rowLabelWidth, pxToUtcIso, dateRange, dayWidth } = useTimeline()
@@ -39,16 +39,17 @@ const rowHeight = computed(() => {
 })
 
 const availabilityOverlays = computed(() => {
-  if (store.rowMode !== 'resource' || !props.availabilityEntries?.length) {
+  if (store.rowMode !== 'resource' || !props.availabilityPeriods?.length) {
     return []
   }
 
   return getUnavailableOverlaysForMatrix(
-    props.availabilityEntries,
+    [],
     props.rowId,
     dateRange.value.start,
     dateRange.value.end,
     dayWidth.value,
+    props.availabilityPeriods,
   )
 })
 
@@ -176,7 +177,7 @@ function onRowPointerDown(event: PointerEvent) {
         :layout="layouts.get(record.id)!"
         :selected="store.selectedPlanningId === record.id"
         :row-id="rowId"
-        :availability-entries="availabilityEntries"
+        :availability-periods="availabilityPeriods"
       />
     </div>
   </div>

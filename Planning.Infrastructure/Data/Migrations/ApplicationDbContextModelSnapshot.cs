@@ -8,7 +8,7 @@ using Planning.Infrastructure.Data;
 
 #nullable disable
 
-namespace Planning.Infrastructure.Data.Migrations
+namespace Planning.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -62,7 +62,7 @@ namespace Planning.Infrastructure.Data.Migrations
                     b.ToTable("Accounts", (string)null);
                 });
 
-            modelBuilder.Entity("Planning.Domain.Availability.EmployeeAvailability", b =>
+            modelBuilder.Entity("Planning.Domain.Availability.AvailabilityRule", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,36 +71,29 @@ namespace Planning.Infrastructure.Data.Migrations
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateOnly>("Date")
+                    b.Property<DateOnly?>("Date")
                         .HasColumnType("date");
 
-                    b.Property<string>("DayPart")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<TimeOnly?>("EndTime")
-                        .HasColumnType("time");
-
-                    b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
-
-                    b.Property<Guid>("LastModifiedByUserId")
+                    b.Property<Guid>("EmployeeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Note")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Source")
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<TimeOnly?>("StartTime")
-                        .HasColumnType("time");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -110,24 +103,22 @@ namespace Planning.Infrastructure.Data.Migrations
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<string>("Weekday")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LastModifiedByUserId");
+                    b.HasIndex("EmployeeId");
 
                     b.HasIndex("OrganizationId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("OrganizationId", "EmployeeId", "Date")
+                        .HasFilter("[Type] = 'OneTime'");
 
-                    b.HasIndex("OrganizationId", "UserId", "Date");
+                    b.HasIndex("OrganizationId", "EmployeeId", "Type");
 
-                    b.HasIndex("OrganizationId", "UserId", "Date", "Type", "DayPart")
-                        .IsUnique()
-                        .HasFilter("[Type] = 'DayPart'");
-
-                    b.ToTable("EmployeeAvailabilities", (string)null);
+                    b.ToTable("AvailabilityRules", (string)null);
                 });
 
             modelBuilder.Entity("Planning.Domain.Customers.Customer", b =>
@@ -404,11 +395,11 @@ namespace Planning.Infrastructure.Data.Migrations
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("Planning.Domain.Availability.EmployeeAvailability", b =>
+            modelBuilder.Entity("Planning.Domain.Availability.AvailabilityRule", b =>
                 {
                     b.HasOne("Planning.Domain.Users.User", null)
                         .WithMany()
-                        .HasForeignKey("LastModifiedByUserId")
+                        .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -416,12 +407,6 @@ namespace Planning.Infrastructure.Data.Migrations
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Planning.Domain.Users.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

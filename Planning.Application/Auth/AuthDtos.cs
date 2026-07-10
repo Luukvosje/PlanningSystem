@@ -41,6 +41,17 @@ public sealed record CurrentUserResponse(
     string OrganizationName,
     IReadOnlyList<ModuleSettingResponse> Modules);
 
+public sealed record UpdateProfileRequest(
+    string Email,
+    string FirstName,
+    string LastName);
+
+public sealed record UpdateProfileResponse(
+    Guid AccountId,
+    string Email,
+    string FirstName,
+    string LastName);
+
 public sealed record SwitchOrganizationRequest(Guid OrganizationId);
 
 public sealed record TokenResponse(string AccessToken);

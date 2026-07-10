@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import type { TimelineRow } from '~/types/planning'
-import type { AvailabilityEntry } from '~/types/availability'
+import type { UnavailablePeriod } from '~/types/availability'
 import { useResizeObserver } from '@vueuse/core'
 
 const props = defineProps<{
   rows: TimelineRow[]
   isLoading?: boolean
-  availabilityEntries?: AvailabilityEntry[]
+  availabilityPeriods?: UnavailablePeriod[]
 }>()
 
 const store = usePlanningStore()
@@ -53,7 +53,7 @@ useTimelineWheelZoom(containerRef)
           :label="row.label"
           :records="row.records"
           :row-customer-id="store.rowMode === 'customer' && row.id !== '__unassigned__' ? row.id : null"
-          :availability-entries="availabilityEntries"
+          :availability-periods="availabilityPeriods"
           />
         </div>
       </div>

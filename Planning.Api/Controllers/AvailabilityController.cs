@@ -12,65 +12,69 @@ namespace Planning.Api.Controllers;
 [Authorize(Policy = "RequirePlanningModule")]
 public class AvailabilityController : ApiControllerBase
 {
-    private readonly IAvailabilityService _availabilityService;
-    private readonly IValidator<WeekAvailabilityRequest> _weekValidator;
-    private readonly IValidator<UpsertDayPartAvailabilityRequest> _dayPartValidator;
-    private readonly IValidator<UpsertTimeBlockAvailabilityRequest> _timeBlockValidator;
+    private readonly IAvailabilityRuleService _availabilityRuleService;
+    private readonly IValidator<CreateAvailabilityRuleRequest> _createValidator;
+    private readonly IValidator<UpdateAvailabilityRuleRequest> _updateValidator;
+    private readonly IValidator<PlanningAvailabilityRequest> _planningValidator;
 
     public AvailabilityController(
-        IAvailabilityService availabilityService,
-        IValidator<WeekAvailabilityRequest> weekValidator,
-        IValidator<UpsertDayPartAvailabilityRequest> dayPartValidator,
-        IValidator<UpsertTimeBlockAvailabilityRequest> timeBlockValidator)
+        IAvailabilityRuleService availabilityRuleService,
+        IValidator<CreateAvailabilityRuleRequest> createValidator,
+        IValidator<UpdateAvailabilityRuleRequest> updateValidator,
+        IValidator<PlanningAvailabilityRequest> planningValidator)
     {
-        _availabilityService = availabilityService;
-        _weekValidator = weekValidator;
-        _dayPartValidator = dayPartValidator;
-        _timeBlockValidator = timeBlockValidator;
+        _availabilityRuleService = availabilityRuleService;
+        _createValidator = createValidator;
+        _updateValidator = updateValidator;
+        _planningValidator = planningValidator;
     }
 
-    [HttpGet("week")]
-    [ProducesResponseType(typeof(WeekAvailabilityResponse), StatusCodes.Status200OK)]
+    [HttpGet("rules")]
+    [ProducesResponseType(typeof(AvailabilityRulesListResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> ListRules([FromQuery] Guid employeeId)
+    {
+        var result = await _availabilityRuleService.ListByEmployeeAsync(employeeId, HttpContext.RequestAborted);
+        return result.ToActionResult(this);
+    }
+
+    [HttpGet("rules/for-planning")]
+    [ProducesResponseType(typeof(PlanningAvailabilityResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public Task<IActionResult> GetWeek([FromQuery] WeekAvailabilityRequest request) =>
-        ValidateAndExecuteAsync(request, _weekValidator, async () =>
+    public Task<IActionResult> GetForPlanning([FromQuery] PlanningAvailabilityRequest request) =>
+        ValidateAndExecuteAsync(request, _planningValidator, async () =>
         {
-            var result = await _availabilityService.GetWeekAsync(request, HttpContext.RequestAborted);
+            var result = await _availabilityRuleService.GetForPlanningAsync(request, HttpContext.RequestAborted);
             return result.ToActionResult(this);
         });
 
-    [HttpPut("day-parts")]
-    [ProducesResponseType(typeof(AvailabilityResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [HttpPost("rules")]
+    [ProducesResponseType(typeof(AvailabilityRuleResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public Task<IActionResult> UpsertDayPart([FromBody] UpsertDayPartAvailabilityRequest request) =>
-        ValidateAndExecuteAsync(request, _dayPartValidator, async () =>
+    public Task<IActionResult> CreateRule([FromBody] CreateAvailabilityRuleRequest request) =>
+        ValidateAndExecuteAsync(request, _createValidator, async () =>
         {
-            var result = await _availabilityService.UpsertDayPartAsync(request, HttpContext.RequestAborted);
-            if (result.IsSuccess && result.Value is null)
-            {
-                return NoContent();
-            }
-
+            var result = await _availabilityRuleService.CreateAsync(request, HttpContext.RequestAborted);
             return result.ToActionResult(this);
         });
 
-    [HttpPut("time-blocks")]
-    [ProducesResponseType(typeof(AvailabilityResponse), StatusCodes.Status200OK)]
+    [HttpPut("rules/{id:guid}")]
+    [ProducesResponseType(typeof(AvailabilityRuleResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public Task<IActionResult> UpsertTimeBlock([FromBody] UpsertTimeBlockAvailabilityRequest request) =>
-        ValidateAndExecuteAsync(request, _timeBlockValidator, async () =>
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<IActionResult> UpdateRule(Guid id, [FromBody] UpdateAvailabilityRuleRequest request) =>
+        ValidateAndExecuteAsync(request, _updateValidator, async () =>
         {
-            var result = await _availabilityService.UpsertTimeBlockAsync(request, HttpContext.RequestAborted);
+            var result = await _availabilityRuleService.UpdateAsync(id, request, HttpContext.RequestAborted);
             return result.ToActionResult(this);
         });
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("rules/{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> DeleteRule(Guid id)
     {
-        var result = await _availabilityService.DeleteAsync(id, HttpContext.RequestAborted);
+        var result = await _availabilityRuleService.DeleteAsync(id, HttpContext.RequestAborted);
         return result.ToActionResult(this);
     }
 }

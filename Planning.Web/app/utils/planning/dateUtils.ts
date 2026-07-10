@@ -29,7 +29,7 @@ export function getStatusLabel(status: PlanningStatus): string {
 }
 
 export function getBlockColor(color?: string | null, status?: PlanningStatus): string {
-  if (color) return color
+  // if (color) return color
   if (status) return STATUS_COLORS[status]
   return STATUS_COLORS.Planned
 }
@@ -55,6 +55,13 @@ export function toUtcIso(date: Date): string {
 
 export function toUtcDateTimeIso(date: Date): string {
   return date.toISOString()
+}
+
+export function toDateKey(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
 }
 
 export function snapToMinutes(date: Date, minutes: number): Date {

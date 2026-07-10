@@ -143,6 +143,65 @@ public class AuthService : IAuthService
             modules));
     }
 
+    public async Task<Result<UpdateProfileResponse>> UpdateProfileAsync(
+        UpdateProfileRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_currentUserContext.IsAuthenticated || _currentUserContext.AccountId == Guid.Empty)
+        {
+            return Result<UpdateProfileResponse>.Failure("Not authenticated.", "UNAUTHORIZED");
+        }
+
+        var account = await _accountRepository.GetByIdAsync(_currentUserContext.AccountId, cancellationToken);
+
+        if (account is null)
+        {
+            return Result<UpdateProfileResponse>.Failure("Account not found.", "NOT_FOUND");
+        }
+
+        var normalizedEmail = request.Email.Trim().ToLowerInvariant();
+
+        if (!string.Equals(account.Email, normalizedEmail, StringComparison.Ordinal))
+        {
+            var existingAccount = await _accountRepository.GetByEmailAsync(normalizedEmail, cancellationToken);
+
+            if (existingAccount is not null && existingAccount.Id != account.Id)
+            {
+                return Result<UpdateProfileResponse>.Failure("Email is already registered.", "CONFLICT");
+            }
+        }
+
+        try
+        {
+            var utcNow = DateTime.UtcNow;
+            account.UpdateProfile(request.FirstName, request.LastName, request.Email, utcNow);
+            await _accountRepository.UpdateAsync(account, cancellationToken);
+
+            var memberships = await _userRepository.GetByAccountIdAsync(account.Id, cancellationToken);
+
+            foreach (var membership in memberships)
+            {
+                membership.UpdateProfile(
+                    request.FirstName,
+                    request.LastName,
+                    request.Email,
+                    membership.Role,
+                    utcNow);
+                await _userRepository.UpdateAsync(membership, cancellationToken);
+            }
+
+            return Result<UpdateProfileResponse>.Success(new UpdateProfileResponse(
+                account.Id,
+                account.Email,
+                account.FirstName,
+                account.LastName));
+        }
+        catch (ArgumentException ex)
+        {
+            return Result<UpdateProfileResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+        }
+    }
+
     private async Task<IReadOnlyList<OrganizationMembershipResponse>> BuildMembershipResponsesAsync(
         IReadOnlyList<User> memberships,
         CancellationToken cancellationToken)

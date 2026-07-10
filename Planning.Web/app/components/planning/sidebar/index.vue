@@ -73,19 +73,13 @@ const isSaving = ref(false)
 const errorMessage = ref<string | null>(null)
 const fieldErrors = ref<Record<string, string[]>>({})
 
-const availabilityWeekDate = computed(() =>
-  form.startUtc ? new Date(form.startUtc) : store.currentDate,
-)
-
-const { data: availabilityWeek } = useAvailabilityWeek({
-  weekDate: availabilityWeekDate,
-  userId: computed(() => form.assignedUserId || null),
+const { data: availabilityRules } = useAvailabilityRules({
+  employeeId: computed(() => form.assignedUserId || null),
 })
 
-const { checkAssignment } = useAvailabilityWarning(
-  computed(() => availabilityWeek.value?.items ?? []),
-  users,
-)
+const { checkAssignment } = useAvailabilityWarning(users, {
+  rules: computed(() => availabilityRules.value?.items ?? []),
+})
 
 const assignmentWarning = computed(() => {
   if (!form.assignedUserId || !form.startUtc || !form.endUtc) {

@@ -63,6 +63,22 @@ public class Account : BaseEntity
         Touch(utcNow);
     }
 
+    public void UpdateProfile(string firstName, string lastName, string email, DateTime utcNow)
+    {
+        ValidateName(firstName, nameof(firstName));
+        ValidateName(lastName, nameof(lastName));
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            throw new ArgumentException("Email is required.", nameof(email));
+        }
+
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        Email = email.Trim().ToLowerInvariant();
+        Touch(utcNow);
+    }
+
     private static void ValidateName(string value, string paramName)
     {
         if (string.IsNullOrWhiteSpace(value))

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlanningRecord } from '~/types/planning'
-import type { AvailabilityEntry } from '~/types/availability'
+import type { UnavailablePeriod } from '~/types/availability'
 import { formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils'
 
 const props = defineProps<{
@@ -8,16 +8,15 @@ const props = defineProps<{
   layout: { leftPx: number, widthPx: number, topPx: number, heightPx: number }
   selected?: boolean
   rowId: string
-  availabilityEntries?: AvailabilityEntry[]
+  availabilityPeriods?: UnavailablePeriod[]
 }>()
 
 const store = usePlanningStore()
 const { canManage } = usePlanningPermissions()
 const { data: users } = useUsers()
-const { checkRecord } = useAvailabilityWarning(
-  computed(() => props.availabilityEntries ?? []),
-  users,
-)
+const { checkRecord } = useAvailabilityWarning(users, {
+  planningPeriods: computed(() => props.availabilityPeriods ?? []),
+})
 const { startDrag, draggingId, dragPreview, consumeClickSuppression } = useDragPlanning()
 const { startResize, resizingId, resizePreview } = useResizePlanning()
 const { rowLabelWidth } = useTimeline()

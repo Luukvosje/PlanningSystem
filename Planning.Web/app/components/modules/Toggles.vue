@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { AppModule, ModuleSettingResponse } from '~/generated/models'
-import { ALL_MODULES, MODULE_LABELS } from '~/utils/modules'
+import type { AppModule } from '~/generated/models'
+import { MODULE_LABELS, visibleModulesFromToggleStates } from '~/utils/modules'
+import type { ModuleToggleState } from '~/utils/modules'
 
 const props = defineProps<{
   modelValue: Record<AppModule, boolean>
-  disabledModules?: Record<AppModule, boolean>
+  toggleStates: Record<AppModule, ModuleToggleState>
   saving?: boolean
 }>()
 
@@ -13,30 +14,24 @@ const emit = defineEmits<{
   save: []
 }>()
 
-function isToggleDisabled(module: AppModule) {
-  return props.disabledModules?.[module] === false
-}
+const visibleModules = computed(() => visibleModulesFromToggleStates(props.toggleStates))
 
 function updateModule(module: AppModule, enabled: boolean) {
+  if (props.toggleStates[module]?.disabled) {
+    return
+  }
+
   emit('update:modelValue', {
     ...props.modelValue,
     [module]: enabled,
   })
-}
-
-function moduleTooltip(module: AppModule) {
-  if (isToggleDisabled(module)) {
-    return 'Niet beschikbaar op organisatieniveau'
-  }
-
-  return undefined
 }
 </script>
 
 <template>
   <div class="space-y-3">
     <div
-      v-for="module in ALL_MODULES"
+      v-for="module in visibleModules"
       :key="module"
       class="flex items-center justify-between gap-4"
     >
@@ -45,10 +40,13 @@ function moduleTooltip(module: AppModule) {
           {{ MODULE_LABELS[module] }}
         </p>
       </div>
-      <UTooltip :text="moduleTooltip(module)" :disabled="!isToggleDisabled(module)">
+      <UTooltip
+        :text="toggleStates[module].tooltip"
+        :disabled="!toggleStates[module].tooltip"
+      >
         <USwitch
-          :model-value="modelValue[module]"
-          :disabled="isToggleDisabled(module) || saving"
+          :model-value="toggleStates[module].disabled ? toggleStates[module].checked : modelValue[module]"
+          :disabled="toggleStates[module].disabled || saving"
           @update:model-value="(value) => updateModule(module, value)"
         />
       </UTooltip>

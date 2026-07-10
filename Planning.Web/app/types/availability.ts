@@ -1,43 +1,73 @@
-export type AvailabilityType = 'DayPart' | 'TimeBlock'
-export type DayPart = 'Morning' | 'Afternoon' | 'Evening'
-export type AvailabilitySource = 'Employee' | 'Manager'
+export type AvailabilityRuleType = 'Weekly' | 'OneTime'
+export type AvailabilityRuleStatus = 'Unavailable' | 'Preferred' | 'Available'
+export type Weekday = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday'
 
-export interface AvailabilityEntry {
+export interface AvailabilityRule {
   id: string
-  userId: string
-  date: string
-  type: AvailabilityType
-  dayPart?: DayPart | null
-  startTime?: string | null
-  endTime?: string | null
-  isAvailable: boolean
-  source: AvailabilitySource
-  lastModifiedByUserId: string
-  lastModifiedByName: string
-  note?: string | null
+  employeeId: string
+  type: AvailabilityRuleType
+  weekday?: Weekday | null
+  date?: string | null
+  startTime: string
+  endTime: string
+  status: AvailabilityRuleStatus
+  reason?: string | null
   createdAtUtc?: string
   updatedAtUtc?: string
 }
 
-export interface WeekAvailabilityResponse {
-  items: AvailabilityEntry[]
-  rangeStart: string
-  rangeEnd: string
+export interface AvailabilityRulesListResponse {
+  items: AvailabilityRule[]
 }
 
-export interface UpsertDayPartRequest {
-  userId: string
-  date: string
-  dayPart: DayPart
-  isAvailable: boolean
-  note?: string | null
-}
-
-export interface UpsertTimeBlockRequest {
-  userId: string
+export interface UnavailablePeriod {
+  employeeId: string
   date: string
   startTime: string
   endTime: string
-  note?: string | null
-  id?: string | null
+  status: AvailabilityRuleStatus
+  reason?: string | null
+  ruleId: string
 }
+
+export interface PlanningAvailabilityResponse {
+  periods: UnavailablePeriod[]
+}
+
+export interface CreateAvailabilityRuleRequest {
+  employeeId: string
+  type: AvailabilityRuleType
+  weekday?: Weekday | null
+  date?: string | null
+  startTime: string
+  endTime: string
+  status: AvailabilityRuleStatus
+  reason?: string | null
+}
+
+export interface UpdateAvailabilityRuleRequest {
+  weekday?: Weekday | null
+  date?: string | null
+  startTime: string
+  endTime: string
+  status: AvailabilityRuleStatus
+  reason?: string | null
+}
+
+export const WEEKDAY_LABELS: Record<Weekday, string> = {
+  Monday: 'maandag',
+  Tuesday: 'dinsdag',
+  Wednesday: 'woensdag',
+  Thursday: 'donderdag',
+  Friday: 'vrijdag',
+  Saturday: 'zaterdag',
+  Sunday: 'zondag',
+}
+
+export const WEEKDAY_OPTIONS = (Object.keys(WEEKDAY_LABELS) as Weekday[]).map(day => ({
+  label: WEEKDAY_LABELS[day].charAt(0).toUpperCase() + WEEKDAY_LABELS[day].slice(1),
+  value: day,
+}))
+
+export const WHOLE_DAY_START = '00:00:00'
+export const WHOLE_DAY_END = '23:59:00'

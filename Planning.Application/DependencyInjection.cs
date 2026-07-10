@@ -22,7 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IPlanningService, PlanningService>();
-        services.AddScoped<IAvailabilityService, AvailabilityService>();
+        services.AddScoped<IAvailabilityRuleService, AvailabilityRuleService>();
         services.AddScoped<IModuleService, ModuleService>();
 
         return services;

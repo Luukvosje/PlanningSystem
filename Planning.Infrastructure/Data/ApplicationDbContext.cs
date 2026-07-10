@@ -23,7 +23,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrganizationInvite> OrganizationInvites => Set<OrganizationInvite>();
     public DbSet<Customer> Customers => Set<Customer>();
     public DbSet<PlanningRecord> PlanningRecords => Set<PlanningRecord>();
-    public DbSet<EmployeeAvailability> EmployeeAvailabilities => Set<EmployeeAvailability>();
+    public DbSet<AvailabilityRule> AvailabilityRules => Set<AvailabilityRule>();
     public DbSet<OrganizationModule> OrganizationModules => Set<OrganizationModule>();
     public DbSet<UserModule> UserModules => Set<UserModule>();
 

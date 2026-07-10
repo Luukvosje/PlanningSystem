@@ -6,15 +6,13 @@ const { data: users } = useUsers()
 
 const popover = computed(() => store.createPopover)
 
-const { data: availabilityWeek } = useAvailabilityWeek({
-  weekDate: computed(() => store.currentDate),
-  userId: computed(() => popover.value?.assignedUserId ?? null),
+const { data: availabilityRules } = useAvailabilityRules({
+  employeeId: computed(() => popover.value?.assignedUserId ?? null),
 })
 
-const { checkAssignment } = useAvailabilityWarning(
-  computed(() => availabilityWeek.value?.items ?? []),
-  users,
-)
+const { checkAssignment } = useAvailabilityWarning(users, {
+  rules: computed(() => availabilityRules.value?.items ?? []),
+})
 
 const customerOptions = computed(() =>
   (customers.value ?? []).map(c => ({

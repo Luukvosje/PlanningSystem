@@ -6,7 +6,7 @@ export function usePlanningAvailability(records: Ref<PlanningRecord[]>) {
 
   const weekDate = computed(() => store.currentDate)
 
-  const availabilityUserIds = computed(() => {
+  const availabilityEmployeeIds = computed(() => {
     const activeUsers = (users.value ?? [])
       .filter(user => user.isActive !== false)
       .map(user => user.id!)
@@ -29,14 +29,14 @@ export function usePlanningAvailability(records: Ref<PlanningRecord[]>) {
     return fromRecords.length > 0 ? fromRecords : activeUsers
   })
 
-  const { data: availabilityData } = useAvailabilityWeek({
+  const { data: availabilityData } = usePlanningAvailabilityPeriods({
     weekDate,
-    userIds: availabilityUserIds,
+    employeeIds: availabilityEmployeeIds,
   })
 
-  const availabilityEntries = computed(() => availabilityData.value?.items ?? [])
+  const availabilityPeriods = computed(() => availabilityData.value?.periods ?? [])
 
   return {
-    availabilityEntries,
+    availabilityPeriods,
   }
 }

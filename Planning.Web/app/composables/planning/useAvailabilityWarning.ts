@@ -1,13 +1,16 @@
-import type { AvailabilityEntry } from '~/types/availability'
+import type { AvailabilityRule, UnavailablePeriod } from '~/types/availability'
 import type { PlanningRecord } from '~/types/planning'
 import { hasAvailabilityConflict } from '~/utils/planning/availabilityMath'
 
 export function useAvailabilityWarning(
-  entries: Ref<AvailabilityEntry[]>,
   users: Ref<{ id?: string, firstName?: string | null, lastName?: string | null }[] | undefined>,
+  sources: {
+    rules?: Ref<AvailabilityRule[]>
+    planningPeriods?: Ref<UnavailablePeriod[]>
+  },
 ) {
-  function getUserName(userId: string) {
-    const user = users.value?.find(item => item.id === userId)
+  function getEmployeeName(employeeId: string) {
+    const user = users.value?.find(item => item.id === employeeId)
     if (!user) return 'Medewerker'
     return `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || 'Medewerker'
   }
@@ -17,18 +20,20 @@ export function useAvailabilityWarning(
       record.assignedUserId,
       record.startUtc,
       record.endUtc,
-      entries.value,
-      getUserName(record.assignedUserId),
+      sources.rules?.value ?? [],
+      getEmployeeName(record.assignedUserId),
+      sources.planningPeriods?.value,
     )
   }
 
-  function checkAssignment(userId: string, startUtc: string, endUtc: string) {
+  function checkAssignment(employeeId: string, startUtc: string, endUtc: string) {
     return hasAvailabilityConflict(
-      userId,
+      employeeId,
       startUtc,
       endUtc,
-      entries.value,
-      getUserName(userId),
+      sources.rules?.value ?? [],
+      getEmployeeName(employeeId),
+      sources.planningPeriods?.value,
     )
   }
 
