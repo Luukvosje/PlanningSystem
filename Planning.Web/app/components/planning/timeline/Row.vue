@@ -44,12 +44,29 @@ const selection = ref<{ startPx: number, endPx: number } | null>(null)
 const isSelecting = ref(false)
 
 const layouts = computed(() =>
-  layoutOverlappingBlocks(props.records, toPx, store.zoom),
+  layoutOverlappingBlocks(props.records, toPx, store.zoom, store.rowLayout),
 )
+
+// Horizontal viewport culling: only render blocks visible in the current scroll viewport.
+const visibleRecords = computed(() => {
+  const { scrollLeft, clientWidth } = store.timelineViewport
+  if (clientWidth <= 0) return props.records
+  const viewLeft = scrollLeft - rowLabelWidth
+  const viewRight = viewLeft + clientWidth
+  // Add generous buffer (2 screens) so blocks near the edge are already mounted when
+  // the user scrolls, avoiding pop-in during fast scrolling.
+  const buffer = clientWidth
+  return props.records.filter((record) => {
+    const layout = layouts.value.get(record.id)
+    if (!layout) return true
+    return layout.leftPx + layout.widthPx >= viewLeft - buffer &&
+      layout.leftPx <= viewRight + buffer
+  })
+})
 
 const rowHeight = computed(() => {
   const maxLane = Math.max(...[...layouts.value.values()].map(l => l.lane), 0)
-  return getRowHeight(maxLane + 1, store.zoom)
+  return getRowHeight(maxLane + 1, store.zoom, store.rowLayout)
 })
 
 const availabilityOverlays = computed(() => {
@@ -203,10 +220,10 @@ function onRowPointerDown(event: PointerEvent) {
         }"
       />
 
-      <AvailabilityOverlay :overlays="availabilityOverlays" />
+      <AvailabilityOverlay v-if="store.showAvailability" :overlays="availabilityOverlays" />
 
       <PlanningTimelineBlock
-        v-for="record in records"
+        v-for="record in visibleRecords"
         :key="record.id"
         :record="record"
         :layout="layouts.get(record.id)!"

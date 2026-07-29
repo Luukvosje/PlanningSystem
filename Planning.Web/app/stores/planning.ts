@@ -20,6 +20,7 @@ import {
   shiftDateByZoomPeriod,
   stepZoomIn,
   stepZoomOut,
+  timelineLeftForDate,
 } from '~/utils/planning/timelineMath';
 
 export interface TimelineViewport {
@@ -66,6 +67,48 @@ export const usePlanningStore = defineStore('planning', () => {
     get: () => preferences.value.snapToBlocks,
     set: (value: boolean) => {
       preferences.value.snapToBlocks = value;
+    },
+  });
+
+  const rowLayout = computed({
+    get: () => preferences.value.rowLayout,
+    set: (value: 'compact' | 'spacious') => {
+      preferences.value.rowLayout = value;
+    },
+  });
+
+  const showAvailability = computed({
+    get: () => preferences.value.showAvailability,
+    set: (value: boolean) => {
+      preferences.value.showAvailability = value;
+    },
+  });
+
+  const showConcepts = computed({
+    get: () => preferences.value.showConcepts,
+    set: (value: boolean) => {
+      preferences.value.showConcepts = value;
+    },
+  });
+
+  const showBlockColor = computed({
+    get: () => preferences.value.showBlockColor,
+    set: (value: boolean) => {
+      preferences.value.showBlockColor = value;
+    },
+  });
+
+  const showWeekends = computed({
+    get: () => preferences.value.showWeekends,
+    set: (value: boolean) => {
+      preferences.value.showWeekends = value;
+    },
+  });
+
+  const showFullDay = computed({
+    get: () => preferences.value.showFullDay,
+    set: (value: boolean) => {
+      preferences.value.showFullDay = value;
     },
   });
 
@@ -153,8 +196,12 @@ export const usePlanningStore = defineStore('planning', () => {
       return false;
     }
 
-    const dayIndex = getDayCount(loadedRangeStart.value, today);
-    const todayLeft = ROW_LABEL_WIDTH + dayIndex * dayWidth;
+    const todayLeft = ROW_LABEL_WIDTH + timelineLeftForDate(
+      today,
+      loadedRangeStart.value,
+      dayWidth,
+      showWeekends.value,
+    );
     const todayRight = todayLeft + dayWidth;
     const visibleLeft = scrollLeft + ROW_LABEL_WIDTH;
     const visibleRight = scrollLeft + clientWidth;
@@ -275,6 +322,12 @@ export const usePlanningStore = defineStore('planning', () => {
     zoom,
     slotScale,
     snapToBlocks,
+    rowLayout,
+    showAvailability,
+    showConcepts,
+    showBlockColor,
+    showWeekends,
+    showFullDay,
     filters,
     loadedRangeStart,
     loadedRangeEnd,

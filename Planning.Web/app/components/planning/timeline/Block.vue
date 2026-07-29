@@ -154,11 +154,15 @@ function onContextMenu(event: MouseEvent) {
 	>
 		<div
 			class="absolute inset-0 rounded-md overflow-hidden"
-			:style="{ backgroundColor: blockColor }"
+			:class="store.showBlockColor ? '' : 'border-2 bg-default'"
+			:style="store.showBlockColor
+				? { backgroundColor: blockColor }
+				: { borderColor: blockColor }"
 		>
 			<div
 				v-if="availabilityWarning.hasConflict"
-				class="absolute top-0.5 right-0.5 z-20 text-amber-200 pointer-events-none"
+				class="absolute top-0.5 right-0.5 z-20 pointer-events-none"
+				:class="store.showBlockColor ? 'text-amber-200' : 'text-amber-500'"
 				title="Niet beschikbaar"
 			>
 				<UIcon
@@ -168,42 +172,68 @@ function onContextMenu(event: MouseEvent) {
 			</div>
 			<div
 				v-if="selected"
-				class="absolute inset-0 bg-white/25 pointer-events-none rounded-md"
+				class="absolute inset-0 pointer-events-none rounded-md"
+				:class="store.showBlockColor ? 'bg-white/25' : 'bg-primary/10'"
 			/>
 
 			<div
 				v-if="canManage"
 				data-resize="start"
-				class="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/40 z-10"
+				class="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 z-10"
+				:class="store.showBlockColor ? 'bg-black/40' : 'bg-neutral-400/40'"
 				@pointerdown.stop="startResize($event, record, 'start', layout, rowId)"
 			/>
 
 			<div
 				v-if="canManage"
 				data-resize="end"
-				class="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 bg-black/40 z-10"
+				class="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 z-10"
+				:class="store.showBlockColor ? 'bg-black/40' : 'bg-neutral-400/40'"
 				@pointerdown.stop="startResize($event, record, 'end', layout, rowId)"
 			/>
 		</div>
 
 		<div
 			v-if="displayLayout.widthPx > 40"
-			class="sticky z-25 min-w-0 overflow-hidden px-2 py-0.5 text-white h-full flex flex-col justify-center gap-px pointer-events-none rounded-l-md"
+			class="sticky z-25 min-w-0 overflow-hidden px-2 h-full flex flex-col justify-center gap-px pointer-events-none rounded-l-md"
+			:class="[
+				store.showBlockColor ? 'text-white' : 'text-default',
+				store.rowLayout === 'spacious' ? 'py-2' : 'py-0.5',
+			]"
 			:style="{
 				left: `${rowLabelWidth}px`,
 				top: `${headerHeight}px`,
 				maxWidth: `${Math.min(displayLayout.widthPx, 192)}px`,
 			}"
 		>
+			<!-- Titel: altijd zichtbaar -->
 			<p class="min-w-0 text-xs font-semibold truncate leading-tight shrink-0">
 				{{ record.title }}
 			</p>
+
+			<!-- Tijd: altijd zichtbaar als er ruimte is -->
 			<p
-				v-if="displayLayout.widthPx > 120 && displayLayout.heightPx >= 38"
+				v-if="displayLayout.widthPx > 80"
 				class="min-w-0 text-[10px] leading-tight opacity-75 truncate shrink-0"
 			>
 				{{ formatTimeRange(record.startUtc, record.endUtc) }}
 			</p>
+
+			<!-- Spacious-only: klant + beschrijving -->
+			<template v-if="store.rowLayout === 'spacious'">
+				<p
+					v-if="record.customerName && displayLayout.widthPx > 80"
+					class="min-w-0 text-[10px] leading-tight opacity-80 truncate shrink-0 mt-0.5"
+				>
+					{{ record.customerName }}
+				</p>
+				<p
+					v-if="record.description && displayLayout.heightPx >= 72 && displayLayout.widthPx > 100"
+					class="min-w-0 text-[10px] leading-tight opacity-60 truncate shrink-0"
+				>
+					{{ record.description }}
+				</p>
+			</template>
 		</div>
 
 		<Teleport to="body">

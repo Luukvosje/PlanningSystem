@@ -29,16 +29,6 @@ const emit = defineEmits<{
 				/>
 			</UFieldGroup>
 
-			<label
-				v-if="canManage"
-				class="flex items-center gap-2 text-sm text-muted cursor-pointer select-none"
-			>
-				<USwitch
-					v-model="store.snapToBlocks"
-					size="sm"
-				/>
-				<span>Uitlijnen op blokken</span>
-			</label>
 		</div>
 		<div class="flex flex-wrap items-center gap-2">
 			<UButton
@@ -66,12 +56,13 @@ const emit = defineEmits<{
 			</UFieldGroup>
 
 			<PlanningSettingsDate />
-			<UButton
+			<PlanningSettings />
+			<!-- <UButton
 				v-if="canManage"
 				icon="i-lucide-plus"
 				label="Nieuw"
 				@click="() => { emit('create') }"
-			/>
+			/> -->
 		</div>
 	</div>
 </template>

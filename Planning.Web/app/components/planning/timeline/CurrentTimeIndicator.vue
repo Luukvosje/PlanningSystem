@@ -12,11 +12,13 @@ const {
   dayHeaders,
   timelineGridLines,
   importantGridLines,
+  coarseGridLines,
   showTimeSlots,
   isZoomedOut,
   isCompactMode,
 } = useTimeline();
 const { openingHours } = usePlanningSettings();
+const store = usePlanningStore();
 
 function openingOverlaysForDay(day: TimelineDayHeader) {
   if (isCompactMode.value && day.window) {
@@ -66,7 +68,7 @@ function dayBorderClass(day: TimelineDayHeader) {
 			class="shrink-0 h-full relative"
 			:class="[
 				dayBorderClass(day),
-				day.isWeekend ? 'bg-muted/20' : 'bg-secondary/5',
+				day.isWeekend && store.showWeekends ? 'bg-muted/20' : 'bg-secondary/5',
 			]"
 			:style="{ width: `${day.width}px` }"
 		>
@@ -105,6 +107,16 @@ function dayBorderClass(day: TimelineDayHeader) {
 				class="absolute inset-y-0 border-l-2 border-default/60 pointer-events-none"
 				:style="{ left: `${line.leftPx}px` }"
 			/>
+
+			<!-- Coarse grid lines for day / week / month zoom (always visible) -->
+			<template v-if="!showTimeSlots && coarseGridLines.length > 0">
+				<div
+					v-for="line in coarseGridLines"
+					:key="`${day.label}-coarse-${line.leftPx}`"
+					class="absolute inset-y-0 border-l border-default/20 pointer-events-none"
+					:style="{ left: `${line.leftPx}px` }"
+				/>
+			</template>
 		</div>
 	</div>
 </template>

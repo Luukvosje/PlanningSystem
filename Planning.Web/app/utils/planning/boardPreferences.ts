@@ -14,6 +14,8 @@ const STATUSES: PlanningStatus[] = ['Planned', 'Confirmed', 'Completed', 'Cancel
 
 export const LEGACY_PLANNING_SNAP_KEY = 'planning-snap-to-blocks';
 
+export type PlanningRowLayout = 'compact' | 'spacious';
+
 export interface PlanningBoardPreferences {
   version: number
   currentDate: Date
@@ -22,6 +24,12 @@ export interface PlanningBoardPreferences {
   slotScale: number
   snapToBlocks: boolean
   filters: PlanningFilters
+  rowLayout: PlanningRowLayout
+  showAvailability: boolean
+  showConcepts: boolean
+  showBlockColor: boolean
+  showWeekends: boolean
+  showFullDay: boolean
 }
 
 /** Serializable shape stored in localStorage. */
@@ -33,6 +41,12 @@ export interface StoredPlanningBoardPreferences {
   slotScale: number
   snapToBlocks: boolean
   filters: PlanningFilters
+  rowLayout: PlanningRowLayout
+  showAvailability: boolean
+  showConcepts: boolean
+  showBlockColor: boolean
+  showWeekends: boolean
+  showFullDay: boolean
 }
 
 export function planningBoardStorageKey(organizationId: string | null | undefined): string {
@@ -49,6 +63,12 @@ export function createDefaultPlanningBoardPreferences(): PlanningBoardPreference
     zoom: '1h',
     slotScale: 1,
     snapToBlocks: true,
+    rowLayout: 'spacious',
+    showAvailability: false,
+    showConcepts: false,
+    showBlockColor: true,
+    showWeekends: true,
+    showFullDay: false,
     filters: {
       userIds: [],
       customerIds: [],
@@ -124,6 +144,12 @@ export function normalizePlanningBoardPreferences(
     snapToBlocks: typeof source.snapToBlocks === 'boolean' ?
       source.snapToBlocks :
       fallback.snapToBlocks,
+    rowLayout: pickEnum(source.rowLayout, ['compact', 'spacious'] as PlanningRowLayout[], fallback.rowLayout),
+    showAvailability: typeof source.showAvailability === 'boolean' ? source.showAvailability : fallback.showAvailability,
+    showConcepts: typeof source.showConcepts === 'boolean' ? source.showConcepts : fallback.showConcepts,
+    showBlockColor: typeof source.showBlockColor === 'boolean' ? source.showBlockColor : fallback.showBlockColor,
+    showWeekends: typeof source.showWeekends === 'boolean' ? source.showWeekends : fallback.showWeekends,
+    showFullDay: typeof source.showFullDay === 'boolean' ? source.showFullDay : fallback.showFullDay,
     filters: normalizeFilters(source.filters),
   };
 }
@@ -138,6 +164,12 @@ export function toStoredPlanningBoardPreferences(
     zoom: preferences.zoom,
     slotScale: preferences.slotScale,
     snapToBlocks: preferences.snapToBlocks,
+    rowLayout: preferences.rowLayout,
+    showAvailability: preferences.showAvailability,
+    showConcepts: preferences.showConcepts,
+    showBlockColor: preferences.showBlockColor,
+    showWeekends: preferences.showWeekends,
+    showFullDay: preferences.showFullDay,
     filters: {
       userIds: [...preferences.filters.userIds],
       customerIds: [...preferences.filters.customerIds],

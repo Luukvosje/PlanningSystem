@@ -1,5 +1,6 @@
 import type { PlanningRecord, TimelineBlockLayout, TimelineZoom } from '~/types/planning'
 import { BASE_ROW_HEIGHT, BLOCK_PADDING, LANE_HEIGHT, getLaneHeight } from './timelineMath'
+import type { PlanningLayoutMode } from './timelineMath'
 
 function durationMs(record: PlanningRecord): number {
   return new Date(record.endUtc).getTime() - new Date(record.startUtc).getTime()
@@ -9,10 +10,11 @@ export function layoutOverlappingBlocks(
   records: PlanningRecord[],
   timeToPx: (utc: string) => number,
   zoom?: TimelineZoom,
+  layout: PlanningLayoutMode = 'default',
 ): Map<string, TimelineBlockLayout> {
   if (records.length === 0) return new Map()
 
-  const laneHeight = zoom ? getLaneHeight(zoom) : LANE_HEIGHT
+  const laneHeight = zoom ? getLaneHeight(zoom, layout) : LANE_HEIGHT
 
   const sorted = [...records].sort((a, b) => {
     const startDiff = new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime()
@@ -57,8 +59,8 @@ export function layoutOverlappingBlocks(
   return layouts
 }
 
-export function getRowHeight(laneCount: number, zoom?: TimelineZoom): number {
-  const laneHeight = zoom ? getLaneHeight(zoom) : LANE_HEIGHT
+export function getRowHeight(laneCount: number, zoom?: TimelineZoom, layout: PlanningLayoutMode = 'default'): number {
+  const laneHeight = zoom ? getLaneHeight(zoom, layout) : LANE_HEIGHT
   const lanes = Math.max(laneCount, 1)
   return Math.max(laneHeight + BLOCK_PADDING * 2, lanes * laneHeight + BLOCK_PADDING * 2)
 }

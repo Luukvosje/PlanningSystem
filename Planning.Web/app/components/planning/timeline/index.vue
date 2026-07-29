@@ -4,11 +4,11 @@ import type { UnavailablePeriod } from '~/types/availability';
 import { useResizeObserver } from '@vueuse/core';
 import { nextTick } from 'vue';
 import {
-  getDayCount,
-  getDayWidth,
+  getLaneHeight,
   ROW_LABEL_WIDTH,
+  BLOCK_PADDING,
 } from '~/utils/planning/timelineMath';
-import { startOfMonth } from '~/utils/planning/dateUtils';
+import { addDays, startOfMonth } from '~/utils/planning/dateUtils';
 
 const props = defineProps<{
   rows: TimelineRow[]
@@ -24,8 +24,76 @@ const SCROLL_EDGE_PX = 240;
 const extending = ref(false);
 const didInitialScroll = ref(false);
 
+// ─── Vertical virtualisation ────────────────────────────────────────────────
+// We estimate the minimum row height based on current zoom/layout (single-lane).
+// Rows with many overlapping blocks are taller, so this is a lower-bound estimate.
+// We use a generous vertical buffer (1.5× viewport height) so rows are already
+// mounted before they scroll into view.
+const verticalScrollTop = ref(0);
+const verticalClientHeight = ref(0);
+const VERTICAL_BUFFER_ROWS = 3; // extra rows to keep rendered above/below viewport
+
+const estimatedRowHeight = computed(() => {
+  const lh = getLaneHeight(store.zoom, store.rowLayout);
+  return lh + BLOCK_PADDING * 2;
+});
+
+/** Cumulative top-pixel offset for each row (index → top px). */
+const rowTops = computed(() => {
+  const tops: number[] = [];
+  let top = 0;
+  for (const _row of props.rows) {
+    tops.push(top);
+    top += estimatedRowHeight.value;
+  }
+  return tops;
+});
+
+const totalRowsHeight = computed(() =>
+  props.rows.length * estimatedRowHeight.value,
+);
+
+const visibleRowRange = computed(() => {
+  const viewTop = verticalScrollTop.value;
+  const viewBottom = viewTop + (verticalClientHeight.value || 600);
+  const bufferPx = VERTICAL_BUFFER_ROWS * estimatedRowHeight.value;
+
+  let start = 0;
+  let end = props.rows.length;
+
+  for (let i = 0; i < rowTops.value.length; i++) {
+    if (rowTops.value[i]! + estimatedRowHeight.value < viewTop - bufferPx) {
+      start = i + 1;
+    } else {
+      break;
+    }
+  }
+
+  for (let i = rowTops.value.length - 1; i >= 0; i--) {
+    if (rowTops.value[i]! > viewBottom + bufferPx) {
+      end = i;
+    } else {
+      break;
+    }
+  }
+
+  return { start, end };
+});
+
+const spacerTopHeight = computed(() =>
+  rowTops.value[visibleRowRange.value.start] ?? 0,
+);
+const spacerBottomHeight = computed(() =>
+  totalRowsHeight.value - (rowTops.value[visibleRowRange.value.end] ?? totalRowsHeight.value),
+);
+const virtualRows = computed(() =>
+  props.rows.slice(visibleRowRange.value.start, visibleRowRange.value.end),
+);
+
 useResizeObserver(containerRef, (entries: readonly ResizeObserverEntry[]) => {
-  containerWidth.value = entries[0]?.contentRect.width ?? 0;
+  const entry = entries[0];
+  containerWidth.value = entry?.contentRect.width ?? 0;
+  verticalClientHeight.value = entry?.contentRect.height ?? 0;
   syncViewport();
 });
 
@@ -39,12 +107,7 @@ provide('timelineRowRecords', rowRecordsMap);
 const availabilityPeriodsRef = computed(() => props.availabilityPeriods ?? []);
 provide('timelineAvailabilityPeriods', availabilityPeriodsRef);
 
-const dayCount = computed(() =>
-  getDayCount(store.loadedRangeStart, store.loadedRangeEnd),
-);
-const dayWidth = computed(() =>
-  getDayWidth(store.zoom, dayCount.value, containerWidth.value, store.slotScale),
-);
+const { dayWidth, toPx } = useTimeline();
 
 function syncViewport() {
   const el = containerRef.value;
@@ -72,9 +135,19 @@ async function extendPrevious() {
     if (!el || addedDays <= 0) {
       return;
     }
-    // Prefer post-update dayWidth; fall back to previous if width briefly collapses.
     const width = dayWidth.value > 0 ? dayWidth.value : widthBefore;
-    el.scrollLeft += addedDays * width;
+    const rangeStart = store.loadedRangeStart;
+    let visibleAdded = addedDays;
+    if (!store.showWeekends) {
+      visibleAdded = 0;
+      for (let i = 0; i < addedDays; i++) {
+        const d = addDays(rangeStart, i);
+        if (d.getDay() !== 0 && d.getDay() !== 6) {
+          visibleAdded++;
+        }
+      }
+    }
+    el.scrollLeft += visibleAdded * width;
     syncViewport();
   } finally {
     extending.value = false;
@@ -101,6 +174,8 @@ function onScroll() {
     return;
   }
 
+  verticalScrollTop.value = el.scrollTop;
+  verticalClientHeight.value = el.clientHeight;
   syncViewport();
 
   if (el.scrollLeft <= SCROLL_EDGE_PX) {
@@ -128,10 +203,12 @@ function scrollToDate(date: Date) {
     return;
   }
 
-  const dayIndex = getDayCount(rangeStart, target);
+  const noon = new Date(target);
+  noon.setHours(12, 0, 0, 0);
+  const px = toPx(noon.toISOString());
   const targetLeft = Math.max(
     0,
-    ROW_LABEL_WIDTH + dayIndex * dayWidth.value - el.clientWidth / 3,
+    ROW_LABEL_WIDTH + px - el.clientWidth / 3,
   );
   el.scrollLeft = targetLeft;
   syncViewport();
@@ -243,14 +320,26 @@ watch(
 			<PlanningTimelineHeader />
 			<div class="relative">
 				<PlanningTimelineCurrentTimeIndicator />
+				<!-- Top spacer for virtualised rows above viewport -->
+				<div
+					v-if="spacerTopHeight > 0"
+					:style="{ height: `${spacerTopHeight}px` }"
+					aria-hidden="true"
+				/>
 				<PlanningTimelineRow
-					v-for="row in rows"
+					v-for="row in virtualRows"
 					:key="row.id"
 					:row-id="row.id"
 					:label="row.label"
 					:records="row.records"
 					:row-customer-id="store.rowMode === 'customer' && row.id !== '__unassigned__' ? row.id : null"
 					:availability-periods="availabilityPeriods"
+				/>
+				<!-- Bottom spacer for virtualised rows below viewport -->
+				<div
+					v-if="spacerBottomHeight > 0"
+					:style="{ height: `${spacerBottomHeight}px` }"
+					aria-hidden="true"
 				/>
 			</div>
 		</div>

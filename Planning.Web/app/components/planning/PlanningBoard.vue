@@ -15,6 +15,12 @@ const boardLoading = computed(() =>
   (store.rowMode === 'customer' && customersLoading.value),
 );
 
+const visibleRecords = computed(() =>
+  store.showConcepts
+    ? records.value
+    : records.value.filter((r) => r.status !== 'Planned'),
+);
+
 const timelineRows = computed<TimelineRow[]>(() => {
   const { userIds, customerIds } = store.filters;
   let rows: TimelineRow[];
@@ -28,11 +34,11 @@ const timelineRows = computed<TimelineRow[]>(() => {
     rows = customerList.map((customer) => ({
       id: customer.id!,
       label: customer.name ?? 'Onbekend',
-      records: records.value.filter((r) => r.customerId === customer.id),
+      records: visibleRecords.value.filter((r) => r.customerId === customer.id),
     }));
 
     if (customerIds.length === 0) {
-      const unassigned = records.value.filter((r) => !r.customerId);
+      const unassigned = visibleRecords.value.filter((r) => !r.customerId);
       if (unassigned.length > 0) {
         rows.unshift({
           id: '__unassigned__',
@@ -50,7 +56,7 @@ const timelineRows = computed<TimelineRow[]>(() => {
     rows = userList.map((user) => ({
       id: user.id!,
       label: `${user.firstName} ${user.lastName}`.trim(),
-      records: records.value.filter((r) => r.assignedUserId === user.id),
+      records: visibleRecords.value.filter((r) => r.assignedUserId === user.id),
     }));
   }
 

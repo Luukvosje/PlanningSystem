@@ -1,10 +1,12 @@
 import type { PlanningRecord } from '~/types/planning';
 import type { CompactCurrentTimeIndicator, DayTimeWindow } from '~/utils/planning/timelineMath';
 import {
+  countVisibleDaysInRange,
   computeWeekWindows,
   getCompactCurrentTimePx,
   getCompactImportantGridLines,
   getCompactTimelineGridLines,
+  getCoarseGridLines,
   getCurrentTimePx,
   getDayCount,
   getDayWidth,
@@ -163,32 +165,59 @@ export function useTimeline() {
     end: store.loadedRangeEnd,
   }));
 
-  /** Infinite month board always uses full-day columns (former monthly mode). */
-  const isCompactMode = computed(() => false);
+  /** Compact mode: tighter row layout based on user preference. */
+  const isCompactMode = computed(() => store.rowLayout === 'compact');
 
   const allVisibleRecords = computed(() =>
     [...rowRecords.value.values()].flat(),
   );
 
   const dayCount = computed(() => getDayCount(dateRange.value.start, dateRange.value.end));
-  const dayWidth = computed(() =>
-    getDayWidth(store.zoom, dayCount.value, containerWidth.value, store.slotScale),
-  );
-  const timelineWidth = computed(() => getTimelineWidth(dayCount.value, dayWidth.value));
 
   const visibleDays = computed(() =>
     Array.from({ length: dayCount.value }, (_, index) => addDays(dateRange.value.start, index)),
   );
 
+  const visibleDayCount = computed(() =>
+    countVisibleDaysInRange(dateRange.value.start, dateRange.value.end, store.showWeekends),
+  );
+
+  const dayWidth = computed(() =>
+    getDayWidth(store.zoom, visibleDayCount.value, containerWidth.value, store.slotScale),
+  );
+  const timelineWidth = computed(() => getTimelineWidth(visibleDayCount.value, dayWidth.value));
+
+  /**
+   * Map from date-key (YYYY-MM-DD) to left-pixel offset.
+   * Hidden weekend days (showWeekends = false) contribute 0 width.
+   */
+  const dayLeftMap = computed<Map<string, number>>(() => {
+    const map = new Map<string, number>();
+    let left = 0;
+    for (const date of visibleDays.value) {
+      const key = toDateKey(date);
+      map.set(key, left);
+      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+      if (!isWeekend || store.showWeekends) {
+        left += dayWidth.value;
+      }
+    }
+    return map;
+  });
+
+  /**
+   * dayWindows: per-dag tijdvenster ingekrompen naar openingstijden + records.
+   * Actief wanneer showFullDay = false (gebruik openingstijden) OF isCompactMode.
+   */
   const dayWindows = computed(() =>
-    isCompactMode.value ?
+    (!store.showFullDay) ?
       computeWeekWindows(
-          visibleDays.value,
-          allVisibleRecords.value,
-          openingHours.value,
-          importantWorkTimes.value,
-          { zoomMinutes: getZoomMinutes(store.zoom) },
-        ) :
+        visibleDays.value,
+        allVisibleRecords.value,
+        openingHours.value,
+        importantWorkTimes.value,
+        { zoomMinutes: getZoomMinutes(store.zoom) },
+      ) :
       null,
   );
 
@@ -196,46 +225,51 @@ export function useTimeline() {
     const primaryBorder = getPrimaryBorderMode(store.zoom);
     const days = visibleDays.value;
 
-    return days.map((date, index) => {
-      const monday = getMonday(date);
-      const monthKey = monthKeyForDate(date);
-      const nextDate = days[index + 1];
-      const nextWeekKey = nextDate ? getMonday(nextDate).toISOString() : null;
-      const nextMonthKey = nextDate ? monthKeyForDate(nextDate) : null;
-      const weekKey = monday.toISOString();
+    return days
+      .map((date, index) => {
+        const monday = getMonday(date);
+        const monthKey = monthKeyForDate(date);
+        const nextDate = days[index + 1];
+        const nextWeekKey = nextDate ? getMonday(nextDate).toISOString() : null;
+        const nextMonthKey = nextDate ? monthKeyForDate(nextDate) : null;
+        const weekKey = monday.toISOString();
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const width = (!store.showWeekends && isWeekend) ? 0 : dayWidth.value;
+        const left = dayLeftMap.value.get(toDateKey(date)) ?? 0;
 
-      const isPrimaryBorderEnd =
-        primaryBorder === 'day' ||
-        (primaryBorder === 'week' && weekKey !== nextWeekKey) ||
-        (primaryBorder === 'month' && monthKey !== nextMonthKey);
+        const isPrimaryBorderEnd =
+          primaryBorder === 'day' ||
+          (primaryBorder === 'week' && weekKey !== nextWeekKey) ||
+          (primaryBorder === 'month' && monthKey !== nextMonthKey);
 
-      const base: TimelineDayHeader = {
-        date,
-        label: formatDayHeader(date),
-        compact: formatCompactDayHeader(date),
-        left: index * dayWidth.value,
-        width: dayWidth.value,
-        isWeekend: date.getDay() === 0 || date.getDay() === 6,
-        weekKey,
-        monthKey,
-        isPrimaryBorderEnd,
-      };
+        const base: TimelineDayHeader = {
+          date,
+          label: formatDayHeader(date),
+          compact: formatCompactDayHeader(date),
+          left,
+          width,
+          isWeekend,
+          weekKey,
+          monthKey,
+          isPrimaryBorderEnd,
+        };
 
-      if (!isCompactMode.value || !dayWindows.value) {
-        return base;
-      }
+        if (!dayWindows.value) {
+          return base;
+        }
 
-      const window = dayWindows.value.get(toDateKey(date))!;
-      const dayRecords = recordsForDay(allVisibleRecords.value, date);
+        const window = dayWindows.value.get(toDateKey(date))!;
+        const dayRecords = recordsForDay(allVisibleRecords.value, date);
 
-      return {
-        ...base,
-        window,
-        gridLines: getCompactTimelineGridLines(store.zoom, dayWidth.value, window, importantWorkTimes.value),
-        importantGridLines: getCompactImportantGridLines(dayWidth.value, window, importantWorkTimes.value),
-        isEmptyDay: dayRecords.length === 0,
-      };
-    });
+        return {
+          ...base,
+          window,
+          gridLines: getCompactTimelineGridLines(store.zoom, dayWidth.value, window, importantWorkTimes.value),
+          importantGridLines: getCompactImportantGridLines(dayWidth.value, window, importantWorkTimes.value),
+          isEmptyDay: dayRecords.length === 0,
+        };
+      })
+      .filter((day) => store.showWeekends || !day.isWeekend);
   });
 
   const columnMode = computed(() => getHeaderColumnMode(store.zoom));
@@ -286,8 +320,8 @@ export function useTimeline() {
   const slotWidth = computed(() => {
     const slotMinutes = getZoomMinutes(store.zoom);
     if (slotMinutes >= 24 * 60) {
-return dayWidth.value;
-}
+      return dayWidth.value;
+    }
     return dayWidth.value / ((24 * 60) / slotMinutes);
   });
 
@@ -295,28 +329,37 @@ return dayWidth.value;
 
   const timeSlotMarkers = computed(() => getTimeSlotMarkers(store.zoom, dayWidth.value));
 
-  const timelineGridLines = computed(() =>
-    isCompactMode.value ?
-      [] :
-      getTimelineGridLines(store.zoom, dayWidth.value, importantWorkTimes.value),
-  );
+  const timelineGridLines = computed(() => getTimelineGridLines(store.zoom, dayWidth.value, importantWorkTimes.value));
 
   const importantGridLines = computed(() =>
-    isCompactMode.value ?
-      [] :
-      getImportantGridLines(dayWidth.value, importantWorkTimes.value),
+    getImportantGridLines(dayWidth.value, importantWorkTimes.value),
   );
+
+  /** Coarse vertical lines for calendar zoom levels (day / week / month). */
+  const coarseGridLines = computed(() => getCoarseGridLines(store.zoom, dayWidth.value));
 
   const showTimeSlots = computed(() => showsTimeSlots(store.zoom));
 
   function toPx(utcIso: string): number {
-    if (!isCompactMode.value || !dayWindows.value) {
+    const dayIndex = getDayIndexForIso(utcIso, dateRange.value.start);
+    const day = addDays(dateRange.value.start, dayIndex);
+    const dayKey = toDateKey(day);
+
+    if (!store.showWeekends) {
+      // Use precomputed left offset; weekend days snap to their left edge
+      const dayLeft = dayLeftMap.value.get(dayKey) ?? 0;
+      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+      if (isWeekend) return dayLeft;
+      const fracMs = new Date(utcIso).getTime() - day.getTime();
+      const fracPx = (fracMs / (24 * 60 * 60 * 1000)) * dayWidth.value;
+      return dayLeft + fracPx;
+    }
+
+    if (!dayWindows.value) {
       return timeToPx(utcIso, dateRange.value.start, dayWidth.value);
     }
 
-    const dayIndex = getDayIndexForIso(utcIso, dateRange.value.start);
-    const day = addDays(dateRange.value.start, dayIndex);
-    const window = dayWindows.value.get(toDateKey(day));
+    const window = dayWindows.value.get(dayKey);
     if (!window) {
       return timeToPx(utcIso, dateRange.value.start, dayWidth.value);
     }
@@ -325,7 +368,27 @@ return dayWidth.value;
   }
 
   function toIso(px: number, snap = true): string {
-    if (!isCompactMode.value || !dayWindows.value) {
+    if (!store.showWeekends) {
+      // Find which visible (non-weekend) day this px falls in
+      const entries = [...dayLeftMap.value.entries()];
+      let bestKey = entries[0]?.[0] ?? toDateKey(dateRange.value.start);
+      for (const [key, left] of entries) {
+        const date = new Date(key);
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        if (isWeekend) continue;
+        if (left <= px) bestKey = key;
+      }
+      const dayStart = new Date(bestKey);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayLeft = dayLeftMap.value.get(bestKey) ?? 0;
+      const pxInDay = Math.max(0, px - dayLeft);
+      const msInDay = (pxInDay / dayWidth.value) * 24 * 60 * 60 * 1000;
+      const snapMs = snap ? SNAP_MINUTES * 60 * 1000 : 1;
+      const snapped = Math.round((dayStart.getTime() + msInDay) / snapMs) * snapMs;
+      return new Date(snapped).toISOString();
+    }
+
+    if (!dayWindows.value) {
       return pxToUtcIsoMath(px, dateRange.value.start, dayWidth.value, snap ? SNAP_MINUTES : 0);
     }
 
@@ -341,26 +404,40 @@ return dayWidth.value;
   }
 
   const currentTimeIndicator = computed<CompactCurrentTimeIndicator | null>(() => {
-    if (isCompactMode.value && dayWindows.value) {
-      const now = new Date();
-      for (let index = 0; index < visibleDays.value.length; index++) {
-        const date = visibleDays.value[index]!;
-        const window = dayWindows.value.get(toDateKey(date));
-        if (!window) {
-continue;
-}
+    const now = new Date();
+    if (now < dateRange.value.start || now >= dateRange.value.end) {
+      return null;
+    }
 
+    if (dayWindows.value) {
+      for (const date of visibleDays.value) {
+        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        if (!store.showWeekends && isWeekend) {
+          continue;
+        }
+
+        const key = toDateKey(date);
+        const window = dayWindows.value.get(key);
+        if (!window) {
+          continue;
+        }
+
+        const columnOffsetPx = dayLeftMap.value.get(key) ?? 0;
         const indicator = getCompactCurrentTimePx(
           now,
           window,
           dayWidth.value,
-          index * dayWidth.value,
+          columnOffsetPx,
         );
         if (indicator) {
-return indicator;
-}
+          return indicator;
+        }
       }
       return null;
+    }
+
+    if (!store.showWeekends) {
+      return { px: toPx(now.toISOString()), clamped: 'none' };
     }
 
     const px = getCurrentTimePx(dateRange.value.start, dateRange.value.end, dayWidth.value);
@@ -400,6 +477,7 @@ return indicator;
     timeSlotMarkers,
     timelineGridLines,
     importantGridLines,
+    coarseGridLines,
     showTimeSlots,
     isZoomedOut,
     isCompactMode,

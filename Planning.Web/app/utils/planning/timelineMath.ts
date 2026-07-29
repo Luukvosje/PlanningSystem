@@ -38,14 +38,20 @@ export interface ComputeWeekWindowsOptions extends ComputeDayWindowOptions {
 export const ROW_LABEL_WIDTH = 200;
 export const BLOCK_PADDING = 4;
 export const LANE_HEIGHT = 52;
+export const LANE_HEIGHT_COMPACT = 36;
+export const LANE_HEIGHT_SPACIOUS = 96;
 export const LANE_HEIGHT_DETAIL = 80;
 export const BASE_ROW_HEIGHT = LANE_HEIGHT + BLOCK_PADDING * 2;
 export const SNAP_MINUTES = 15;
 
 const DETAIL_ZOOM_LEVELS: TimelineZoom[] = ['15m', '30m', '1h', '2h', '4h', 'day'];
 
-/** Returns the lane height for the given zoom level. Day and finer zooms use a taller lane. */
-export function getLaneHeight(zoom: TimelineZoom): number {
+export type PlanningLayoutMode = 'compact' | 'spacious' | 'default';
+
+/** Returns the lane height for the given zoom level and optional layout mode. */
+export function getLaneHeight(zoom: TimelineZoom, layout: PlanningLayoutMode = 'default'): number {
+  if (layout === 'compact') return LANE_HEIGHT_COMPACT;
+  if (layout === 'spacious') return LANE_HEIGHT_SPACIOUS;
   return DETAIL_ZOOM_LEVELS.includes(zoom) ? LANE_HEIGHT_DETAIL : LANE_HEIGHT;
 }
 
@@ -136,7 +142,18 @@ export function stepZoomOut(zoom: TimelineZoom): TimelineZoom {
   return ZOOM_LADDER[index + 1]!;
 }
 
+/** Fixed minimum day-widths (px) for the coarse calendar zoom levels. */
+const CALENDAR_MIN_DAY_WIDTH: Partial<Record<TimelineZoom, number>> = {
+  month: 36,   // ~250px per week (7 × 36 = 252)
+  week: 96,    // ~96px per day
+  day: 240,    // ~240px per day
+};
+
 export function getMinZoomDayWidth(zoom: TimelineZoom, slotScale = 1): number {
+  const fixed = CALENDAR_MIN_DAY_WIDTH[zoom];
+  if (fixed !== undefined) {
+    return fixed;
+  }
   const slotMinutes = ZOOM_MINUTES[zoom];
   const effectiveSlotWidth = getEffectiveSlotWidth(slotScale);
   return ((24 * 60) / slotMinutes) * effectiveSlotWidth;
@@ -175,10 +192,7 @@ export function getHeaderColumnMode(zoom: TimelineZoom): TimelineHeaderColumnMod
     // Sub-header shows weeks under the month band
     return 'week';
   }
-  if (zoom === 'week') {
-    // Sub-header shows individual days under the week band
-    return 'day';
-  }
+  // week, day and finer: sub-header shows individual days
   return 'day';
 }
 
@@ -192,7 +206,8 @@ export function getHeaderPeriodMode(zoom: TimelineZoom): TimelineHeaderPeriodMod
     return 'week';
   }
   if (zoom === 'day') {
-    return null;
+    // Top band: month groups above day columns
+    return 'month';
   }
   // Finer zooms: week band above day columns
   return 'week';
@@ -206,7 +221,7 @@ export function getPrimaryBorderMode(zoom: TimelineZoom): TimelinePrimaryBorder 
     return 'week';
   }
   if (zoom === 'day') {
-    return 'week';
+    return 'month';
   }
   return 'day';
 }
@@ -236,6 +251,51 @@ export function shiftDateByZoomPeriod(
 
 export function getDayCount(start: Date, end: Date): number {
   return Math.ceil((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+}
+
+function isWeekendDate(date: Date): boolean {
+  const day = date.getDay();
+  return day === 0 || day === 6;
+}
+
+/** Weekdays only when showWeekends is false. */
+export function countVisibleDaysInRange(start: Date, end: Date, showWeekends: boolean): number {
+  const total = getDayCount(start, end);
+  if (showWeekends) {
+    return total;
+  }
+
+  let count = 0;
+  for (let i = 0; i < total; i++) {
+    const date = addDays(start, i);
+    if (!isWeekendDate(date)) {
+      count++;
+    }
+  }
+  return count;
+}
+
+/** Visible day columns strictly before date (midnight local). */
+export function countVisibleDaysBefore(date: Date, rangeStart: Date, showWeekends: boolean): number {
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+  let count = 0;
+
+  for (let d = new Date(rangeStart); d < dayStart; d = addDays(d, 1)) {
+    if (showWeekends || !isWeekendDate(d)) {
+      count++;
+    }
+  }
+  return count;
+}
+
+export function timelineLeftForDate(
+  date: Date,
+  rangeStart: Date,
+  dayWidth: number,
+  showWeekends: boolean,
+): number {
+  return countVisibleDaysBefore(date, rangeStart, showWeekends) * dayWidth;
 }
 
 export function timeToPx(
@@ -363,6 +423,57 @@ export function getImportantGridLines(
 
 function minutesToDayPx(minutes: number, dayWidth: number): number {
   return (minutes / (24 * 60)) * dayWidth;
+}
+
+/**
+ * Coarse vertical grid lines for calendar zoom levels (day / week / month).
+ * - day zoom   → one line every 4 hours within the day
+ * - week zoom  → one line per day (already covered by day-border, but added here
+ *                so they appear inside rows via CurrentTimeIndicator)
+ * - month zoom → one line per day (week separators are handled by dayBorder)
+ *
+ * Each line's `leftPx` is relative to the start of one day column.
+ */
+export function getCoarseGridLines(
+  zoom: TimelineZoom,
+  dayWidth: number,
+): TimelineGridLine[] {
+  if (zoom === 'day') {
+    // Lines every 4 hours; skip index 0 (leftPx = 0 overlaps the day's left border)
+    const intervalMinutes = 4 * 60;
+    const count = (24 * 60) / intervalMinutes; // 6
+    const formatter = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    return Array.from({ length: count }, (_, i) => {
+      const totalMinutes = i * intervalMinutes;
+      const date = new Date(2000, 0, 1, Math.floor(totalMinutes / 60), totalMinutes % 60);
+      return {
+        leftPx: (totalMinutes / (24 * 60)) * dayWidth,
+        width: (intervalMinutes / (24 * 60)) * dayWidth,
+        label: formatter.format(date),
+        showLabel: dayWidth >= 60,
+        isImportant: false,
+      };
+    }).filter((line) => line.leftPx > 0);
+  }
+
+  if (zoom === 'week') {
+    // Lines every 12 hours (midday divider) — gives a subtle half-day split within each day column
+    return [
+      {
+        leftPx: dayWidth / 2,
+        width: dayWidth / 2,
+        showLabel: false,
+        isImportant: false,
+      },
+    ];
+  }
+
+  if (zoom === 'month') {
+    // No intra-day lines needed at month zoom — day borders provide enough structure
+    return [];
+  }
+
+  return [];
 }
 
 export function getTimelineGridLines(

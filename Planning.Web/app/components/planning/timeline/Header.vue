@@ -10,9 +10,12 @@ const {
   rowLabelWidth,
   timelineGridLines,
   importantGridLines,
+  coarseGridLines,
   showTimeSlots,
   isZoomedOut,
 } = useTimeline();
+
+const store = usePlanningStore();
 
 const headerRef = useTemplateRef<HTMLElement>('headerRef');
 const headerHeight = ref(0);
@@ -72,7 +75,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 				class="sticky left-0 z-30 shrink-0 border-r border-default bg-default px-3 py-2"
 				:style="{ width: `${rowLabelWidth}px` }"
 			>
-				<span class="text-xs font-medium text-muted uppercase tracking-wide">Resource</span>
+				<span class="text-xs font-medium text-muted uppercase tracking-wide">{{ store.rowMode === 'resource' ? 'Team' : 'Klant' }}</span>
 			</div>
 
 			<div
@@ -85,14 +88,14 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 					class="shrink-0 relative"
 					:class="[
 						dayBorderClass(day.isPrimaryBorderEnd),
-						day.isWeekend ? 'bg-muted/40' : '',
+						day.isWeekend && store.showWeekends ? 'bg-muted/40' : '',
 					]"
 					:style="{ width: `${day.width}px` }"
 				>
 					<PlanningTimelineStickyDayLabel
 						:weekday="day.compact.weekday"
 						:day="day.compact.day"
-						:is-weekend="day.isWeekend"
+						:is-weekend="day.isWeekend && store.showWeekends"
 						variant="header"
 					/>
 				</div>
@@ -138,7 +141,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 					class="shrink-0 relative"
 					:class="[
 						dayBorderClass(day.isPrimaryBorderEnd),
-						day.isWeekend ? 'bg-muted/40' : '',
+						day.isWeekend && store.showWeekends ? 'bg-muted/40' : '',
 					]"
 					:style="{ width: `${day.width}px`, minHeight: isZoomedOut ? '2rem' : undefined }"
 				>
@@ -192,6 +195,16 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 						class="absolute top-0 bottom-0 border-l-2 border-default/70 pointer-events-none"
 						:style="{ left: `${line.leftPx}px` }"
 					/>
+
+					<!-- Coarse grid lines for day / week / month zoom -->
+					<template v-if="!showTimeSlots && coarseGridLines.length > 0">
+						<div
+							v-for="line in coarseGridLines"
+							:key="`${day.label}-coarse-${line.leftPx}`"
+							class="absolute top-0 bottom-0 border-l border-default/20 pointer-events-none"
+							:style="{ left: `${line.leftPx}px` }"
+						/>
+					</template>
 				</div>
 			</div>
 		</div>
