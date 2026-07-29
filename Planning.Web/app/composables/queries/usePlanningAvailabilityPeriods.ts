@@ -1,31 +1,32 @@
-import { useQuery } from '@tanstack/vue-query'
-import { getPlanningAvailability } from '~/utils/availabilityClient'
-import { queryKeys } from '~/utils/queryKeys'
-import { getMonday, toDateKey } from '~/utils/planning/dateUtils'
+import { useQuery } from '@tanstack/vue-query';
+import { getPlanningAvailability } from '~/utils/availabilityClient';
+import { queryKeys } from '~/utils/queryKeys';
+import { toDateKey, addDays } from '~/utils/planning/dateUtils';
 
 export function usePlanningAvailabilityPeriods(options: {
-  weekDate: Ref<Date>
+  rangeStart: Ref<Date>
+  rangeEnd: Ref<Date>
   employeeIds?: Ref<string[] | undefined>
   enabled?: Ref<boolean>
 }) {
-  const auth = useAuthStore()
+  const auth = useAuthStore();
 
   const range = computed(() => {
-    const start = getMonday(options.weekDate.value)
-    const end = new Date(start)
-    end.setDate(end.getDate() + 6)
+    const start = options.rangeStart.value;
+    // API endDate is inclusive; loadedRangeEnd is exclusive.
+    const inclusiveEnd = addDays(options.rangeEnd.value, -1);
     return {
       startDate: toDateKey(start),
-      endDate: toDateKey(end),
-    }
-  })
+      endDate: toDateKey(inclusiveEnd < start ? start : inclusiveEnd),
+    };
+  });
 
   const employeeIdsParam = computed(() => {
     if (options.employeeIds?.value?.length) {
-      return options.employeeIds.value.join(',')
+      return options.employeeIds.value.join(',');
     }
-    return undefined
-  })
+    return undefined;
+  });
 
   return useQuery({
     queryKey: computed(() =>
@@ -42,9 +43,9 @@ export function usePlanningAvailabilityPeriods(options: {
         employeeIds: employeeIdsParam.value,
       }),
     enabled: computed(() =>
-      (options.enabled?.value ?? true)
-      && auth.isAuthenticated
-      && auth.hasOrganization,
+      (options.enabled?.value ?? true) &&
+      auth.isAuthenticated &&
+      auth.hasOrganization,
     ),
-  })
+  });
 }

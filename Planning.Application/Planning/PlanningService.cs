@@ -187,7 +187,7 @@ public class PlanningService : IPlanningService
         try
         {
             var duration = planningRecord.EndUtc - planningRecord.StartUtc;
-            var startUtc = request.StartUtc ?? planningRecord.StartUtc.AddDays(1);
+            var startUtc = request.StartUtc ?? planningRecord.StartUtc;
             var endUtc = startUtc.Add(duration);
 
             var duplicate = planningRecord.Duplicate(assignedUserId, startUtc, endUtc, DateTime.UtcNow);

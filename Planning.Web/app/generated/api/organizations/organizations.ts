@@ -11,7 +11,9 @@ import type {
   ModuleSettingResponse,
   OrganizationMembershipResponse,
   OrganizationResponse,
-  UpdateModulesRequest
+  UpdateModulesRequest,
+  UpdateOrganizationPlanningSettingsRequest,
+  UpdateOrganizationRequest
 } from '../../models';
 
 import { customFetch } from '../../../utils/apiClient';
@@ -57,6 +59,27 @@ export const getApiOrganizationsCurrent = async ( options?: RequestInit): Promis
 );}
 
 
+export const getPutApiOrganizationsCurrentUrl = () => {
+
+
+  
+
+  return `/api/organizations/current`
+}
+
+export const putApiOrganizationsCurrent = async (updateOrganizationRequest: UpdateOrganizationRequest, options?: RequestInit): Promise<OrganizationResponse> => {
+  
+  return customFetch<OrganizationResponse>(getPutApiOrganizationsCurrentUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateOrganizationRequest,)
+  }
+);}
+
+
 export const getGetApiOrganizationsMineUrl = () => {
 
 
@@ -93,6 +116,27 @@ export const getApiOrganizationsId = async (id: string, options?: RequestInit): 
     method: 'GET'
     
     
+  }
+);}
+
+
+export const getPutApiOrganizationsCurrentPlanningSettingsUrl = () => {
+
+
+  
+
+  return `/api/organizations/current/planning-settings`
+}
+
+export const putApiOrganizationsCurrentPlanningSettings = async (updateOrganizationPlanningSettingsRequest: UpdateOrganizationPlanningSettingsRequest, options?: RequestInit): Promise<OrganizationResponse> => {
+  
+  return customFetch<OrganizationResponse>(getPutApiOrganizationsCurrentPlanningSettingsUrl(),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateOrganizationPlanningSettingsRequest,)
   }
 );}
 

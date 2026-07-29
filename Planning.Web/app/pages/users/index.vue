@@ -87,7 +87,9 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
 
     <UAlert v-if="error" color="error" :title="message" />
 
-    <div v-else-if="isLoading || users?.length || globalFilter" class="space-y-4">
+    <UiLoadingIndicator v-else-if="isLoading" label="Team laden..." />
+
+    <div v-else-if="users?.length || globalFilter" class="space-y-4">
       <UInput
         v-model="globalFilter"
         icon="i-lucide-search"
@@ -99,7 +101,6 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
         v-model:global-filter="globalFilter"
         :data="users ?? []"
         :columns="columns"
-        :loading="isLoading"
         :global-filter-options="{
           globalFilterFn: (row, _columnId, filterValue) => matchesUserFilter(row.original, filterValue),
         }"

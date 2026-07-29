@@ -22,6 +22,7 @@ export const queryKeys = {
     range: (start?: string, end?: string, filterKey?: string) =>
       ['planning', 'range', start, end, filterKey] as const,
     detail: (id: string) => ['planning', 'detail', id] as const,
+    nextShift: (userId?: string) => ['planning', 'nextShift', userId] as const,
   },
   availability: {
     rules: (employeeId?: string) => ['availability', 'rules', employeeId] as const,

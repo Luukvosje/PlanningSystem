@@ -6,6 +6,8 @@ public class Organization : BaseEntity
 {
     public string Name { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
+    public List<TimeOnly> ImportantWorkTimes { get; private set; } = OrganizationPlanningDefaults.ImportantWorkTimes.ToList();
+    public List<DayOpeningHours> OpeningHours { get; private set; } = [];
 
     private Organization()
     {
@@ -47,6 +49,25 @@ public class Organization : BaseEntity
 
         Name = name.Trim();
         Email = email.Trim().ToLowerInvariant();
+        Touch(utcNow);
+    }
+
+    public void UpdatePlanningSettings(
+        IReadOnlyList<TimeOnly> importantWorkTimes,
+        IReadOnlyList<DayOpeningHours> openingHours,
+        DateTime utcNow)
+    {
+        ImportantWorkTimes = importantWorkTimes
+            .Distinct()
+            .OrderBy(time => time)
+            .ToList();
+
+        OpeningHours = openingHours
+            .GroupBy(entry => entry.Day)
+            .Select(group => group.First())
+            .OrderBy(entry => entry.Day)
+            .ToList();
+
         Touch(utcNow);
     }
 }

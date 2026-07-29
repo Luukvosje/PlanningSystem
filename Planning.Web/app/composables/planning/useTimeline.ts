@@ -1,67 +1,385 @@
-import type { PlanningRecord } from '~/types/planning'
+import type { PlanningRecord } from '~/types/planning';
+import type { CompactCurrentTimeIndicator, DayTimeWindow } from '~/utils/planning/timelineMath';
 import {
-  computeDateRange,
+  computeWeekWindows,
+  getCompactCurrentTimePx,
+  getCompactImportantGridLines,
+  getCompactTimelineGridLines,
   getCurrentTimePx,
   getDayCount,
   getDayWidth,
+  getHeaderColumnMode,
+  getHeaderPeriodMode,
+  getImportantGridLines,
+  getPrimaryBorderMode,
+  getTimelineGridLines,
   getTimelineWidth,
   getTimeSlotMarkers,
+  getZoomMinutes,
+  isZoomedOutView,
   pxToUtcIso as pxToUtcIsoMath,
+  pxToUtcIsoCompact,
   ROW_LABEL_WIDTH,
   showsTimeSlots,
   SNAP_MINUTES,
   timeToPx,
-} from '~/utils/planning/timelineMath'
-import { addDays, formatDayHeader } from '~/utils/planning/dateUtils'
+  timeToPxCompact,
+  toDateKey,
+} from '~/utils/planning/timelineMath';
+import {
+  addDays,
+  formatCompactDayHeader,
+  formatDayHeader,
+  getMonday,
+  startOfMonth,
+} from '~/utils/planning/dateUtils';
+import {
+  formatWeekDateRange,
+  getISOWeekNumber,
+} from '~/utils/planning/planningSettings';
+
+export interface TimelineDayHeader {
+  date: Date
+  label: string
+  compact: { weekday: string, day: string }
+  left: number
+  width: number
+  isWeekend: boolean
+  weekKey: string
+  monthKey: string
+  isPrimaryBorderEnd: boolean
+  window?: DayTimeWindow
+  gridLines?: ReturnType<typeof getCompactTimelineGridLines>
+  importantGridLines?: ReturnType<typeof getCompactImportantGridLines>
+  isEmptyDay?: boolean
+}
+
+export interface TimelinePeriodHeader {
+  key: string
+  label: string
+  dateRange?: string
+  left: number
+  width: number
+  isPrimaryBorderEnd: boolean
+}
+
+/** @deprecated Prefer TimelinePeriodHeader */
+export type TimelineWeekHeader = TimelinePeriodHeader
+
+const monthLabelFormatter = new Intl.DateTimeFormat('nl-NL', {
+  month: 'long',
+  year: 'numeric',
+});
+
+function monthKeyForDate(date: Date): string {
+  return startOfMonth(date).toISOString();
+}
+
+function formatMonthLabel(date: Date): string {
+  return monthLabelFormatter.format(date);
+}
+
+function groupDaysByKey(
+  days: TimelineDayHeader[],
+  keyOf: (day: TimelineDayHeader) => string,
+): Map<string, TimelineDayHeader[]> {
+  const groups = new Map<string, TimelineDayHeader[]>();
+  for (const day of days) {
+    const key = keyOf(day);
+    const existing = groups.get(key) ?? [];
+    existing.push(day);
+    groups.set(key, existing);
+  }
+  return groups;
+}
+
+function buildWeekPeriodHeaders(
+  dayGroups: Map<string, TimelineDayHeader[]>,
+  primaryBorder: ReturnType<typeof getPrimaryBorderMode>,
+): TimelinePeriodHeader[] {
+  const entries = [...dayGroups.entries()];
+  return entries.map(([, days], index) => {
+    const startDate = days[0]!.date;
+    const endDate = days[days.length - 1]!.date;
+    const nextGroup = entries[index + 1]?.[1];
+    const isPrimaryBorderEnd = primaryBorder === 'day' ||
+      primaryBorder === 'week' ||
+      (primaryBorder === 'month' &&
+        (!nextGroup || nextGroup[0]!.monthKey !== days[0]!.monthKey));
+
+    return {
+      key: days[0]!.weekKey,
+      label: `Week ${getISOWeekNumber(startDate)}`,
+      dateRange: formatWeekDateRange(startDate, endDate),
+      left: days[0]!.left,
+      width: days.reduce((total, day) => total + day.width, 0),
+      isPrimaryBorderEnd,
+    };
+  });
+}
+
+function buildMonthPeriodHeaders(
+  dayGroups: Map<string, TimelineDayHeader[]>,
+): TimelinePeriodHeader[] {
+  return [...dayGroups.entries()].map(([, days]) => {
+    const startDate = days[0]!.date;
+    return {
+      key: days[0]!.monthKey,
+      label: formatMonthLabel(startDate),
+      left: days[0]!.left,
+      width: days.reduce((total, day) => total + day.width, 0),
+      isPrimaryBorderEnd: true,
+    };
+  });
+}
+
+function recordsForDay(records: PlanningRecord[], date: Date): PlanningRecord[] {
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = addDays(dayStart, 1);
+
+  return records.filter((record) => {
+    const start = new Date(record.startUtc);
+    const end = new Date(record.endUtc);
+    return start < dayEnd && end > dayStart;
+  });
+}
+
+function getDayIndexForIso(utcIso: string, rangeStart: Date): number {
+  const date = new Date(utcIso);
+  const dayStart = new Date(date);
+  dayStart.setHours(0, 0, 0, 0);
+  return Math.floor((dayStart.getTime() - rangeStart.getTime()) / (24 * 60 * 60 * 1000));
+}
 
 export function useTimeline() {
-  const store = usePlanningStore()
-  const containerWidth = inject<Ref<number>>('timelineContainerWidth', ref(0))
+  const store = usePlanningStore();
+  const { importantWorkTimes, openingHours } = usePlanningSettings();
+  const containerWidth = inject<Ref<number>>('timelineContainerWidth', ref(0));
+  const rowRecords = inject<Ref<Map<string, PlanningRecord[]>>>('timelineRowRecords', ref(new Map()));
 
-  const dateRange = computed(() =>
-    computeDateRange(store.currentDate, store.viewMode),
-  )
+  const dateRange = computed(() => ({
+    start: store.loadedRangeStart,
+    end: store.loadedRangeEnd,
+  }));
 
-  const dayCount = computed(() => getDayCount(dateRange.value.start, dateRange.value.end))
+  /** Infinite month board always uses full-day columns (former monthly mode). */
+  const isCompactMode = computed(() => false);
+
+  const allVisibleRecords = computed(() =>
+    [...rowRecords.value.values()].flat(),
+  );
+
+  const dayCount = computed(() => getDayCount(dateRange.value.start, dateRange.value.end));
   const dayWidth = computed(() =>
     getDayWidth(store.zoom, dayCount.value, containerWidth.value, store.slotScale),
-  )
-  const timelineWidth = computed(() => getTimelineWidth(dayCount.value, dayWidth.value))
+  );
+  const timelineWidth = computed(() => getTimelineWidth(dayCount.value, dayWidth.value));
 
-  const dayHeaders = computed(() =>
-    Array.from({ length: dayCount.value }, (_, index) => {
-      const date = addDays(dateRange.value.start, index)
-      return {
+  const visibleDays = computed(() =>
+    Array.from({ length: dayCount.value }, (_, index) => addDays(dateRange.value.start, index)),
+  );
+
+  const dayWindows = computed(() =>
+    isCompactMode.value ?
+      computeWeekWindows(
+          visibleDays.value,
+          allVisibleRecords.value,
+          openingHours.value,
+          importantWorkTimes.value,
+          { zoomMinutes: getZoomMinutes(store.zoom) },
+        ) :
+      null,
+  );
+
+  const dayHeaders = computed<TimelineDayHeader[]>(() => {
+    const primaryBorder = getPrimaryBorderMode(store.zoom);
+    const days = visibleDays.value;
+
+    return days.map((date, index) => {
+      const monday = getMonday(date);
+      const monthKey = monthKeyForDate(date);
+      const nextDate = days[index + 1];
+      const nextWeekKey = nextDate ? getMonday(nextDate).toISOString() : null;
+      const nextMonthKey = nextDate ? monthKeyForDate(nextDate) : null;
+      const weekKey = monday.toISOString();
+
+      const isPrimaryBorderEnd =
+        primaryBorder === 'day' ||
+        (primaryBorder === 'week' && weekKey !== nextWeekKey) ||
+        (primaryBorder === 'month' && monthKey !== nextMonthKey);
+
+      const base: TimelineDayHeader = {
         date,
         label: formatDayHeader(date),
+        compact: formatCompactDayHeader(date),
         left: index * dayWidth.value,
         width: dayWidth.value,
         isWeekend: date.getDay() === 0 || date.getDay() === 6,
+        weekKey,
+        monthKey,
+        isPrimaryBorderEnd,
+      };
+
+      if (!isCompactMode.value || !dayWindows.value) {
+        return base;
       }
-    }),
-  )
 
-  const timeSlotMarkers = computed(() => getTimeSlotMarkers(store.zoom, dayWidth.value))
-  const showTimeSlots = computed(() => showsTimeSlots(store.zoom))
+      const window = dayWindows.value.get(toDateKey(date))!;
+      const dayRecords = recordsForDay(allVisibleRecords.value, date);
 
-  const timeToPxFn = (utcIso: string) =>
-    timeToPx(utcIso, dateRange.value.start, dayWidth.value)
+      return {
+        ...base,
+        window,
+        gridLines: getCompactTimelineGridLines(store.zoom, dayWidth.value, window, importantWorkTimes.value),
+        importantGridLines: getCompactImportantGridLines(dayWidth.value, window, importantWorkTimes.value),
+        isEmptyDay: dayRecords.length === 0,
+      };
+    });
+  });
 
-  const currentTimePx = computed(() =>
-    getCurrentTimePx(dateRange.value.start, dateRange.value.end, dayWidth.value),
-  )
+  const columnMode = computed(() => getHeaderColumnMode(store.zoom));
+  const periodMode = computed(() => getHeaderPeriodMode(store.zoom));
+  const primaryBorder = computed(() => getPrimaryBorderMode(store.zoom));
+
+  const weekGroups = computed(() =>
+    groupDaysByKey(dayHeaders.value, (day) => day.weekKey),
+  );
+
+  const monthGroups = computed(() =>
+    groupDaysByKey(dayHeaders.value, (day) => day.monthKey),
+  );
+
+  const weekHeaders = computed(() =>
+    buildWeekPeriodHeaders(weekGroups.value, primaryBorder.value),
+  );
+
+  const monthHeaders = computed(() =>
+    buildMonthPeriodHeaders(monthGroups.value),
+  );
+
+  const showPeriodHeaders = computed(() => periodMode.value !== null);
+
+  const periodHeaders = computed<TimelinePeriodHeader[]>(() => {
+    if (periodMode.value === 'week') {
+      return weekHeaders.value;
+    }
+    if (periodMode.value === 'month') {
+      return monthHeaders.value;
+    }
+    return [];
+  });
+
+  /** Labels for the second header row (day / week / month columns). */
+  const columnHeaders = computed<TimelinePeriodHeader[]>(() => {
+    if (columnMode.value === 'week') {
+      return weekHeaders.value;
+    }
+    if (columnMode.value === 'month') {
+      return monthHeaders.value;
+    }
+    return [];
+  });
+
+  /** @deprecated Use showPeriodHeaders */
+  const showWeekHeaders = showPeriodHeaders;
+  const slotWidth = computed(() => {
+    const slotMinutes = getZoomMinutes(store.zoom);
+    if (slotMinutes >= 24 * 60) {
+return dayWidth.value;
+}
+    return dayWidth.value / ((24 * 60) / slotMinutes);
+  });
+
+  const isZoomedOut = computed(() => isZoomedOutView(store.zoom, slotWidth.value));
+
+  const timeSlotMarkers = computed(() => getTimeSlotMarkers(store.zoom, dayWidth.value));
+
+  const timelineGridLines = computed(() =>
+    isCompactMode.value ?
+      [] :
+      getTimelineGridLines(store.zoom, dayWidth.value, importantWorkTimes.value),
+  );
+
+  const importantGridLines = computed(() =>
+    isCompactMode.value ?
+      [] :
+      getImportantGridLines(dayWidth.value, importantWorkTimes.value),
+  );
+
+  const showTimeSlots = computed(() => showsTimeSlots(store.zoom));
+
+  function toPx(utcIso: string): number {
+    if (!isCompactMode.value || !dayWindows.value) {
+      return timeToPx(utcIso, dateRange.value.start, dayWidth.value);
+    }
+
+    const dayIndex = getDayIndexForIso(utcIso, dateRange.value.start);
+    const day = addDays(dateRange.value.start, dayIndex);
+    const window = dayWindows.value.get(toDateKey(day));
+    if (!window) {
+      return timeToPx(utcIso, dateRange.value.start, dayWidth.value);
+    }
+
+    return dayIndex * dayWidth.value + timeToPxCompact(utcIso, window, dayWidth.value);
+  }
+
+  function toIso(px: number, snap = true): string {
+    if (!isCompactMode.value || !dayWindows.value) {
+      return pxToUtcIsoMath(px, dateRange.value.start, dayWidth.value, snap ? SNAP_MINUTES : 0);
+    }
+
+    const dayIndex = Math.floor(px / dayWidth.value);
+    const pxInDay = px - dayIndex * dayWidth.value;
+    const day = addDays(dateRange.value.start, dayIndex);
+    const window = dayWindows.value.get(toDateKey(day));
+    if (!window) {
+      return pxToUtcIsoMath(px, dateRange.value.start, dayWidth.value, snap ? SNAP_MINUTES : 0);
+    }
+
+    return pxToUtcIsoCompact(pxInDay, window, dayWidth.value, snap ? SNAP_MINUTES : 0);
+  }
+
+  const currentTimeIndicator = computed<CompactCurrentTimeIndicator | null>(() => {
+    if (isCompactMode.value && dayWindows.value) {
+      const now = new Date();
+      for (let index = 0; index < visibleDays.value.length; index++) {
+        const date = visibleDays.value[index]!;
+        const window = dayWindows.value.get(toDateKey(date));
+        if (!window) {
+continue;
+}
+
+        const indicator = getCompactCurrentTimePx(
+          now,
+          window,
+          dayWidth.value,
+          index * dayWidth.value,
+        );
+        if (indicator) {
+return indicator;
+}
+      }
+      return null;
+    }
+
+    const px = getCurrentTimePx(dateRange.value.start, dateRange.value.end, dayWidth.value);
+    return px !== null ? { px, clamped: 'none' } : null;
+  });
+
+  const currentTimePx = computed(() => currentTimeIndicator.value?.px ?? null);
 
   function getBlockLayout(record: PlanningRecord) {
-    const leftPx = timeToPxFn(record.startUtc)
-    const rightPx = timeToPxFn(record.endUtc)
+    const leftPx = toPx(record.startUtc);
+    const rightPx = toPx(record.endUtc);
     return {
       leftPx,
       widthPx: Math.max(rightPx - leftPx, 4),
-    }
+    };
   }
 
   function pxToUtcIso(px: number, snap = true): string {
-    return pxToUtcIsoMath(px, dateRange.value.start, dayWidth.value, snap ? SNAP_MINUTES : 0)
+    return toIso(px, snap);
   }
 
   return {
@@ -70,12 +388,29 @@ export function useTimeline() {
     dayCount,
     timelineWidth,
     dayHeaders,
+    weekHeaders,
+    monthHeaders,
+    periodHeaders,
+    columnHeaders,
+    showPeriodHeaders,
+    showWeekHeaders,
+    columnMode,
+    periodMode,
+    primaryBorder,
     timeSlotMarkers,
+    timelineGridLines,
+    importantGridLines,
     showTimeSlots,
+    isZoomedOut,
+    isCompactMode,
+    dayWindows,
     rowLabelWidth: ROW_LABEL_WIDTH,
     currentTimePx,
-    timeToPx: timeToPxFn,
+    currentTimeIndicator,
+    toPx,
+    toIso,
+    timeToPx: toPx,
     getBlockLayout,
     pxToUtcIso,
-  }
+  };
 }

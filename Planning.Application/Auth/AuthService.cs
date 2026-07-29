@@ -9,6 +9,7 @@ namespace Planning.Application.Auth;
 public class AuthService : IAuthService
 {
     private readonly IAccountRepository _accountRepository;
+    private readonly IRefreshTokenRepository _refreshTokenRepository;
     private readonly IUserRepository _userRepository;
     private readonly IOrganizationRepository _organizationRepository;
     private readonly IPasswordHasher _passwordHasher;
@@ -18,6 +19,7 @@ public class AuthService : IAuthService
 
     public AuthService(
         IAccountRepository accountRepository,
+        IRefreshTokenRepository refreshTokenRepository,
         IUserRepository userRepository,
         IOrganizationRepository organizationRepository,
         IPasswordHasher passwordHasher,
@@ -26,6 +28,7 @@ public class AuthService : IAuthService
         IModuleService moduleService)
     {
         _accountRepository = accountRepository;
+        _refreshTokenRepository = refreshTokenRepository;
         _userRepository = userRepository;
         _organizationRepository = organizationRepository;
         _passwordHasher = passwordHasher;
@@ -74,27 +77,71 @@ public class AuthService : IAuthService
             return Result<LoginResponse>.Failure("Invalid email or password.", "UNAUTHORIZED");
         }
 
-        var token = _jwtTokenService.GenerateToken(new TokenUserContext(
+        var accessToken = _jwtTokenService.GenerateToken(new TokenUserContext(
             account.Id,
             account.Email));
+        var refreshToken = await IssueRefreshTokenAsync(account.Id, cancellationToken);
 
         var memberships = await _userRepository.GetByAccountIdAsync(account.Id, cancellationToken);
 
         if (memberships.Count == 0)
         {
             return Result<LoginResponse>.Success(
-                new LoginResponse(token, false, []));
+                new LoginResponse(accessToken, refreshToken, false, []));
         }
 
         if (memberships.Count > 1)
         {
             var membershipResponses = await BuildMembershipResponsesAsync(memberships, cancellationToken);
             return Result<LoginResponse>.Success(
-                new LoginResponse(token, true, membershipResponses));
+                new LoginResponse(accessToken, refreshToken, true, membershipResponses));
         }
 
         return Result<LoginResponse>.Success(
-            new LoginResponse(token, false, null, memberships[0].OrganizationId));
+            new LoginResponse(accessToken, refreshToken, false, null, memberships[0].OrganizationId));
+    }
+
+    public async Task<Result<TokenResponse>> RefreshAsync(
+        RefreshTokenRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.RefreshToken))
+        {
+            return Result<TokenResponse>.Failure("Refresh token is required.", "UNAUTHORIZED");
+        }
+
+        var tokenHash = RefreshTokenHasher.Hash(request.RefreshToken);
+        var existingToken = await _refreshTokenRepository.GetByTokenHashAsync(tokenHash, cancellationToken);
+        var utcNow = DateTime.UtcNow;
+
+        if (existingToken is null || !existingToken.IsActive(utcNow))
+        {
+            return Result<TokenResponse>.Failure("Invalid or expired refresh token.", "UNAUTHORIZED");
+        }
+
+        var account = await _accountRepository.GetByIdAsync(existingToken.AccountId, cancellationToken);
+
+        if (account is null)
+        {
+            return Result<TokenResponse>.Failure("Invalid or expired refresh token.", "UNAUTHORIZED");
+        }
+
+        var newRefreshTokenPlain = RefreshTokenHasher.GenerateToken();
+        var newRefreshTokenHash = RefreshTokenHasher.Hash(newRefreshTokenPlain);
+        var replacement = RefreshToken.Create(
+            account.Id,
+            newRefreshTokenHash,
+            utcNow,
+            _jwtTokenService.GetRefreshTokenLifetime());
+
+        existingToken.Revoke(utcNow, newRefreshTokenHash);
+        await _refreshTokenRepository.ReplaceAsync(existingToken, replacement, cancellationToken);
+
+        var accessToken = _jwtTokenService.GenerateToken(new TokenUserContext(
+            account.Id,
+            account.Email));
+
+        return Result<TokenResponse>.Success(new TokenResponse(accessToken, newRefreshTokenPlain));
     }
 
     public async Task<Result<CurrentUserResponse>> GetCurrentUserAsync(
@@ -200,6 +247,20 @@ public class AuthService : IAuthService
         {
             return Result<UpdateProfileResponse>.Failure(ex.Message, "VALIDATION_ERROR");
         }
+    }
+
+    private async Task<string> IssueRefreshTokenAsync(Guid accountId, CancellationToken cancellationToken)
+    {
+        var plainToken = RefreshTokenHasher.GenerateToken();
+        var tokenHash = RefreshTokenHasher.Hash(plainToken);
+        var refreshToken = RefreshToken.Create(
+            accountId,
+            tokenHash,
+            DateTime.UtcNow,
+            _jwtTokenService.GetRefreshTokenLifetime());
+
+        await _refreshTokenRepository.AddAsync(refreshToken, cancellationToken);
+        return plainToken;
     }
 
     private async Task<IReadOnlyList<OrganizationMembershipResponse>> BuildMembershipResponsesAsync(

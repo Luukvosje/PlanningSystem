@@ -9,8 +9,10 @@ import type {
   CurrentUserResponse,
   LoginRequest,
   LoginResponse,
+  RefreshTokenRequest,
   RegisterRequest,
   RegisterResponse,
+  TokenResponse,
   UpdateProfileRequest,
   UpdateProfileResponse
 } from '../../models';
@@ -75,6 +77,27 @@ export const postApiAuthLogin = async (loginRequest: LoginRequest, options?: Req
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       loginRequest,)
+  }
+);}
+
+
+export const getPostApiAuthRefreshUrl = () => {
+
+
+  
+
+  return `/api/auth/refresh`
+}
+
+export const postApiAuthRefresh = async (refreshTokenRequest: RefreshTokenRequest, options?: RequestInit): Promise<TokenResponse> => {
+  
+  return customFetch<TokenResponse>(getPostApiAuthRefreshUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      refreshTokenRequest,)
   }
 );}
 

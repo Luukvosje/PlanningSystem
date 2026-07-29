@@ -6,6 +6,7 @@
  * OpenAPI spec version: v1
  */
 import type { ModuleSettingResponse } from './moduleSettingResponse';
+import type { OpeningHoursEntryResponse } from './openingHoursEntryResponse';
 
 export interface OrganizationResponse {
   id?: string;
@@ -17,4 +18,10 @@ export interface OrganizationResponse {
   updatedAtUtc?: string;
   /** @nullable */
   modules?: ModuleSettingResponse[] | null;
+  /** @nullable */
+  importantWorkTimes?: string[] | null;
+  /** @nullable */
+  openingHours?: OpeningHoursEntryResponse[] | null;
+  /** @nullable */
+  logoUrl?: string | null;
 }

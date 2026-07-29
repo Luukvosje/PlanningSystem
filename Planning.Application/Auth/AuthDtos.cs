@@ -20,9 +20,12 @@ public sealed record LoginRequest(
 
 public sealed record LoginResponse(
     string AccessToken,
+    string RefreshToken,
     bool RequiresOrganizationSelection,
     IReadOnlyList<OrganizationMembershipResponse>? Memberships,
     Guid? DefaultOrganizationId = null);
+
+public sealed record RefreshTokenRequest(string RefreshToken);
 
 public sealed record OrganizationMembershipResponse(
     Guid OrganizationId,
@@ -54,4 +57,4 @@ public sealed record UpdateProfileResponse(
 
 public sealed record SwitchOrganizationRequest(Guid OrganizationId);
 
-public sealed record TokenResponse(string AccessToken);
+public sealed record TokenResponse(string AccessToken, string RefreshToken);

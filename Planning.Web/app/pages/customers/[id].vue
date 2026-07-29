@@ -13,6 +13,7 @@ const customersApi = useCustomersApi()
 const queryClient = useQueryClient()
 const toast = useToast()
 const customerEdit = useCustomerEdit()
+const canManage = computed(() => canManageCustomers(auth.currentUser?.role))
 
 onMounted(async () => {
   await auth.fetchMe()
@@ -55,12 +56,12 @@ async function onDelete() {
       Terug naar klanten
     </UButton>
 
-    <USkeleton v-if="isLoading" class="h-48 w-full" />
+    <UiLoadingIndicator v-if="isLoading" label="Klant laden..." />
 
     <UAlert v-else-if="error" color="error" :title="message" />
 
     <template v-else-if="customer">
-      <div class="flex justify-end gap-2">
+      <div v-if="canManage" class="flex justify-end gap-2">
         <UButton variant="outline" size="sm" icon="i-lucide-pencil" @click="customerEdit.open(customer)">
           Bewerken
         </UButton>

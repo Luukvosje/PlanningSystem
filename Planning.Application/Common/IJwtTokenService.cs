@@ -12,4 +12,5 @@ public sealed record TokenUserContext(
 public interface IJwtTokenService
 {
     string GenerateToken(TokenUserContext context);
+    TimeSpan GetRefreshTokenLifetime();
 }

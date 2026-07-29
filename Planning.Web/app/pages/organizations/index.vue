@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { useQueryClient } from '@tanstack/vue-query'
+import { organizationSchema } from '~/schemas/organization.schema'
 
 definePageMeta({ layout: 'default' })
 
+const FormView = resolveComponent('FormView')
+
 const auth = useAuthStore()
-const toast = useToast()
-const queryClient = useQueryClient()
-const organizationCreate = useOrganizationCreate()
+const { updateOrganization } = useOrganizationSettingsApi()
+const { data: organization, isLoading, error } = useCurrentOrganization()
+const { message } = useApiError(error)
 
 onMounted(async () => {
   await auth.fetchMe()
@@ -16,98 +18,74 @@ onMounted(async () => {
   }
 })
 
-const { data: organizations, isLoading, error } = useMyOrganizations()
-const { message } = useApiError(error)
+const organizationForm = useForm({
+  schema: organizationSchema,
+  initialState: {
+    name: '',
+    email: '',
+  },
+  controls: [
+    {
+      name: 'name',
+      label: 'Naam',
+      type: 'input',
+      required: true,
+    },
+    {
+      name: 'email',
+      label: 'E-mail',
+      type: 'email',
+      required: true,
+      props: { autocomplete: 'email' },
+    },
+  ],
+  submit: { label: 'Opslaan', block: true },
+  onSubmit: async (data) => {
+    await updateOrganization.mutateAsync(data)
+  },
+})
 
-async function switchTo(orgId: string | undefined) {
-  if (!orgId || orgId === auth.organizationId) {
-    return
-  }
+watch(
+  organization,
+  (org) => {
+    if (!org) {
+      return
+    }
 
-  try {
-    auth.selectOrganization(orgId)
-    await invalidateOrgScopedQueries(queryClient)
-    toast.add({ title: 'Organisatie gewisseld', color: 'success' })
-  }
-  catch (err) {
-    const { message: errMsg } = useApiError(err)
-    toast.add({ title: errMsg.value, color: 'error' })
-  }
-}
+    organizationForm.state.name = org.name ?? ''
+    organizationForm.state.email = org.email ?? ''
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
   <PageContainer>
     <PageHeader
-      title="Mijn organisaties"
-      subtitle="Beheer en wissel tussen je organisaties."
-    >
-      <template #actions>
-        <UButton icon="i-lucide-plus" @click="organizationCreate.open()">
-          Nieuwe organisatie
-        </UButton>
-      </template>
-    </PageHeader>
+      title="Organisatie"
+      subtitle="Beheer de gegevens van je organisatie."
+    />
 
-    <div v-if="isLoading" class="space-y-3">
-      <USkeleton class="h-16 w-full" />
-      <USkeleton class="h-16 w-full" />
-    </div>
+    <UiLoadingIndicator v-if="isLoading" label="Organisatie laden..." />
 
     <UAlert v-else-if="error" color="error" :title="message" />
 
-    <div v-else-if="organizations?.length" class="space-y-3">
-      <UCard
-        v-for="org in organizations"
-        :key="org.organizationId"
-        :class="org.organizationId === auth.organizationId ? 'ring-2 ring-primary' : ''"
-      >
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="font-medium">
-              {{ org.organizationName }}
-            </p>
-            <UBadge variant="subtle" class="mt-1">
-              {{ getRoleLabel(org.role) }}
-            </UBadge>
-            <UBadge
-              v-if="org.organizationId === auth.organizationId"
-              color="primary"
-              variant="subtle"
-              class="mt-1 ml-2"
-            >
-              Huidig
-            </UBadge>
-          </div>
-          <UButton
-            v-if="org.organizationId !== auth.organizationId"
-            variant="outline"
-            size="sm"
-            @click="() => { switchTo(org.organizationId) }"
-          >
-            Wisselen
-          </UButton>
-        </div>
-      </UCard>
-    </div>
+    <UCard v-else class="max-w-lg">
+      <template #header>
+        <h2 class="font-semibold">
+          Gegevens
+        </h2>
+      </template>
 
-    <UCard v-else>
-      <p class="text-muted text-center py-4">
-        Je bent nog geen lid van een organisatie.
-      </p>
-      <div class="flex justify-center gap-2 mt-2">
-        <UButton to="/organizations/new">
-          Organisatie aanmaken
-        </UButton>
-        <UButton to="/join" variant="outline">
-          Code invullen
-        </UButton>
-      </div>
+      <component :is="FormView" :form="organizationForm" />
     </UCard>
 
-    <OrganizationsModulesCard
-      v-if="canManageOrganization(auth.currentUser?.role)"
+    <OrganizationsLogoCard
+      v-if="organization && !isLoading && !error"
+      :organization="organization"
       class="mt-6"
     />
+
+    <OrganizationsPlanningSettingsCard v-if="!isLoading && !error" class="max-w-2xl mt-6" />
   </PageContainer>
 </template>

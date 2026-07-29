@@ -1,5 +1,14 @@
+import type { UnavailablePeriod } from '~/types/availability'
 import type { PlanningRecord } from '~/types/planning'
-import { pxFromPointerEvent, SNAP_MINUTES, snapPx } from '~/utils/planning/timelineMath'
+import { pxFromPointerEvent, SNAP_MINUTES } from '~/utils/planning/timelineMath'
+import {
+  collectBlockSnapPoints,
+  getRowAvailabilitySnapPoints,
+  getRowBlockBounds,
+  mergeSnapPoints,
+  snapPxToTimeline,
+  type BlockSnapOptions,
+} from '~/utils/planning/blockSnap'
 import { suppressPlanningBlockClick } from '~/composables/planning/useDragPlanning'
 
 const DRAG_THRESHOLD_PX = 4
@@ -21,8 +30,9 @@ function computeSnappedResize(
   anchorRightPx: number,
   dayWidth: number,
   minWidth: number,
+  snapOptions: BlockSnapOptions = {},
 ): Pick<ResizeState, 'edge' | 'leftPx' | 'widthPx'> {
-  const snappedPx = snapPx(mousePx, dayWidth)
+  const snappedPx = snapPxToTimeline(mousePx, dayWidth, snapOptions)
 
   if (edge === 'start') {
     let leftPx = Math.min(snappedPx, anchorRightPx - minWidth)
@@ -57,18 +67,47 @@ export function useResizePlanning() {
   const api = usePlanningApi()
   const toast = useToast()
   const { canManage } = usePlanningPermissions()
-  const { pxToUtcIso, dayWidth } = useTimeline()
+  const { pxToUtcIso, dayWidth, timeToPx, dateRange } = useTimeline()
+  const { importantWorkTimes } = usePlanningSettings()
+  const rowRecordsMap = inject<ComputedRef<Map<string, PlanningRecord[]>>>(
+    'timelineRowRecords',
+    computed(() => new Map()),
+  )
+  const availabilityPeriods = inject<ComputedRef<UnavailablePeriod[]>>(
+    'timelineAvailabilityPeriods',
+    computed(() => []),
+  )
 
   const minDurationPx = computed(() => (SNAP_MINUTES / (24 * 60)) * dayWidth.value)
 
   const resizingId = ref<string | null>(null)
   const resizePreview = ref<{ recordId: string, leftPx: number, widthPx: number } | null>(null)
 
+  function getSnapOptions(rowId: string, recordId: string): BlockSnapOptions {
+    const records = rowRecordsMap.value.get(rowId) ?? []
+    return {
+      snapToBlocks: store.snapToBlocks,
+      blockSnapPoints: mergeSnapPoints(
+        collectBlockSnapPoints(getRowBlockBounds(records, timeToPx, recordId)),
+        getRowAvailabilitySnapPoints(
+          rowId,
+          availabilityPeriods.value,
+          dateRange.value.start,
+          dateRange.value.end,
+          dayWidth.value,
+          store.rowMode,
+        ),
+      ),
+      importantTimes: importantWorkTimes.value,
+    }
+  }
+
   function startResize(
     event: PointerEvent,
     record: PlanningRecord,
     edge: 'start' | 'end',
     layout: { leftPx: number, widthPx: number },
+    rowId: string,
   ) {
     if (!canManage.value) return
 
@@ -85,6 +124,7 @@ export function useResizePlanning() {
     const anchorLeftPx = layout.leftPx
     const anchorRightPx = layout.leftPx + layout.widthPx
     const startMousePx = pxFromPointerEvent(event, rowEl)
+    const snapOptions = getSnapOptions(rowId, record.id)
 
     let state: ResizeState = {
       recordId: record.id,
@@ -119,6 +159,7 @@ export function useResizePlanning() {
         anchorRightPx,
         dayWidth.value,
         minWidth,
+        snapOptions,
       )
       state = { ...state, ...resized }
       updatePreview()
@@ -137,6 +178,7 @@ export function useResizePlanning() {
         anchorRightPx,
         dayWidth.value,
         minWidth,
+        snapOptions,
       )
       state = { ...state, ...resized }
 
@@ -151,8 +193,8 @@ export function useResizePlanning() {
         suppressPlanningBlockClick(record.id)
       }
 
-      const startUtc = pxToUtcIso(state.leftPx)
-      const endUtc = pxToUtcIso(state.leftPx + state.widthPx)
+      const startUtc = pxToUtcIso(state.leftPx, false)
+      const endUtc = pxToUtcIso(state.leftPx + state.widthPx, false)
 
       store.applyOptimisticPatch(record.id, { startUtc, endUtc })
 

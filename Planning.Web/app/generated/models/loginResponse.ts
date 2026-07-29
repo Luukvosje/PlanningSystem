@@ -10,6 +10,8 @@ import type { OrganizationMembershipResponse } from './organizationMembershipRes
 export interface LoginResponse {
   /** @nullable */
   accessToken?: string | null;
+  /** @nullable */
+  refreshToken?: string | null;
   requiresOrganizationSelection?: boolean;
   /** @nullable */
   memberships?: OrganizationMembershipResponse[] | null;

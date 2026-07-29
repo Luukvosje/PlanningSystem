@@ -53,7 +53,7 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 </script>
 
 <template>
-  <UCard class="w-full">
+  <UCard class="w-full lg:max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
         Uitnodiging accepteren
@@ -66,7 +66,9 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
     <component :is="FormView" :form="joinForm">
       <template #after>
         <div v-if="auth.isAuthenticated && joinForm.state.code.length >= 4">
-          <USkeleton v-if="previewLoading" class="h-12 w-full" />
+          <div v-if="previewLoading" class="py-2">
+            <UiLoadingIndicator label="Code controleren..." size="sm" />
+          </div>
           <UAlert
             v-else-if="preview"
             :color="preview.isValid ? 'info' : 'warning'"

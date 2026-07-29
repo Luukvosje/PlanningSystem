@@ -1,5 +1,13 @@
 export default defineNuxtConfig({
+  compatibilityDate: '2026-07-18',
+
   devtools: { enabled: true },
+
+  // Avoid Vite failing to resolve the virtual `#app-manifest` import
+  // (known Nuxt/Vite race: https://github.com/nuxt/nuxt/issues/33606).
+  experimental: {
+    appManifest: false,
+  },
 
   app: {
     head: {
@@ -14,7 +22,7 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@pinia/nuxt', '@nuxt/ui'],
+  modules: ['@pinia/nuxt', '@nuxt/ui', '@nuxt/eslint'],
 
   colorMode: {
     preference: 'light',

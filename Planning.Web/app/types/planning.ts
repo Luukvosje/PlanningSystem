@@ -1,7 +1,6 @@
 export type PlanningStatus = 'Planned' | 'Confirmed' | 'Completed' | 'Cancelled'
-export type PlanningViewMode = 'daily' | 'weekly' | 'monthly'
 export type PlanningRowMode = 'resource' | 'customer'
-export type TimelineZoom = '15m' | '30m' | '1h' | '2h' | '4h' | 'day' | 'week'
+export type TimelineZoom = '15m' | '30m' | '1h' | '2h' | '4h' | 'day' | 'week' | 'month'
 
 export interface PlanningRecord {
   id: string
@@ -96,13 +95,35 @@ export interface CreatePlanningDraft {
   endUtc: string
 }
 
-export interface CreatePopoverState extends CreatePlanningDraft {
-  x: number
-  y: number
-}
-
 export interface ContextMenuState {
   x: number
   y: number
   recordId: string
 }
+
+export interface PlanningFormData {
+  title: string
+  description: string
+  notes: string
+  assignedUserId: string
+  customerId: string | null
+  status: PlanningStatus
+  color: string
+  startUtc: string
+  endUtc: string
+}
+
+export const PLANNING_COLORS = [
+  '#6366F1', // Indigo
+  '#8B5CF6', // Violet
+  '#EC4899', // Pink
+  '#EF4444', // Red
+  '#F97316', // Orange
+  '#EAB308', // Yellow
+  '#22C55E', // Green
+  '#14B8A6', // Teal
+  '#3B82F6', // Blue
+  '#64748B', // Slate
+] as const
+
+export type PlanningColor = typeof PLANNING_COLORS[number]

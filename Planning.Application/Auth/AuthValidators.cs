@@ -32,6 +32,14 @@ public class UpdateProfileRequestValidator : AbstractValidator<UpdateProfileRequ
     }
 }
 
+public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
+{
+    public RefreshTokenRequestValidator()
+    {
+        RuleFor(x => x.RefreshToken).NotEmpty().MaximumLength(512);
+    }
+}
+
 public class SwitchOrganizationRequestValidator : AbstractValidator<SwitchOrganizationRequest>
 {
     public SwitchOrganizationRequestValidator()

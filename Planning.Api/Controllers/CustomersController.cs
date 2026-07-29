@@ -28,8 +28,10 @@ public class CustomersController : ApiControllerBase
     }
 
     [HttpPost]
+    [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public Task<IActionResult> Create([FromBody] CreateCustomerRequest request) =>
         ValidateAndExecuteAsync(request, _createValidator, async () =>
         {
@@ -41,9 +43,11 @@ public class CustomersController : ApiControllerBase
         });
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(typeof(CustomerResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public Task<IActionResult> Update(Guid id, [FromBody] UpdateCustomerRequest request) =>
         ValidateAndExecuteAsync(request, _updateValidator, async () =>
         {
@@ -52,8 +56,10 @@ public class CustomersController : ApiControllerBase
         });
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> Delete(Guid id)
     {
         var result = await _customerService.DeleteAsync(id, HttpContext.RequestAborted);

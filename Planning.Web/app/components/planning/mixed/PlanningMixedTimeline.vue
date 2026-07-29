@@ -60,10 +60,7 @@ const mixedAvailabilityOverlays = computed(() => {
     </div>
 
     <div class="relative flex-1 min-h-0 overflow-auto rounded-xl border border-default bg-default shadow-sm">
-      <div v-if="isLoading" class="p-8 space-y-3">
-        <USkeleton class="h-10 w-full" />
-        <USkeleton class="h-24 w-full" />
-      </div>
+      <PlanningLoading v-if="isLoading" label="Diensten laden..." />
 
       <div v-else-if="dayRecords.length === 0" class="p-12 text-center">
         <UIcon name="i-lucide-calendar-off" class="size-10 text-muted mx-auto mb-3" />

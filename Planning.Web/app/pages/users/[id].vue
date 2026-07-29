@@ -14,7 +14,7 @@ const { message } = useApiError(error)
       Terug naar team
     </UButton>
 
-    <USkeleton v-if="isLoading" class="h-32 w-full" />
+    <UiLoadingIndicator v-if="isLoading" label="Teamlid laden..." />
 
     <UAlert v-else-if="error" color="error" :title="message" />
 

@@ -87,7 +87,7 @@ const orgForm = useForm({
 </script>
 
 <template>
-  <UCard class="w-full">
+  <UCard class="w-full lg:max-w-2xl mx-auto">
     <template #header>
       <h1 class="text-xl font-semibold">
         Inloggen

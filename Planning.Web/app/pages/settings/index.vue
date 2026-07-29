@@ -7,6 +7,7 @@ const FormView = resolveComponent('FormView')
 
 const auth = useAuthStore()
 const { updateProfile } = useProfileApi()
+const { isLoading: profileLoading } = useCurrentUser()
 
 onMounted(() => auth.fetchMe())
 
@@ -69,7 +70,9 @@ watch(
       subtitle="Beheer je persoonlijke gegevens."
     />
 
-    <UCard class="max-w-lg">
+    <UiLoadingIndicator v-if="profileLoading && !auth.currentUser" label="Profiel laden..." />
+
+    <UCard v-else class="max-w-lg">
       <template #header>
         <h2 class="font-semibold">
           Profiel

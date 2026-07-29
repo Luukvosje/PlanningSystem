@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Planning.Domain.Organizations;
+using Planning.Infrastructure.Data;
 
 namespace Planning.Infrastructure.Organizations;
 
@@ -25,6 +26,14 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
 
         builder.Property(x => x.UpdatedAtUtc)
             .IsRequired();
+
+        builder.Property(x => x.ImportantWorkTimes)
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(new JsonColumnConverter<List<TimeOnly>>(OrganizationPlanningDefaults.ImportantWorkTimes.ToList()));
+
+        builder.Property(x => x.OpeningHours)
+            .HasColumnType("nvarchar(max)")
+            .HasConversion(new JsonColumnConverter<List<DayOpeningHours>>([]));
 
         builder.HasIndex(x => x.Email)
             .IsUnique();

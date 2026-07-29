@@ -37,6 +37,6 @@ const canEditAvailability = computed(() => canManagePlanning(auth.currentUser?.r
       </div>
     </UCard>
 
-    <UsersModulesCard v-if="canManage" :user="user" />
+    <!-- <UsersModulesCard v-if="canManage" :user="user" /> -->
   </div>
 </template>

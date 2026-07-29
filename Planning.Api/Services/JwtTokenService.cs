@@ -61,4 +61,14 @@ public class JwtTokenService : IJwtTokenService
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    public TimeSpan GetRefreshTokenLifetime()
+    {
+        var jwtSettings = _configuration.GetSection("Jwt");
+        var expirationDays = int.TryParse(jwtSettings["RefreshTokenExpirationDays"], out var days)
+            ? days
+            : 14;
+
+        return TimeSpan.FromDays(expirationDays);
+    }
 }

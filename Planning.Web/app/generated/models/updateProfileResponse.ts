@@ -7,8 +7,11 @@
  */
 
 export interface UpdateProfileResponse {
-  accountId?: string
-  email?: string | null
-  firstName?: string | null
-  lastName?: string | null
+  accountId?: string;
+  /** @nullable */
+  email?: string | null;
+  /** @nullable */
+  firstName?: string | null;
+  /** @nullable */
+  lastName?: string | null;
 }

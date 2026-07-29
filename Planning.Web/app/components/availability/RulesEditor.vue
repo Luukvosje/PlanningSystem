@@ -87,123 +87,118 @@ async function removeRule(rule: AvailabilityRule) {
       />
     </UFormField>
 
-    <section class="space-y-3">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-medium">
-            Wekelijkse blokkades
-          </h2>
-          <p class="text-sm text-muted">
-            Vaste momenten waarop je niet beschikbaar bent.
-          </p>
-        </div>
-        <UButton icon="i-lucide-plus" label="Toevoegen" @click="openWeeklyCreate" />
-      </div>
+    <UiLoadingIndicator v-if="isLoading" label="Beschikbaarheid laden..." />
 
-      <div v-if="isLoading" class="space-y-2">
-        <USkeleton class="h-14 w-full" />
-        <USkeleton class="h-14 w-full" />
-      </div>
-
-      <UCard v-else-if="weeklyRules.length === 0">
-        <p class="text-sm text-muted text-center py-2">
-          Geen vaste blokkades. Je bent standaard beschikbaar.
-        </p>
-      </UCard>
-
-      <div v-else class="space-y-2">
-        <UCard
-          v-for="rule in weeklyRules"
-          :key="rule.id"
-          :ui="{ body: 'p-3 sm:p-4' }"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="font-medium">
-                {{ formatWeeklyRuleLabel(rule.weekday!, rule.startTime, rule.endTime) }}
-              </p>
-              <p v-if="rule.reason" class="text-sm text-muted mt-0.5">
-                {{ rule.reason }}
-              </p>
-            </div>
-            <div class="flex shrink-0 gap-1">
-              <UButton
-                icon="i-lucide-pencil"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                @click="openWeeklyEdit(rule)"
-              />
-              <UButton
-                icon="i-lucide-trash-2"
-                variant="ghost"
-                color="error"
-                size="sm"
-                :loading="api.remove.isPending.value"
-                @click="removeRule(rule)"
-              />
-            </div>
+    <template v-else>
+      <section class="space-y-3">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-medium">
+              Wekelijkse blokkades
+            </h2>
+            <p class="text-sm text-muted">
+              Vaste momenten waarop je niet beschikbaar bent.
+            </p>
           </div>
-        </UCard>
-      </div>
-    </section>
-
-    <section class="space-y-3">
-      <div class="flex items-center justify-between gap-3">
-        <div>
-          <h2 class="text-lg font-medium">
-            Eenmalige uitzonderingen
-          </h2>
-          <p class="text-sm text-muted">
-            Vakantie, afspraken of andere uitzonderingen op een datum.
-          </p>
+          <UButton icon="i-lucide-plus" label="Toevoegen" @click="openWeeklyCreate" />
         </div>
-        <UButton icon="i-lucide-plus" label="Toevoegen" @click="openOneTimeCreate" />
-      </div>
 
-      <div v-if="isLoading" class="space-y-2">
-        <USkeleton class="h-14 w-full" />
-      </div>
-
-      <UCard v-else-if="oneTimeRules.length === 0">
-        <p class="text-sm text-muted text-center py-2">
-          Geen eenmalige uitzonderingen.
-        </p>
-      </UCard>
-
-      <div v-else class="space-y-2">
-        <UCard
-          v-for="rule in oneTimeRules"
-          :key="rule.id"
-          :ui="{ body: 'p-3 sm:p-4' }"
-        >
-          <div class="flex items-start justify-between gap-3">
-            <div class="min-w-0">
-              <p class="font-medium">
-                {{ formatOneTimeRuleLabel(rule.date!, rule.startTime, rule.endTime, rule.reason) }}
-              </p>
-            </div>
-            <div class="flex shrink-0 gap-1">
-              <UButton
-                icon="i-lucide-pencil"
-                variant="ghost"
-                color="neutral"
-                size="sm"
-                @click="openOneTimeEdit(rule)"
-              />
-              <UButton
-                icon="i-lucide-trash-2"
-                variant="ghost"
-                color="error"
-                size="sm"
-                :loading="api.remove.isPending.value"
-                @click="removeRule(rule)"
-              />
-            </div>
-          </div>
+        <UCard v-if="weeklyRules.length === 0">
+          <p class="text-sm text-muted text-center py-2">
+            Geen vaste blokkades. Je bent standaard beschikbaar.
+          </p>
         </UCard>
-      </div>
-    </section>
+
+        <div v-else class="space-y-2">
+          <UCard
+            v-for="rule in weeklyRules"
+            :key="rule.id"
+            :ui="{ body: 'p-3 sm:p-4' }"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-medium">
+                  {{ formatWeeklyRuleLabel(rule.weekday!, rule.startTime, rule.endTime) }}
+                </p>
+                <p v-if="rule.reason" class="text-sm text-muted mt-0.5">
+                  {{ rule.reason }}
+                </p>
+              </div>
+              <div class="flex shrink-0 gap-1">
+                <UButton
+                  icon="i-lucide-pencil"
+                  variant="ghost"
+                  color="neutral"
+                  size="sm"
+                  @click="openWeeklyEdit(rule)"
+                />
+                <UButton
+                  icon="i-lucide-trash-2"
+                  variant="ghost"
+                  color="error"
+                  size="sm"
+                  :loading="api.remove.isPending.value"
+                  @click="removeRule(rule)"
+                />
+              </div>
+            </div>
+          </UCard>
+        </div>
+      </section>
+
+      <section class="space-y-3">
+        <div class="flex items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-medium">
+              Eenmalige uitzonderingen
+            </h2>
+            <p class="text-sm text-muted">
+              Vakantie, afspraken of andere uitzonderingen op een datum.
+            </p>
+          </div>
+          <UButton icon="i-lucide-plus" label="Toevoegen" @click="openOneTimeCreate" />
+        </div>
+
+        <UCard v-if="oneTimeRules.length === 0">
+          <p class="text-sm text-muted text-center py-2">
+            Geen eenmalige uitzonderingen.
+          </p>
+        </UCard>
+
+        <div v-else class="space-y-2">
+          <UCard
+            v-for="rule in oneTimeRules"
+            :key="rule.id"
+            :ui="{ body: 'p-3 sm:p-4' }"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <p class="font-medium">
+                  {{ formatOneTimeRuleLabel(rule.date!, rule.startTime, rule.endTime, rule.reason) }}
+                </p>
+              </div>
+              <div class="flex shrink-0 gap-1">
+                <UButton
+                  icon="i-lucide-pencil"
+                  variant="ghost"
+                  color="neutral"
+                  size="sm"
+                  @click="openOneTimeEdit(rule)"
+                />
+                <UButton
+                  icon="i-lucide-trash-2"
+                  variant="ghost"
+                  color="error"
+                  size="sm"
+                  :loading="api.remove.isPending.value"
+                  @click="removeRule(rule)"
+                />
+              </div>
+            </div>
+          </UCard>
+        </div>
+      </section>
+    </template>
 
     <AvailabilityRuleSheet
       v-model:open="weeklySheetOpen"

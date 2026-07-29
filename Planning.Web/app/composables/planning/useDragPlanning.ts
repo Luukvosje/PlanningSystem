@@ -1,5 +1,13 @@
+import type { UnavailablePeriod } from '~/types/availability'
 import type { PlanningRecord } from '~/types/planning'
-import { pxFromPointerEvent, snapPx } from '~/utils/planning/timelineMath'
+import { pxFromPointerEvent } from '~/utils/planning/timelineMath'
+import {
+  collectBlockSnapPoints,
+  getRowAvailabilitySnapPoints,
+  getRowBlockBounds,
+  mergeSnapPoints,
+  snapDragLeftPx,
+} from '~/utils/planning/blockSnap'
 
 const DRAG_THRESHOLD_PX = 4
 
@@ -58,7 +66,31 @@ export function useDragPlanning() {
   const api = usePlanningApi()
   const toast = useToast()
   const { canManage } = usePlanningPermissions()
-  const { pxToUtcIso, dayWidth } = useTimeline()
+  const { pxToUtcIso, dayWidth, timeToPx, dateRange } = useTimeline()
+  const { importantWorkTimes } = usePlanningSettings()
+  const rowRecordsMap = inject<ComputedRef<Map<string, PlanningRecord[]>>>(
+    'timelineRowRecords',
+    computed(() => new Map()),
+  )
+  const availabilityPeriods = inject<ComputedRef<UnavailablePeriod[]>>(
+    'timelineAvailabilityPeriods',
+    computed(() => []),
+  )
+
+  function getBlockSnapPoints(rowId: string, excludeRecordId: string): number[] {
+    const records = rowRecordsMap.value.get(rowId) ?? []
+    return mergeSnapPoints(
+      collectBlockSnapPoints(getRowBlockBounds(records, timeToPx, excludeRecordId)),
+      getRowAvailabilitySnapPoints(
+        rowId,
+        availabilityPeriods.value,
+        dateRange.value.start,
+        dateRange.value.end,
+        dayWidth.value,
+        store.rowMode,
+      ),
+    )
+  }
 
   function startDrag(
     event: PointerEvent,
@@ -99,8 +131,15 @@ export function useDragPlanning() {
         rowEl.setPointerCapture(e.pointerId)
       }
 
-      leftPx = snapPx(nextLeftPx, dayWidth.value)
       const dropTarget = resolveDropTarget(e.clientX, e.clientY)
+      leftPx = snapDragLeftPx(nextLeftPx, widthPx, dayWidth.value, {
+        snapToBlocks: store.snapToBlocks,
+        blockSnapPoints: getBlockSnapPoints(
+          dropTarget?.rowId ?? sourceRowId,
+          record.id,
+        ),
+        importantTimes: importantWorkTimes.value,
+      })
       dragHoverRowId.value = dropTarget?.rowId ?? null
       updatePreview(offsetY)
     }
@@ -125,8 +164,8 @@ export function useDragPlanning() {
       suppressPlanningBlockClick(record.id)
 
       const times = {
-        startUtc: pxToUtcIso(leftPx),
-        endUtc: pxToUtcIso(leftPx + widthPx),
+        startUtc: pxToUtcIso(leftPx, false),
+        endUtc: pxToUtcIso(leftPx + widthPx, false),
       }
       const dropTarget = resolveDropTarget(e.clientX, e.clientY)
       const moveTarget = resolveMoveTarget(record, sourceRowId, dropTarget, store.rowMode)

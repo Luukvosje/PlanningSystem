@@ -1,68 +1,112 @@
-import { useQuery } from '@tanstack/vue-query'
-import { getPlanningList } from '~/utils/planningClient'
-import { queryKeys } from '~/utils/queryKeys'
-import { computeDateRange } from '~/utils/planning/timelineMath'
-import { toUtcDateTimeIso } from '~/utils/planning/dateUtils'
+import { useQueries, useQuery } from '@tanstack/vue-query';
+import type { PlanningRecord } from '~/types/planning';
+import { getPlanningList } from '~/utils/planningClient';
+import { queryKeys } from '~/utils/queryKeys';
+import { eachMonthInRange, toUtcDateTimeIso } from '~/utils/planning/dateUtils';
 
 export function usePlanningRange() {
-  const auth = useAuthStore()
-  const store = usePlanningStore()
+  const auth = useAuthStore();
+  const store = usePlanningStore();
 
-  const dateRange = computed(() =>
-    computeDateRange(store.currentDate, store.viewMode),
-  )
+  const dateRange = computed(() => ({
+    start: store.loadedRangeStart,
+    end: store.loadedRangeEnd,
+  }));
 
-  const filterKey = computed(() => JSON.stringify(store.filters))
+  const filterKey = computed(() => JSON.stringify(store.filters));
 
-  const startUtc = computed(() => toUtcDateTimeIso(dateRange.value.start))
-  const endUtc = computed(() => {
-    const end = dateRange.value.end
-    return toUtcDateTimeIso(end)
-  })
+  const months = computed(() =>
+    eachMonthInRange(store.loadedRangeStart, store.loadedRangeEnd),
+  );
 
-  const query = useQuery({
-    queryKey: computed(() =>
-      queryKeys.planning.range(startUtc.value, endUtc.value, filterKey.value),
-    ),
-    queryFn: () =>
-      getPlanningList({
-        startUtc: startUtc.value,
-        endUtc: endUtc.value,
-        userIds: store.filters.userIds.length ? store.filters.userIds.join(',') : undefined,
-        customerIds: store.filters.customerIds.length ? store.filters.customerIds.join(',') : undefined,
-        statuses: store.filters.statuses.length ? store.filters.statuses.join(',') : undefined,
-        search: store.filters.search || undefined,
-        pageSize: 2000,
+  const enabled = computed(() => auth.isAuthenticated && auth.hasOrganization);
+
+  const monthQueries = useQueries({
+    queries: computed(() =>
+      months.value.map((month) => {
+        const startUtc = toUtcDateTimeIso(month.start);
+        const endUtc = toUtcDateTimeIso(month.end);
+        return {
+          queryKey: queryKeys.planning.range(startUtc, endUtc, filterKey.value),
+          queryFn: () =>
+            getPlanningList({
+              startUtc,
+              endUtc,
+              userIds: store.filters.userIds.length ? store.filters.userIds.join(',') : undefined,
+              customerIds: store.filters.customerIds.length ?
+                store.filters.customerIds.join(',') :
+                undefined,
+              statuses: store.filters.statuses.length ?
+                store.filters.statuses.join(',') :
+                undefined,
+              search: store.filters.search || undefined,
+              pageSize: 2000,
+            }),
+          enabled: enabled.value,
+        };
       }),
-    enabled: computed(() => auth.isAuthenticated && auth.hasOrganization),
-  })
+    ),
+  });
 
   const records = computed(() => {
-    const items = query.data.value?.items ?? []
-    const patches = store.optimisticPatches
+    const byId = new Map<string, PlanningRecord>();
+    for (const query of monthQueries.value) {
+      for (const item of query.data?.items ?? []) {
+        byId.set(item.id, item);
+      }
+    }
 
-    return items.map((item) => {
-      const patch = patches.get(item.id)
-      return patch ? { ...item, ...patch } : item
-    })
-  })
+    const patches = store.optimisticPatches;
+    return [...byId.values()].map((item) => {
+      const patch = patches.get(item.id);
+      return patch ? { ...item, ...patch } : item;
+    });
+  });
+
+  const isInitialLoading = computed(() => {
+    if (!enabled.value || months.value.length === 0) {
+      return false;
+    }
+    const hasAnyData = monthQueries.value.some((query) => query.data != null);
+    if (hasAnyData) {
+      return false;
+    }
+    return monthQueries.value.some((query) => query.isPending || query.isLoading);
+  });
+
+  const isFetching = computed(() =>
+    monthQueries.value.some((query) => query.isFetching),
+  );
+
+  const isLoading = computed(() => isInitialLoading.value);
+
+  const error = computed(() =>
+    monthQueries.value.find((query) => query.error)?.error ?? null,
+  );
+
+  async function refetch() {
+    await Promise.all(monthQueries.value.map((query) => query.refetch()));
+  }
 
   return {
-    ...query,
     records,
     dateRange,
-    startUtc,
-    endUtc,
-  }
+    isInitialLoading,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    monthQueries,
+  };
 }
 
 export function usePlanningDetail(id: Ref<string | null | undefined>) {
-  const auth = useAuthStore()
-  const api = usePlanningApi()
+  const auth = useAuthStore();
+  const api = usePlanningApi();
 
   return useQuery({
     queryKey: computed(() => queryKeys.planning.detail(id.value ?? '')),
     queryFn: () => api.getById(id.value!),
     enabled: computed(() => auth.isAuthenticated && auth.hasOrganization && !!id.value),
-  })
+  });
 }

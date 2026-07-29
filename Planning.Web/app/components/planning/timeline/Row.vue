@@ -3,7 +3,14 @@ import type { PlanningRecord } from '~/types/planning'
 import type { UnavailablePeriod } from '~/types/availability'
 import AvailabilityOverlay from './AvailabilityOverlay.vue'
 import { getRowHeight, layoutOverlappingBlocks } from '~/utils/planning/overlapLayout'
-import { SNAP_MINUTES, snapPx } from '~/utils/planning/timelineMath'
+import { SNAP_MINUTES } from '~/utils/planning/timelineMath'
+import {
+  collectBlockSnapPoints,
+  getRowAvailabilitySnapPoints,
+  getRowBlockBounds,
+  mergeSnapPoints,
+  snapPxToTimeline,
+} from '~/utils/planning/blockSnap'
 import { getUnavailableOverlaysForMatrix } from '~/utils/planning/availabilityMath'
 
 const props = defineProps<{
@@ -14,7 +21,8 @@ const props = defineProps<{
   availabilityPeriods?: UnavailablePeriod[]
 }>()
 
-const { timeToPx, timelineWidth, rowLabelWidth, pxToUtcIso, dateRange, dayWidth } = useTimeline()
+const { toPx, toIso, timelineWidth, rowLabelWidth, dateRange, dayWidth, isCompactMode } = useTimeline()
+const { importantWorkTimes } = usePlanningSettings()
 const store = usePlanningStore()
 const { canManage } = usePlanningPermissions()
 const { dragHoverRowId } = useDragPlanning()
@@ -23,19 +31,25 @@ const { data: users } = useUsers()
 const isDropTarget = computed(() => dragHoverRowId.value === props.rowId)
 
 const DRAG_THRESHOLD_PX = 4
-const minDurationPx = computed(() => (SNAP_MINUTES / (24 * 60)) * dayWidth.value)
+const minDurationPx = computed(() => {
+  if (!isCompactMode.value) {
+    return (SNAP_MINUTES / (24 * 60)) * dayWidth.value
+  }
+
+  return (SNAP_MINUTES / (24 * 60)) * dayWidth.value
+})
 const minDurationMs = SNAP_MINUTES * 60 * 1000
 
 const selection = ref<{ startPx: number, endPx: number } | null>(null)
 const isSelecting = ref(false)
 
 const layouts = computed(() =>
-  layoutOverlappingBlocks(props.records, timeToPx),
+  layoutOverlappingBlocks(props.records, toPx, store.zoom),
 )
 
 const rowHeight = computed(() => {
   const maxLane = Math.max(...[...layouts.value.values()].map(l => l.lane), 0)
-  return getRowHeight(maxLane + 1)
+  return getRowHeight(maxLane + 1, store.zoom)
 })
 
 const availabilityOverlays = computed(() => {
@@ -50,6 +64,7 @@ const availabilityOverlays = computed(() => {
     dateRange.value.end,
     dayWidth.value,
     props.availabilityPeriods,
+    isCompactMode.value ? toPx : undefined,
   )
 })
 
@@ -61,6 +76,28 @@ const selectionPreview = computed(() => {
   return { left, width }
 })
 
+const blockSnapPoints = computed(() =>
+  mergeSnapPoints(
+    collectBlockSnapPoints(getRowBlockBounds(props.records, toPx)),
+    getRowAvailabilitySnapPoints(
+      props.rowId,
+      props.availabilityPeriods ?? [],
+      dateRange.value.start,
+      dateRange.value.end,
+      dayWidth.value,
+      store.rowMode,
+    ),
+  ),
+)
+
+function snapTimelinePx(px: number): number {
+  return snapPxToTimeline(px, dayWidth.value, {
+    snapToBlocks: store.snapToBlocks,
+    blockSnapPoints: blockSnapPoints.value,
+    importantTimes: importantWorkTimes.value,
+  })
+}
+
 function pxFromEvent(event: PointerEvent, target: HTMLElement): number {
   const rect = target.getBoundingClientRect()
   return event.clientX - rect.left
@@ -71,7 +108,7 @@ function resolveAssignedUserId(): string | null {
   return users.value?.[0]?.id ?? null
 }
 
-function openCreatePopover(event: PointerEvent, startPx: number, endPx: number) {
+function openCreate(startPx: number, endPx: number) {
   const dragged = Math.abs(endPx - startPx) >= DRAG_THRESHOLD_PX
   const minPx = Math.min(startPx, endPx)
   const maxPx = Math.max(startPx, endPx)
@@ -80,8 +117,8 @@ function openCreatePopover(event: PointerEvent, startPx: number, endPx: number) 
   let endUtc: string
 
   if (dragged) {
-    startUtc = pxToUtcIso(minPx)
-    endUtc = pxToUtcIso(maxPx)
+    startUtc = toIso(minPx, false)
+    endUtc = toIso(maxPx, false)
     const startTime = new Date(startUtc).getTime()
     const endTime = new Date(endUtc).getTime()
     if (endTime - startTime < minDurationMs) {
@@ -89,16 +126,14 @@ function openCreatePopover(event: PointerEvent, startPx: number, endPx: number) 
     }
   }
   else {
-    startUtc = pxToUtcIso(startPx)
+    startUtc = toIso(startPx, false)
     endUtc = new Date(new Date(startUtc).getTime() + minDurationMs).toISOString()
   }
 
   const assignedUserId = resolveAssignedUserId()
   if (!assignedUserId) return
 
-  store.openCreatePopover({
-    x: event.clientX,
-    y: event.clientY,
+  store.openCreateSidebar({
     assignedUserId,
     customerId: props.rowCustomerId ?? (store.rowMode === 'customer' && props.rowId !== '__unassigned__' ? props.rowId : null),
     startUtc,
@@ -113,13 +148,13 @@ function onRowPointerDown(event: PointerEvent) {
   event.preventDefault()
 
   const target = event.currentTarget as HTMLElement
-  const startPx = snapPx(pxFromEvent(event, target), dayWidth.value)
+  const startPx = snapTimelinePx(pxFromEvent(event, target))
 
   selection.value = { startPx, endPx: startPx }
   isSelecting.value = true
 
   const onMove = (e: PointerEvent) => {
-    const endPx = snapPx(pxFromEvent(e, target), dayWidth.value)
+    const endPx = snapTimelinePx(pxFromEvent(e, target))
     selection.value = { startPx, endPx }
   }
 
@@ -128,9 +163,9 @@ function onRowPointerDown(event: PointerEvent) {
     document.removeEventListener('pointerup', onUp)
     isSelecting.value = false
 
-    const endPx = snapPx(pxFromEvent(e, target), dayWidth.value)
+    const endPx = snapTimelinePx(pxFromEvent(e, target))
     selection.value = null
-    openCreatePopover(e, startPx, endPx)
+    openCreate(startPx, endPx)
   }
 
   document.addEventListener('pointermove', onMove)

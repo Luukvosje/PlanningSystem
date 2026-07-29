@@ -16,6 +16,22 @@ public interface IOrganizationService
 
     Task<Result<OrganizationResponse>> GetCurrentAsync(CancellationToken cancellationToken = default);
 
+    Task<Result<OrganizationResponse>> UpdateCurrentAsync(
+        UpdateOrganizationRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<OrganizationResponse>> UpdateCurrentPlanningSettingsAsync(
+        UpdateOrganizationPlanningSettingsRequest request,
+        CancellationToken cancellationToken = default);
+
     Task<Result<IReadOnlyList<OrganizationMembershipResponse>>> GetMineAsync(
+        CancellationToken cancellationToken = default);
+
+    Task<Result<OrganizationLogoFile>> GetCurrentLogoAsync(CancellationToken cancellationToken = default);
+
+    Task<Result<OrganizationLogoUploadResponse>> UploadCurrentLogoAsync(
+        Stream content,
+        string contentType,
+        long size,
         CancellationToken cancellationToken = default);
 }

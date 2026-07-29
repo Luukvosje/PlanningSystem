@@ -19,6 +19,7 @@ using Planning.Infrastructure.Modules;
 using Planning.Infrastructure.Organizations;
 using Planning.Infrastructure.Planning;
 using Planning.Infrastructure.Security;
+using Planning.Infrastructure.Storage;
 using Planning.Infrastructure.Users;
 
 namespace Planning.Infrastructure;
@@ -27,7 +28,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        string contentRootPath)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -35,16 +37,21 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
 
+        services.AddSingleton<IOrganizationLogoStorage>(
+            _ => new OrganizationLogoStorage(Path.Combine(contentRootPath, "img", "logos")));
+
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationInviteRepository, OrganizationInviteRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IPlanningRecordRepository, PlanningRecordRepository>();
         services.AddScoped<IAvailabilityRuleRepository, AvailabilityRuleRepository>();
         services.AddScoped<IModuleRepository, ModuleRepository>();
+        services.AddScoped<ITestDataSeeder, TestDataSeeder>();
 
         return services;
     }

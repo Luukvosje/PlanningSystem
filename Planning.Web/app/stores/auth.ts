@@ -5,27 +5,33 @@ import {
   postApiAuthRegister,
 } from '~/generated/api/auth/auth'
 import type { OrganizationMembership } from '~/types/api-error'
-import { isApiError } from '~/types/api-error'
 
 export interface LoginResult {
   requiresOrganizationSelection: boolean
   memberships?: OrganizationMembership[]
 }
 
+const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 14
+
 export const useAuthStore = defineStore('auth', () => {
   const accessToken = useCookie<string | null>('planning_access_token', {
-    maxAge: 60 * 60 * 24,
+    maxAge: REFRESH_TOKEN_MAX_AGE,
+    sameSite: 'lax',
+  })
+
+  const refreshToken = useCookie<string | null>('planning_refresh_token', {
+    maxAge: REFRESH_TOKEN_MAX_AGE,
     sameSite: 'lax',
   })
 
   const organizationId = useCookie<string | null>('planning_organization_id', {
-    maxAge: 60 * 60 * 24,
+    maxAge: REFRESH_TOKEN_MAX_AGE,
     sameSite: 'lax',
   })
 
   const currentUser = ref<CurrentUserResponse | null>(null)
 
-  const isAuthenticated = computed(() => !!accessToken.value)
+  const isAuthenticated = computed(() => !!accessToken.value || !!refreshToken.value)
 
   const hasOrganization = computed(() => !!organizationId.value)
 
@@ -34,6 +40,15 @@ export const useAuthStore = defineStore('auth', () => {
     if (!token) {
       currentUser.value = null
     }
+  }
+
+  function setRefreshToken(token: string | null | undefined) {
+    refreshToken.value = token ?? null
+  }
+
+  function setTokens(access: string | null | undefined, refresh: string | null | undefined) {
+    setToken(access)
+    setRefreshToken(refresh)
   }
 
   function setOrganizationId(id: string | null | undefined) {
@@ -49,7 +64,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(request: LoginRequest): Promise<LoginResult> {
     const response = await postApiAuthLogin(request)
-    setToken(response.accessToken)
+    setTokens(response.accessToken, response.refreshToken)
 
     if (response.defaultOrganizationId) {
       setOrganizationId(response.defaultOrganizationId)
@@ -66,7 +81,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function fetchMe() {
-    if (!accessToken.value || !hasOrganization.value) {
+    if ((!accessToken.value && !refreshToken.value) || !hasOrganization.value) {
       currentUser.value = null
       return null
     }
@@ -81,17 +96,20 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
-    setToken(null)
+    setTokens(null, null)
     setOrganizationId(null)
   }
 
   return {
     accessToken,
+    refreshToken,
     organizationId,
     currentUser,
     isAuthenticated,
     hasOrganization,
     setToken,
+    setRefreshToken,
+    setTokens,
     setOrganizationId,
     register,
     login,

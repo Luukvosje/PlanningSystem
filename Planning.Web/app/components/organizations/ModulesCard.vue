@@ -41,7 +41,7 @@ function save() {
       </div>
     </template>
 
-    <USkeleton v-if="isLoading" class="h-32 w-full" />
+    <UiLoadingIndicator v-if="isLoading" label="Modules laden..." />
 
     <ModulesToggles
       v-else

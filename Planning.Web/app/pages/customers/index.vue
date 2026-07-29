@@ -6,6 +6,7 @@ definePageMeta({ layout: 'default' })
 
 const auth = useAuthStore()
 const customerCreate = useCustomerCreate()
+const canManage = computed(() => canManageCustomers(auth.currentUser?.role))
 
 onMounted(async () => {
   await auth.fetchMe()
@@ -63,7 +64,7 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
       title="Klanten"
       :subtitle="auth.currentUser?.organizationName"
     >
-      <template #actions>
+      <template v-if="canManage" #actions>
         <UButton icon="i-lucide-plus" @click="customerCreate.open()">
           Nieuwe klant
         </UButton>
@@ -72,7 +73,9 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
 
     <UAlert v-if="error" color="error" :title="message" />
 
-    <div v-else-if="isLoading || customers?.length || globalFilter" class="space-y-4">
+    <UiLoadingIndicator v-else-if="isLoading" label="Klanten laden..." />
+
+    <div v-else-if="customers?.length || globalFilter" class="space-y-4">
       <UInput
         v-model="globalFilter"
         icon="i-lucide-search"
@@ -84,7 +87,6 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
         v-model:global-filter="globalFilter"
         :data="customers ?? []"
         :columns="columns"
-        :loading="isLoading"
         :global-filter-options="{
           globalFilterFn: (row, _columnId, filterValue) => matchesCustomerFilter(row.original, filterValue),
         }"
@@ -96,9 +98,9 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
 
     <UCard v-else>
       <p class="text-muted text-center py-4">
-        Nog geen klanten. Voeg je eerste klant toe.
+        {{ canManage ? 'Nog geen klanten. Voeg je eerste klant toe.' : 'Nog geen klanten.' }}
       </p>
-      <div class="flex justify-center">
+      <div v-if="canManage" class="flex justify-center">
         <UButton @click="customerCreate.open()">
           Klant toevoegen
         </UButton>

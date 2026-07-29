@@ -7,12 +7,23 @@ internal static class OrganizationMapper
 {
     public static OrganizationResponse ToResponse(
         Organization organization,
-        IReadOnlyList<ModuleSettingResponse> modules) =>
+        IReadOnlyList<ModuleSettingResponse> modules,
+        string? logoUrl = null) =>
         new(
             organization.Id,
             organization.Name,
             organization.Email,
             organization.CreatedAtUtc,
             organization.UpdatedAtUtc,
-            modules);
+            modules,
+            organization.ImportantWorkTimes
+                .Select(time => time.ToString("HH\\:mm"))
+                .ToList(),
+            organization.OpeningHours
+                .Select(entry => new OpeningHoursEntryResponse(
+                    entry.Day,
+                    entry.OpenTime.ToString("HH\\:mm"),
+                    entry.CloseTime.ToString("HH\\:mm")))
+                .ToList(),
+            logoUrl);
 }

@@ -37,10 +37,6 @@ const tooltipText = computed(() => {
 const availabilityWarning = computed(() => checkRecord(props.record))
 
 function onClick() {
-  store.selectPlanning(props.record.id)
-}
-
-function onDoubleClick() {
   store.openEdit(props.record.id)
 }
 
@@ -71,7 +67,6 @@ function onContextMenu(event: MouseEvent) {
     }"
     :title="tooltipText"
     @click.stop="onClick"
-    @dblclick.stop="onDoubleClick"
     @contextmenu="onContextMenu"
   >
     <div

@@ -10,13 +10,15 @@ using Planning.Application.Common;
 using Planning.Domain.Enums;
 using Planning.Domain.Modules;
 using Planning.Infrastructure;
+using Planning.Infrastructure.Data;
 using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.ContentRootPath);
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
@@ -108,9 +110,15 @@ builder.Services.AddScoped<IAuthorizationHandler, ModuleAuthorizationHandler>();
 
 var app = builder.Build();
 
+if (app.Environment.IsEnvironment("Test"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<ITestDataSeeder>().InitializeAsync();
+}
+
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Test"))
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
@@ -124,6 +132,15 @@ else
 }
 
 app.UseCors("Frontend");
+
+var imgPath = Path.Combine(app.Environment.ContentRootPath, "img");
+Directory.CreateDirectory(Path.Combine(imgPath, "logos"));
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imgPath),
+    RequestPath = "/img",
+});
+
 app.UseAuthentication();
 app.UseMiddleware<OrganizationContextMiddleware>();
 app.UseAuthorization();

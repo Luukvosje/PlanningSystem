@@ -332,6 +332,8 @@ ASALocalRun/
 
 # Custom
 .nuget/
+/Planning.Api/img/logos/*
+!/Planning.Api/img/logos/.gitkeep
 /TimeOn.Api/FileData/
 /TimeOn.Web/wwwroot/bundles/
 /FileData

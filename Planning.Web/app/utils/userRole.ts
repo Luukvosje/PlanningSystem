@@ -29,6 +29,11 @@ export function canManagePlanning(role?: UserRole | string | null): boolean {
     || role === UserRole.Planner
 }
 
+/** Owner, Admin and Planner can manage customers; Employee (viewer) is read-only. */
+export function canManageCustomers(role?: UserRole | string | null): boolean {
+  return canManagePlanning(role)
+}
+
 export const assignableRoleOptions = [
   { label: 'Beheerder', value: UserRole.Admin },
   { label: 'Planner', value: UserRole.Planner },
