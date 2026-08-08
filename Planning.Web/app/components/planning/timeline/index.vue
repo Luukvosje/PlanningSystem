@@ -300,25 +300,24 @@ watch(
 		class="relative overflow-auto rounded-xl border border-default bg-default shadow-sm h-full"
 		@scroll.passive="onScroll"
 	>
-		<div
-			v-if="rows.length === 0"
-			class="p-12 text-center"
-		>
-			<UIcon
-				name="i-lucide-calendar-off"
-				class="size-10 text-muted mx-auto mb-3"
-			/>
-			<p class="text-muted">
-				Geen resources om weer te geven.
-			</p>
-		</div>
-
-		<div
-			v-else
-			class="w-max min-w-full flex flex-col"
-		>
+		<div class="w-max min-w-full flex flex-col">
 			<PlanningTimelineHeader />
-			<div class="relative">
+			<div
+				v-if="rows.length === 0"
+				class="p-12 text-center"
+			>
+				<UIcon
+					name="i-lucide-calendar-off"
+					class="size-10 text-muted mx-auto mb-3"
+				/>
+				<p class="text-muted">
+					Geen resources om weer te geven.
+				</p>
+			</div>
+			<div
+				v-else
+				class="relative"
+			>
 				<PlanningTimelineCurrentTimeIndicator />
 				<!-- Top spacer for virtualised rows above viewport -->
 				<div

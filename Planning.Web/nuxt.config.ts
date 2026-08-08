@@ -34,7 +34,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     apiBaseUrl: process.env.NUXT_API_BASE_URL ?? 'http://localhost:5264',
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? '',
+      // Client-side API calls need an absolute URL; empty base hits the Nuxt app itself.
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL ?? 'http://localhost:5264',
     },
   },
 

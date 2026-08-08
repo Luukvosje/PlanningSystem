@@ -1,18 +1,17 @@
 <script setup lang="ts">
 withDefaults(defineProps<{
-  compact?: boolean
+	compact?: boolean
 }>(), {
-  compact: false,
+	compact: false,
 });
 
 const colorMode = useColorMode();
 
 function setMode(mode: 'light' | 'dark') {
-  colorMode.preference = mode;
+	colorMode.preference = mode;
 }
 
 const isLight = computed(() => colorMode.value === 'light');
-const isDark = computed(() => colorMode.value === 'dark');
 </script>
 
 <template>
@@ -35,15 +34,15 @@ const isDark = computed(() => colorMode.value === 'dark');
 			@click="() => { setMode('light') }"
 		/>
 		<UButton
-			:variant="isDark ? 'soft' : 'ghost'"
-			:color="isDark ? 'secondary' : 'neutral'"
+			:variant="!isLight ? 'soft' : 'ghost'"
+			:color="!isLight ? 'secondary' : 'neutral'"
 			size="xs"
 			icon="i-lucide-moon"
 			:label="compact ? undefined : 'Donker'"
 			:square="compact"
 			class="flex-1 justify-center"
 			aria-label="Donkere modus"
-			:aria-pressed="isDark"
+			:aria-pressed="!isLight"
 			@click="() => { setMode('dark') }"
 		/>
 	</div>

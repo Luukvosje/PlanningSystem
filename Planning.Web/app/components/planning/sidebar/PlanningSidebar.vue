@@ -55,39 +55,56 @@ return;
 
 watch(() => store.createDraft, (draft) => {
   if (!draft || !isCreateMode.value) {
-return;
-}
+    return;
+  }
   form.title = '';
   form.description = '';
   form.notes = '';
   form.assignedUserId = draft.assignedUserId;
   form.customerId = draft.customerId ?? null;
-  form.status = 'Planned';
+  form.status = draft.status ?? store.filters.statuses[0] ?? 'Planned';
   form.color = '#6366F1';
   form.startUtc = draft.startUtc;
   form.endUtc = draft.endUtc;
 }, { immediate: true });
 
-const userOptions = computed(() =>
-  (users.value ?? []).map((u) => ({
+const allStatusOptions = [
+  { label: 'Gepland', value: 'Planned' as const },
+  { label: 'Bevestigd', value: 'Confirmed' as const },
+  { label: 'Afgerond', value: 'Completed' as const },
+  { label: 'Geannuleerd', value: 'Cancelled' as const },
+];
+
+const userOptions = computed(() => {
+  let list = users.value ?? [];
+  if (isCreateMode.value && store.filters.userIds.length > 0) {
+    list = list.filter((u) => u.id && store.filters.userIds.includes(u.id));
+  }
+  return list.map((u) => ({
     label: `${u.firstName} ${u.lastName}`.trim(),
     value: u.id!,
-  })),
-);
+  }));
+});
 
-const customerOptions = computed(() =>
-  (customers.value ?? []).map((c) => ({
+const customerOptions = computed(() => {
+  let list = customers.value ?? [];
+  if (isCreateMode.value && store.filters.customerIds.length > 0) {
+    list = list.filter((c) => c.id && store.filters.customerIds.includes(c.id));
+  }
+  return list.map((c) => ({
     label: c.name ?? 'Onbekend',
     value: c.id!,
-  })),
-);
+  }));
+});
 
-const statusOptions = [
-  { label: 'Gepland', value: 'Planned' },
-  { label: 'Bevestigd', value: 'Confirmed' },
-  { label: 'Afgerond', value: 'Completed' },
-  { label: 'Geannuleerd', value: 'Cancelled' },
-];
+const statusOptions = computed(() => {
+  if (isCreateMode.value && store.filters.statuses.length > 0) {
+    return allStatusOptions.filter((option) =>
+      store.filters.statuses.includes(option.value),
+    );
+  }
+  return allStatusOptions;
+});
 
 const isSaving = ref(false);
 const errorMessage = ref<string | null>(null);
@@ -154,6 +171,7 @@ async function save() {
         startUtc: form.startUtc,
         endUtc: form.endUtc,
         color: form.color,
+        status: form.status,
       });
       store.closeSidebar();
       return;
@@ -310,7 +328,6 @@ return;
 				</UFormField>
 
 				<UFormField
-					v-if="!isCreateMode"
 					label="Status"
 					name="status"
 					:error="fieldError('Status')"

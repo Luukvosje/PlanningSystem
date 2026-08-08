@@ -20,7 +20,7 @@ const workDayCount = computed(() => days.value.filter((day) => day.hasShifts).le
 
 <template>
 	<LayoutPageContainer>
-		<div class="mx-auto w-full max-w-xl space-y-6">
+		<div class=" space-y-6">
 			<LayoutPageHeader
 				title="Mijn planning"
 				:subtitle="workDayCount > 0
@@ -46,7 +46,10 @@ const workDayCount = computed(() => days.value.filter((day) => day.hasShifts).le
 				v-if="isLoading"
 				class="space-y-3"
 			>
-				<UCard :ui="{ body: 'p-5' }">
+				<UCard
+					class="w-full"
+					:ui="{ body: 'p-5' }"
+				>
 					<div class="space-y-3">
 						<USkeleton class="h-4 w-28" />
 						<USkeleton class="h-4 w-40" />

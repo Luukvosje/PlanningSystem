@@ -20,4 +20,5 @@ export interface CreatePlanningRequest {
   endUtc?: string;
   /** @nullable */
   color?: string | null;
+  status?: 'Planned' | 'Confirmed' | 'Completed' | 'Cancelled';
 }

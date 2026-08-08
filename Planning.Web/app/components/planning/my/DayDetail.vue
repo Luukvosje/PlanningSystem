@@ -12,6 +12,7 @@ defineProps<{
 		:class="day.isToday
 			? 'ring-1 ring-secondary/40 bg-secondary/10'
 			: 'bg-muted/20'"
+		class="w-full lg:w-full"
 		:ui="{ body: 'p-4 sm:p-5' }"
 	>
 		<div class="space-y-4">

@@ -31,6 +31,7 @@ async function refreshAccessToken(): Promise<boolean> {
   refreshPromise = (async () => {
     const config = useRuntimeConfig()
     const authStore = useAuthStore()
+    const baseURL = (config.public.apiBaseUrl as string) || (config.apiBaseUrl as string)
 
     if (!authStore.refreshToken) {
       return false
@@ -41,7 +42,7 @@ async function refreshAccessToken(): Promise<boolean> {
         accessToken?: string | null
         refreshToken?: string | null
       }>('/api/auth/refresh', {
-        baseURL: config.public.apiBaseUrl,
+        baseURL,
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -76,9 +77,10 @@ export const customFetch = async <T>(
   const config = useRuntimeConfig()
   const authStore = useAuthStore()
   const skipAuthRefresh = options._skipAuthRefresh === true
+  const baseURL = (config.public.apiBaseUrl as string) || (config.apiBaseUrl as string)
 
   const fetchOptions: FetchOptions = {
-    baseURL: config.public.apiBaseUrl,
+    baseURL,
     method: options.method ?? 'GET',
     headers: {
       Accept: 'application/json',

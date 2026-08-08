@@ -19,5 +19,10 @@ export default defineAppConfig({
         root: 'border border-default rounded-xl',
       },
     },
+    card:{
+     slots: {
+      root: 'w-full lg:max-w-2xl mx-auto',
+     }, 
+    },
   },
-})
+});

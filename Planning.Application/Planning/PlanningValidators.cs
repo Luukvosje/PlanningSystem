@@ -12,6 +12,7 @@ public class CreatePlanningRequestValidator : AbstractValidator<CreatePlanningRe
         RuleFor(x => x.Notes).MaximumLength(4000);
         RuleFor(x => x.Color).MaximumLength(7);
         RuleFor(x => x.EndUtc).GreaterThan(x => x.StartUtc);
+        RuleFor(x => x.Status).IsInEnum();
     }
 }
 

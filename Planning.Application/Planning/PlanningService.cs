@@ -62,7 +62,8 @@ public class PlanningService : IPlanningService
                 request.StartUtc,
                 request.EndUtc,
                 request.Color,
-                DateTime.UtcNow);
+                DateTime.UtcNow,
+                request.Status);
 
             await _planningRecordRepository.AddAsync(planningRecord, cancellationToken);
             return await BuildSingleResponseAsync(planningRecord, cancellationToken);

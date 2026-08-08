@@ -39,6 +39,7 @@ export interface CreatePlanningRequest {
   startUtc: string
   endUtc: string
   color?: string | null
+  status?: PlanningStatus
 }
 
 export interface UpdatePlanningRequest {
@@ -91,6 +92,7 @@ export interface TimelineRow {
 export interface CreatePlanningDraft {
   assignedUserId: string
   customerId?: string | null
+  status?: PlanningStatus
   startUtc: string
   endUtc: string
 }

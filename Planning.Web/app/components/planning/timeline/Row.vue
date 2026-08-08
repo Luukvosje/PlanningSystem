@@ -122,7 +122,20 @@ function pxFromEvent(event: PointerEvent, target: HTMLElement): number {
 
 function resolveAssignedUserId(): string | null {
   if (store.rowMode === 'resource') return props.rowId
-  return users.value?.[0]?.id ?? null
+  const filteredUserIds = store.filters.userIds
+  const activeUsers = (users.value ?? []).filter((u) => u.isActive !== false)
+  if (filteredUserIds.length > 0) {
+    return activeUsers.find((u) => u.id && filteredUserIds.includes(u.id))?.id ?? null
+  }
+  return activeUsers[0]?.id ?? null
+}
+
+function resolveCustomerId(): string | null {
+  if (props.rowCustomerId) return props.rowCustomerId
+  if (store.rowMode === 'customer' && props.rowId !== '__unassigned__') return props.rowId
+  const filteredCustomerIds = store.filters.customerIds
+  if (filteredCustomerIds.length === 1) return filteredCustomerIds[0]!
+  return null
 }
 
 function openCreate(startPx: number, endPx: number) {
@@ -152,7 +165,8 @@ function openCreate(startPx: number, endPx: number) {
 
   store.openCreateSidebar({
     assignedUserId,
-    customerId: props.rowCustomerId ?? (store.rowMode === 'customer' && props.rowId !== '__unassigned__' ? props.rowId : null),
+    customerId: resolveCustomerId(),
+    status: store.filters.statuses[0],
     startUtc,
     endUtc,
   })

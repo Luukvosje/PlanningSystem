@@ -3,7 +3,6 @@ import type { TimelineRow } from '~/types/planning';
 
 const store = usePlanningStore();
 const { records, isInitialLoading, error } = usePlanning();
-const { hasActiveFilters } = usePlanningFilters();
 const { availabilityPeriods } = usePlanningAvailability(records);
 const { message } = useApiError(error);
 const { data: users, isLoading: usersLoading } = useUsers();
@@ -60,30 +59,35 @@ const timelineRows = computed<TimelineRow[]>(() => {
     }));
   }
 
-  const resourceFilterActive = store.rowMode === 'resource' ?
-    userIds.length > 0 :
-    customerIds.length > 0;
-
-  if (hasActiveFilters.value && !resourceFilterActive) {
-    return rows.filter((row) => row.records.length > 0);
-  }
-
+  // Always keep resource/customer rows visible so users can still create
+  // on an empty timeline (e.g. when status/search filters match nothing).
   return rows;
 });
 
 function openCreate() {
-  const firstUser = users.value?.[0];
-  if (!firstUser?.id) {
-return;
-}
+  const filteredUserIds = store.filters.userIds;
+  const filteredCustomerIds = store.filters.customerIds;
+  const activeUsers = (users.value ?? []).filter((u) => u.isActive !== false);
+  const preferredUser = filteredUserIds.length > 0
+    ? activeUsers.find((u) => u.id && filteredUserIds.includes(u.id))
+    : activeUsers[0];
+  if (!preferredUser?.id) {
+    return;
+  }
 
   const start = new Date();
   start.setMinutes(0, 0, 0);
   const end = new Date(start);
   end.setHours(end.getHours() + 1);
 
+  const customerId = filteredCustomerIds.length === 1
+    ? filteredCustomerIds[0]!
+    : undefined;
+
   store.openCreateSidebar({
-    assignedUserId: firstUser.id,
+    assignedUserId: preferredUser.id,
+    customerId: customerId ?? null,
+    status: store.filters.statuses[0],
     startUtc: start.toISOString(),
     endUtc: end.toISOString(),
   });

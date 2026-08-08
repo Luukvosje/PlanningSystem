@@ -10,7 +10,8 @@ public sealed record CreatePlanningRequest(
     string? Notes,
     DateTime StartUtc,
     DateTime EndUtc,
-    string? Color);
+    string? Color,
+    PlanningStatus Status = PlanningStatus.Planned);
 
 public sealed record UpdatePlanningRequest(
     Guid AssignedUserId,
