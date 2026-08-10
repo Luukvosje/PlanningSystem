@@ -9,7 +9,7 @@ export function useAppNavigation() {
 
   const navigationItems = computed<NavigationMenuItem[][]>(() => {
     const main: NavigationMenuItem[] = [
-      { label: 'Navigatie', type: 'label' },
+      { label: 'Menu', type: 'label' },
       {
         label: 'Dashboard',
         icon: 'i-lucide-layout-dashboard',
@@ -35,15 +35,18 @@ export function useAppNavigation() {
       });
     }
 
-    if (canAccessModule(AppModule.Klant, modules.value)) {
-      main.push({
-        label: 'Klanten',
-        icon: 'i-lucide-contact',
-        to: '/customers',
-      });
-    }
-
     const groups: NavigationMenuItem[][] = [main];
+
+    if (canAccessModule(AppModule.Klant, modules.value)) {
+      groups.push([
+        { label: 'Relaties', type: 'label' },
+        {
+          label: 'Klanten',
+          icon: 'i-lucide-contact',
+          to: '/customers',
+        },
+      ]);
+    }
 
     if (canManageOrganization(auth.currentUser?.role)) {
       const children: NavigationMenuItem[] = [];

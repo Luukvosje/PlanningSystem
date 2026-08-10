@@ -5,7 +5,7 @@ const { nextShift, isLoading } = useNextPlanningShift();
 </script>
 
 <template>
-	<UCard :ui="{ body: 'p-6' }">
+	<UCard>
 		<div class="flex flex-col gap-4">
 			<div class="min-w-0 space-y-3">
 				<p class="text-xs font-semibold uppercase tracking-wider text-muted">

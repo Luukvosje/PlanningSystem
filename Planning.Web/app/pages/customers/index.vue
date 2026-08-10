@@ -59,8 +59,9 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
 </script>
 
 <template>
-  <LayoutPageContainer>
+  <LayoutPageContainer fill>
     <LayoutPageHeader
+      class="shrink-0"
       title="Klanten"
       :subtitle="auth.currentUser?.organizationName"
     >
@@ -71,16 +72,16 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
       </template>
     </LayoutPageHeader>
 
-    <UAlert v-if="error" color="error" :title="message" />
+    <UAlert v-if="error" class="shrink-0" color="error" :title="message" />
 
-    <UiLoadingIndicator v-else-if="isLoading" label="Klanten laden..." />
+    <UiLoadingIndicator v-else-if="isLoading" class="shrink-0" label="Klanten laden..." />
 
-    <div v-else-if="customers?.length || globalFilter" class="space-y-4">
+    <div v-else class="flex min-h-0 flex-1 flex-col gap-4">
       <UInput
         v-model="globalFilter"
         icon="i-lucide-search"
         placeholder="Zoeken op naam, e-mail of adres..."
-        class="max-w-md"
+        class="max-w-md shrink-0"
       />
 
       <UTable
@@ -90,21 +91,26 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
         :global-filter-options="{
           globalFilterFn: (row, _columnId, filterValue) => matchesCustomerFilter(row.original, filterValue),
         }"
-        empty="Geen klanten gevonden."
-        class="flex-1"
+        sticky
+        class="min-h-0 flex-1"
         @select="onRowSelect"
-      />
+      >
+        <template #empty>
+          <div class="flex h-full min-h-48 flex-col items-center justify-center gap-3 py-6">
+            <template v-if="!(customers?.length) && !globalFilter">
+              <p class="text-muted text-sm">
+                {{ canManage ? 'Nog geen klanten. Voeg je eerste klant toe.' : 'Nog geen klanten.' }}
+              </p>
+              <UButton v-if="canManage" @click="customerCreate.open()">
+                Klant toevoegen
+              </UButton>
+            </template>
+            <p v-else class="text-muted text-sm">
+              Geen klanten gevonden.
+            </p>
+          </div>
+        </template>
+      </UTable>
     </div>
-
-    <UCard v-else>
-      <p class="text-muted text-center py-4">
-        {{ canManage ? 'Nog geen klanten. Voeg je eerste klant toe.' : 'Nog geen klanten.' }}
-      </p>
-      <div v-if="canManage" class="flex justify-center">
-        <UButton @click="customerCreate.open()">
-          Klant toevoegen
-        </UButton>
-      </div>
-    </UCard>
   </LayoutPageContainer>
 </template>

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { PlanningRecord } from '~/types/planning'
 import type { UnavailablePeriod } from '~/types/availability'
-import { formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils'
+import { CONCEPT_BLOCK_STYLE, formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils'
 import { isOpenShift } from '~/utils/planning/mixedTimelineMath'
 
 const props = defineProps<{
@@ -18,9 +18,12 @@ const { checkRecord } = useAvailabilityWarning(users, {
 })
 
 const isOpen = computed(() => isOpenShift(props.record))
-const blockColor = computed(() =>
-  isOpen.value ? undefined : getBlockColor(props.record.color, props.record.status),
-)
+const isConcept = computed(() => props.record.status === 'Planned')
+const blockColor = computed(() => {
+  if (isOpen.value) return undefined
+  if (isConcept.value) return CONCEPT_BLOCK_STYLE.backgroundColor
+  return getBlockColor(props.record.color, props.record.status)
+})
 
 const tooltipText = computed(() => {
   const parts = [props.record.title]
@@ -63,7 +66,11 @@ function onContextMenu(event: MouseEvent) {
       width: `${layout.widthPx}px`,
       top: `${layout.topPx}px`,
       height: `${layout.heightPx}px`,
-      backgroundColor: blockColor,
+      ...(isOpen
+        ? {}
+        : isConcept
+          ? { ...CONCEPT_BLOCK_STYLE }
+          : { backgroundColor: blockColor }),
     }"
     :title="tooltipText"
     @click.stop="onClick"

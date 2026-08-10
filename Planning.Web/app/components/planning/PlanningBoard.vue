@@ -95,17 +95,19 @@ function openCreate() {
 </script>
 
 <template>
-	<div class="flex flex-col gap-4 h-[calc(100vh-8rem)]">
-		<PlanningHeaderToolbar @create="openCreate" />
-		<PlanningHeaderFilters />
+	<div class="flex h-full min-h-0 flex-col">
+		<div class="flex shrink-0 flex-col gap-4 p-4 max-lg:gap-4 max-lg:p-4">
+			<PlanningHeaderToolbar @create="openCreate" />
+			<PlanningHeaderFilters />
 
-		<UAlert
-			v-if="error"
-			color="error"
-			:title="message"
-		/>
+			<UAlert
+				v-if="error"
+				color="error"
+				:title="message"
+			/>
+		</div>
 
-		<div class="flex-1 min-h-0 overflow-hidden grow">
+		<div class="min-h-0 flex-1 overflow-hidden">
 			<PlanningLoading v-if="boardLoading" />
 			<PlanningTimeline
 				v-else

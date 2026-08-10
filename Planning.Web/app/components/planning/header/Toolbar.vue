@@ -2,20 +2,15 @@
 import type { PlanningRowMode } from '~/types/planning';
 
 const store = usePlanningStore();
-const { canManage } = usePlanningPermissions();
 
 const rowModes: { label: string, value: PlanningRowMode, icon: string }[] = [
   { label: 'Team', value: 'resource', icon: 'i-lucide-users' },
   { label: 'Klanten', value: 'customer', icon: 'i-lucide-building-2' },
 ];
-
-const emit = defineEmits<{
-  create: []
-}>();
 </script>
 
 <template>
-	<div class="flex justify-between border-b border-default pb-4">
+	<div class="flex justify-between">
 		<div class="flex flex-wrap items-center gap-2">
 			<UFieldGroup>
 				<UButton

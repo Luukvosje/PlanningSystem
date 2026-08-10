@@ -4,14 +4,17 @@ import { fromDate, getLocalTimeZone, toCalendarDate } from '@internationalized/d
 import type { MyPlanningDay } from '~/composables/planning/useMyPlanningView';
 import { formatCompactDayHeader, getMonday } from '~/utils/planning/dateUtils';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   weekLabel: string
   weekRangeLabel: string
   isCurrentWeek: boolean
   days: MyPlanningDay[]
   weekStart: Date
   selectedDateKey: string
-}>();
+  showDays?: boolean
+}>(), {
+  showDays: true,
+});
 
 const emit = defineEmits<{
   previous: []
@@ -60,68 +63,72 @@ function dayButtonClass(day: MyPlanningDay) {
 
 <template>
 	<div class="space-y-3">
-		<div class="flex flex-wrap items-center gap-2">
-			<UFieldGroup class="min-w-0 flex-1 sm:flex-none">
-				<UButton
-					variant="outline"
-					icon="i-lucide-chevron-left"
-					aria-label="Vorige week"
-					size="md"
-					@click="emit('previous')"
-				/>
-
-				<UPopover v-model:open="calendarOpen">
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<div class="flex min-w-0 flex-wrap items-center gap-2">
+				<UFieldGroup class="min-w-0">
 					<UButton
 						variant="outline"
-						size="md"
-						class="min-w-0 flex-1 justify-center sm:min-w-40 sm:flex-none"
-					>
-						<span class="truncate font-semibold">{{ weekLabel }}</span>
-					</UButton>
+						color="neutral"
+						icon="i-lucide-chevron-left"
+						aria-label="Vorige week"
+						@click="emit('previous')"
+					/>
 
-					<template #content>
-						<div class="flex flex-col gap-2 p-2">
-							<UCalendar
-								v-if="calendarOpen"
-								:default-value="calendarDefaultDate"
-								color="secondary"
-								@update:model-value="onCalendarDateSelect"
-							/>
-							<UButton
-								variant="outline"
-								label="Deze week"
-								block
-								@click="goToTodayAndClose"
-							/>
-						</div>
-					</template>
-				</UPopover>
+					<UPopover v-model:open="calendarOpen">
+						<UButton
+							variant="outline"
+							color="neutral"
+							class="min-w-0 justify-center sm:min-w-40"
+						>
+							<span class="truncate font-semibold">{{ weekLabel }}</span>
+						</UButton>
+
+						<template #content>
+							<div class="flex flex-col gap-2 p-2">
+								<UCalendar
+									v-if="calendarOpen"
+									:default-value="calendarDefaultDate"
+									color="secondary"
+									@update:model-value="onCalendarDateSelect"
+								/>
+								<UButton
+									variant="outline"
+									label="Deze week"
+									block
+									@click="goToTodayAndClose"
+								/>
+							</div>
+						</template>
+					</UPopover>
+
+					<UButton
+						variant="outline"
+						color="neutral"
+						icon="i-lucide-chevron-right"
+						aria-label="Volgende week"
+						@click="emit('next')"
+					/>
+				</UFieldGroup>
 
 				<UButton
+					v-if="!isCurrentWeek"
 					variant="outline"
-					icon="i-lucide-chevron-right"
-					aria-label="Volgende week"
-					size="md"
-					@click="emit('next')"
+					color="neutral"
+					label="Deze week"
+					class="shrink-0"
+					@click="emit('today')"
 				/>
-			</UFieldGroup>
+			</div>
 
-			<UButton
-				v-if="!isCurrentWeek"
-				variant="soft"
-				color="secondary"
-				size="md"
-				label="Deze week"
-				class="shrink-0"
-				@click="emit('today')"
-			/>
+			<p class="text-sm text-muted">
+				{{ weekRangeLabel }}
+			</p>
 		</div>
 
-		<p class="text-sm text-muted">
-			{{ weekRangeLabel }}
-		</p>
-
-		<div class="grid grid-cols-7 gap-1.5 sm:gap-2">
+		<div
+			v-if="showDays"
+			class="grid grid-cols-7 gap-1.5 sm:gap-2"
+		>
 			<button
 				v-for="day in days"
 				:key="day.dateKey"

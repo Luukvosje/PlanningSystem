@@ -73,8 +73,9 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
 </script>
 
 <template>
-  <LayoutPageContainer>
+  <LayoutPageContainer fill>
     <LayoutPageHeader
+      class="shrink-0"
       title="Team"
       :subtitle="auth.currentUser?.organizationName"
     >
@@ -85,16 +86,16 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
       </template>
     </LayoutPageHeader>
 
-    <UAlert v-if="error" color="error" :title="message" />
+    <UAlert v-if="error" class="shrink-0" color="error" :title="message" />
 
-    <UiLoadingIndicator v-else-if="isLoading" label="Team laden..." />
+    <UiLoadingIndicator v-else-if="isLoading" class="shrink-0" label="Team laden..." />
 
-    <div v-else-if="users?.length || globalFilter" class="space-y-4">
+    <div v-else class="flex min-h-0 flex-1 flex-col gap-4">
       <UInput
         v-model="globalFilter"
         icon="i-lucide-search"
         placeholder="Zoeken op naam, e-mail, rol of status..."
-        class="max-w-md"
+        class="max-w-md shrink-0"
       />
 
       <UTable
@@ -104,10 +105,26 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
         :global-filter-options="{
           globalFilterFn: (row, _columnId, filterValue) => matchesUserFilter(row.original, filterValue),
         }"
-        empty="Geen teamleden gevonden."
-        class="flex-1"
+        sticky
+        class="min-h-0 flex-1"
         @select="onRowSelect"
       >
+        <template #empty>
+          <div class="flex h-full min-h-48 flex-col items-center justify-center gap-3 py-6">
+            <template v-if="!(users?.length) && !globalFilter">
+              <p class="text-muted text-sm">
+                Nog geen teamleden. Nodig iemand uit via een code.
+              </p>
+              <UButton v-if="canInvite" @click="inviteCreate.open()">
+                Uitnodigen
+              </UButton>
+            </template>
+            <p v-else class="text-muted text-sm">
+              Geen teamleden gevonden.
+            </p>
+          </div>
+        </template>
+
         <template #role-cell="{ row }">
           <div @click.stop>
             <UsersRoleSelect :user="row.original" />
@@ -121,16 +138,5 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
         </template>
       </UTable>
     </div>
-
-    <UCard v-else>
-      <p class="text-muted text-center py-4">
-        Nog geen teamleden. Nodig iemand uit via een code.
-      </p>
-      <div v-if="canInvite" class="flex justify-center">
-        <UButton @click="inviteCreate.open()">
-          Uitnodigen
-        </UButton>
-      </div>
-    </UCard>
   </LayoutPageContainer>
 </template>

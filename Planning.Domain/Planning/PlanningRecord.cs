@@ -60,7 +60,7 @@ public class PlanningRecord : TenantEntity
         DateTime endUtc,
         string? color,
         DateTime utcNow,
-        PlanningStatus status = PlanningStatus.Planned)
+        PlanningStatus status = PlanningStatus.Confirmed)
     {
         ValidateTitle(title);
         ValidateDateRange(startUtc, endUtc);

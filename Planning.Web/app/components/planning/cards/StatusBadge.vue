@@ -7,7 +7,7 @@ defineProps<{
 }>()
 
 const colorMap: Record<PlanningStatus, 'neutral' | 'info' | 'success' | 'error'> = {
-  Planned: 'info',
+  Planned: 'neutral',
   Confirmed: 'success',
   Completed: 'neutral',
   Cancelled: 'error',

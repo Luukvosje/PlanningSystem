@@ -15,7 +15,7 @@ const form = reactive<PlanningFormData>({
   notes: '',
   assignedUserId: '',
   customerId: null,
-  status: 'Planned',
+  status: 'Confirmed',
   color: '#6366F1',
   startUtc: '',
   endUtc: '',
@@ -62,7 +62,7 @@ watch(() => store.createDraft, (draft) => {
   form.notes = '';
   form.assignedUserId = draft.assignedUserId;
   form.customerId = draft.customerId ?? null;
-  form.status = draft.status ?? store.filters.statuses[0] ?? 'Planned';
+  form.status = draft.status ?? store.filters.statuses[0] ?? 'Confirmed';
   form.color = '#6366F1';
   form.startUtc = draft.startUtc;
   form.endUtc = draft.endUtc;

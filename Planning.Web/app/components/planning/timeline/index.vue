@@ -297,7 +297,7 @@ watch(
 <template>
 	<div
 		ref="containerRef"
-		class="relative overflow-auto rounded-xl border border-default bg-default shadow-sm h-full"
+		class="relative h-full overflow-auto border-t border-default bg-default"
 		@scroll.passive="onScroll"
 	>
 		<div class="w-max min-w-full flex flex-col">

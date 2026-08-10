@@ -91,7 +91,7 @@ export const ZOOM_LADDER: readonly TimelineZoom[] = [
 ] as const;
 
 export const ZOOM_PRESETS: readonly { value: TimelineZoom, label: string, keypress: string }[] = [
-  { value: '1h', label: 'Uur', keypress: 'h' },
+  { value: '1h', label: 'Uur', keypress: 'u' },
   { value: '4h', label: 'Dagdeel', keypress: '4' },
   { value: 'day', label: 'Dag', keypress: 'd' },
   { value: 'week', label: 'Week', keypress: 'w' },

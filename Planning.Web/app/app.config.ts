@@ -17,12 +17,10 @@ export default defineAppConfig({
     table: {
       slots: {
         root: 'border border-default rounded-xl',
+        base: 'h-full',
+        tbody: 'h-full [&_tr:has([data-slot=empty])]:h-full',
+        empty: 'h-full align-middle',
       },
-    },
-    card:{
-     slots: {
-      root: 'w-full lg:max-w-2xl mx-auto',
-     }, 
     },
   },
 });

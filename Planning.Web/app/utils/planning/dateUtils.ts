@@ -1,11 +1,17 @@
 import type { PlanningStatus } from '~/types/planning';
 
 export const STATUS_COLORS: Record<PlanningStatus, string> = {
-  Planned: '#6366F1',
+  Planned: '#94A3B8',
   Confirmed: '#14B8A6',
   Completed: '#64748B',
   Cancelled: '#F43F5E',
 };
+
+/** Concept (Planned) blocks: gray with diagonal stripes. */
+export const CONCEPT_BLOCK_STYLE = {
+  backgroundColor: '#94A3B8',
+  backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.28) 4px, rgba(255,255,255,0.28) 8px)',
+} as const;
 
 export const COLOR_PRESETS = [
   '#6366F1',

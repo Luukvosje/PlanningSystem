@@ -70,9 +70,9 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 			</div>
 		</div>
 
-		<div class="flex border-b border-default/50">
+		<div class="flex">
 			<div
-				class="sticky left-0 z-30 shrink-0 border-r border-default bg-default px-3 py-2"
+				class="sticky left-0 z-30 flex shrink-0 items-center border-r border-default bg-default px-3 py-2"
 				:style="{ width: `${rowLabelWidth}px` }"
 			>
 				<span class="text-xs font-medium text-muted uppercase tracking-wide">{{ store.rowMode === 'resource' ? 'Team' : 'Klant' }}</span>
@@ -85,7 +85,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 				<div
 					v-for="day in dayHeaders"
 					:key="day.label"
-					class="shrink-0 relative"
+					class="relative flex shrink-0 items-stretch"
 					:class="[
 						dayBorderClass(day.isPrimaryBorderEnd),
 						day.isWeekend && store.showWeekends ? 'bg-muted/40' : '',

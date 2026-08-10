@@ -2,7 +2,7 @@
 import type { PlanningRecord } from '~/types/planning';
 import type { UnavailablePeriod } from '~/types/availability';
 import { useElementBounding } from '@vueuse/core';
-import { formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils';
+import { CONCEPT_BLOCK_STYLE, formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils';
 
 const props = defineProps<{
   record: PlanningRecord
@@ -23,7 +23,12 @@ const { startResize, resizingId, resizePreview } = useResizePlanning();
 const { rowLabelWidth } = useTimeline();
 const headerHeight = inject<Ref<number>>('timelineHeaderHeight', ref(0));
 
-const blockColor = computed(() => getBlockColor(props.record.color, props.record.status));
+const isConcept = computed(() => props.record.status === 'Planned');
+const blockColor = computed(() =>
+  isConcept.value
+    ? CONCEPT_BLOCK_STYLE.backgroundColor
+    : getBlockColor(props.record.color, props.record.status),
+);
 const availabilityWarning = computed(() => checkRecord(props.record));
 const isDragging = computed(() => draggingId.value === props.record.id);
 const isResizing = computed(() => resizingId.value === props.record.id);
@@ -156,8 +161,18 @@ function onContextMenu(event: MouseEvent) {
 			class="absolute inset-0 rounded-md overflow-hidden"
 			:class="store.showBlockColor ? '' : 'border-2 bg-default'"
 			:style="store.showBlockColor
-				? { backgroundColor: blockColor }
-				: { borderColor: blockColor }"
+				? (isConcept
+					? { ...CONCEPT_BLOCK_STYLE }
+					: { backgroundColor: blockColor })
+				: {
+					borderColor: blockColor,
+					...(isConcept
+						? {
+							backgroundImage: CONCEPT_BLOCK_STYLE.backgroundImage,
+							backgroundColor: 'rgba(148, 163, 184, 0.18)',
+						}
+						: {}),
+				}"
 		>
 			<div
 				v-if="availabilityWarning.hasConflict"

@@ -11,7 +11,7 @@ public sealed record CreatePlanningRequest(
     DateTime StartUtc,
     DateTime EndUtc,
     string? Color,
-    PlanningStatus Status = PlanningStatus.Planned);
+    PlanningStatus Status = PlanningStatus.Confirmed);
 
 public sealed record UpdatePlanningRequest(
     Guid AssignedUserId,
