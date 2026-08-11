@@ -102,6 +102,12 @@ export function movePlanning(id: string, request: MovePlanningRequest) {
   }).then(normalizeRecord)
 }
 
+export function confirmPlanning(id: string) {
+  return customFetch<Record<string, unknown>>(`/api/planning/${id}/confirm`, {
+    method: 'PATCH',
+  }).then(normalizeRecord)
+}
+
 export function duplicatePlanning(id: string, request: DuplicatePlanningRequest = {}) {
   return customFetch<Record<string, unknown>>(`/api/planning/${id}/duplicate`, {
     method: 'POST',

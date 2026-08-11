@@ -30,6 +30,19 @@ API → Application Services → Domain ← Infrastructure
 - .NET 10 SDK
 - SQL Server or LocalDB
 
+### Secrets (local development)
+
+The JWT signing key is **not** committed. Set it once via `dotnet user-secrets` from
+`Planning.Api`:
+
+```bash
+dotnet user-secrets set "Jwt:Key" "<a long random string, 32+ chars>"
+```
+
+This applies to both the `Development` and `Test` environments. In CI/production, set the
+`Jwt__Key` environment variable instead (double underscore is the .NET config separator).
+Never add `Jwt:Key` back to `appsettings*.json`.
+
 ### Database migration
 
 ```bash

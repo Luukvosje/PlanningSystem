@@ -346,9 +346,13 @@ const userMenuContent = computed(() => ({
 					:name="pageIcon"
 					class="size-5 text-secondary max-lg:size-4"
 				/>
-				<h1 class="font-semibold text-highlighted max-lg:truncate max-lg:text-sm">
+				<h1 class="min-w-0 truncate font-semibold text-highlighted max-lg:text-sm">
 					{{ pageTitle }}
 				</h1>
+
+				<div class="ms-auto flex min-w-0 items-center justify-end gap-2 max-lg:gap-1.5">
+					<slot name="actions" />
+				</div>
 			</div>
 
 			<div

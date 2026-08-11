@@ -161,6 +161,17 @@ public class PlanningRecord : TenantEntity
         Touch(utcNow);
     }
 
+    public void Confirm(DateTime utcNow)
+    {
+        if (Status != PlanningStatus.Planned)
+        {
+            throw new ArgumentException("Only planned bookings can be confirmed.");
+        }
+
+        Status = PlanningStatus.Confirmed;
+        Touch(utcNow);
+    }
+
     public void UpdateNotes(string? notes, DateTime utcNow)
     {
         Notes = notes?.Trim();

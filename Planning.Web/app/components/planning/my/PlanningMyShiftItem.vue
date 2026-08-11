@@ -4,8 +4,11 @@ import { CONCEPT_BLOCK_STYLE, formatTimeRange, getBlockColor } from '~/utils/pla
 
 const props = withDefaults(defineProps<{
   shift: PlanningRecord
+  /** Colored filled card (week board) vs list row with accent bar. */
+  variant?: 'block' | 'list'
   flush?: boolean
 }>(), {
+  variant: 'list',
   flush: false,
 });
 
@@ -15,10 +18,38 @@ const blockColor = computed(() =>
     ? CONCEPT_BLOCK_STYLE.backgroundColor
     : getBlockColor(props.shift.color, props.shift.status),
 );
+
+const blockStyle = computed(() =>
+  isConcept.value
+    ? { ...CONCEPT_BLOCK_STYLE, color: '#fff' }
+    : { backgroundColor: blockColor.value, color: '#fff' },
+);
+
+const timeLabel = computed(() => formatTimeRange(props.shift.startUtc, props.shift.endUtc));
 </script>
 
 <template>
 	<div
+		v-if="variant === 'block'"
+		class="rounded-md px-2.5 py-2 shadow-sm"
+		:style="blockStyle"
+	>
+		<p class="truncate text-sm font-semibold leading-tight text-white">
+			{{ shift.title || 'Dienst' }}
+		</p>
+		<p class="mt-0.5 truncate text-xs leading-tight text-white/90 tabular-nums">
+			{{ timeLabel }}
+		</p>
+		<p
+			v-if="shift.customerName"
+			class="mt-0.5 truncate text-[11px] leading-tight text-white/80"
+		>
+			{{ shift.customerName }}
+		</p>
+	</div>
+
+	<div
+		v-else
 		class="overflow-hidden"
 		:class="flush
 			? 'bg-transparent'
@@ -37,7 +68,7 @@ const blockColor = computed(() =>
 				:class="flush ? 'px-4 py-3.5' : 'px-3 py-2.5'"
 			>
 				<p class="text-sm font-semibold tabular-nums leading-tight">
-					{{ formatTimeRange(shift.startUtc, shift.endUtc) }}
+					{{ timeLabel }}
 				</p>
 				<p
 					v-if="shift.title"

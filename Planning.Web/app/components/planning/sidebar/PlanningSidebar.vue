@@ -68,13 +68,6 @@ watch(() => store.createDraft, (draft) => {
   form.endUtc = draft.endUtc;
 }, { immediate: true });
 
-const allStatusOptions = [
-  { label: 'Gepland', value: 'Planned' as const },
-  { label: 'Bevestigd', value: 'Confirmed' as const },
-  { label: 'Afgerond', value: 'Completed' as const },
-  { label: 'Geannuleerd', value: 'Cancelled' as const },
-];
-
 const userOptions = computed(() => {
   let list = users.value ?? [];
   if (isCreateMode.value && store.filters.userIds.length > 0) {
@@ -97,14 +90,19 @@ const customerOptions = computed(() => {
   }));
 });
 
-const statusOptions = computed(() => {
-  if (isCreateMode.value && store.filters.statuses.length > 0) {
-    return allStatusOptions.filter((option) =>
-      store.filters.statuses.includes(option.value),
-    );
-  }
-  return allStatusOptions;
-});
+const baseStatusOptions = [
+  { label: 'Gepland', value: 'Planned' },
+  { label: 'Afgerond', value: 'Completed' },
+  { label: 'Geannuleerd', value: 'Cancelled' },
+];
+
+// 'Confirmed' wordt alleen bereikt via de Bevestigen-actie, niet via deze vrije lijst.
+// Als een record al bevestigd is blijft de optie zichtbaar zodat de huidige status klopt.
+const statusOptions = computed(() =>
+  form.status === 'Confirmed' ?
+    [{ label: 'Bevestigd', value: 'Confirmed' }, ...baseStatusOptions] :
+    baseStatusOptions,
+);
 
 const isSaving = ref(false);
 const errorMessage = ref<string | null>(null);
@@ -214,6 +212,21 @@ async function onDuplicate() {
 return;
 }
   await duplicateRecord(selectedRecord.value.id);
+}
+
+const confirmMutation = api.useConfirmMutation();
+
+async function onConfirm() {
+  if (!selectedRecord.value) {
+return;
+}
+  try {
+    await confirmMutation.mutateAsync(selectedRecord.value.id);
+    toast.add({ title: 'Boeking bevestigd', color: 'success' });
+  } catch (error) {
+    const { message } = useApiError(error);
+    errorMessage.value = message.value;
+  }
 }
 </script>
 
@@ -378,6 +391,14 @@ return;
 						@click="() => { save() }"
 					/>
 					<template v-if="!isCreateMode">
+						<UButton
+							v-if="selectedRecord?.status === 'Planned'"
+							icon="i-lucide-check"
+							color="success"
+							label="Bevestigen"
+							:loading="confirmMutation.isPending.value"
+							@click="() => { onConfirm() }"
+						/>
 						<UButton
 							variant="outline"
 							icon="i-lucide-copy"

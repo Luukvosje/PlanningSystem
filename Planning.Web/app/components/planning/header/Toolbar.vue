@@ -8,7 +8,6 @@ const rowModes: { label: string, value: PlanningRowMode, icon: string }[] = [
   { label: 'Klanten', value: 'customer', icon: 'i-lucide-building-2' },
 ];
 </script>
-
 <template>
 	<div class="flex justify-between">
 		<div class="flex flex-wrap items-center gap-2">

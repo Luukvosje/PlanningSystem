@@ -1,0 +1,50 @@
+---
+description: Project overview and architecture layering rules for the Planning SaaS monorepo
+alwaysApply: true
+---
+
+# Planning SaaS
+
+Multi-tenant Planning SaaS. .NET 10 (Clean Architecture) backend + Nuxt/Vue 3 frontend.
+
+```
+Planning.Api            Controllers, middleware, JWT, authorization policies
+Planning.Application    DTOs, application services, FluentValidation validators, Result<T>
+Planning.Domain          Entities, enums, repository interfaces (no EF Core, no framework refs)
+Planning.Infrastructure  EF Core, repository implementations, SQL Server
+Planning.Web             Nuxt/Vue 3 frontend
+```
+
+Flow: `Api → Application → Domain ← Infrastructure`. No CQRS/MediatR/event sourcing — don't
+introduce them. Domain must never reference Application, Infrastructure, or Api.
+
+## Layering rules
+
+- Repository **interfaces** live in Domain (`I*Repository`); **implementations** live in
+  Infrastructure. Never put an interface directly in Infrastructure.
+- Controllers stay thin: validate request → call one application service method →
+  translate `Result`/`Result<T>` to `IActionResult`. No business logic and no direct
+  repository/DbContext access in a controller.
+- Business invariants belong in the Domain entity (private setters, static `Create(...)`
+  factory, mutation methods that throw `ArgumentException` on violation). Don't
+  re-implement invariant checks in the Application service — call the domain method.
+- Application services orchestrate: load entities, enforce tenant ownership, call domain
+  methods, call repositories, map to response DTOs.
+
+## Multi-tenancy — the most important rule in this codebase
+
+Every tenant-owned entity extends `TenantEntity` (`OrganizationId`, `CreatedAtUtc`,
+`UpdatedAtUtc`). Repositories fetch by id **without** filtering by organization — the
+application service is the enforcement point. Any new query/mutation on a tenant entity
+must:
+
+1. Resolve the organization from `ICurrentUserContext` (server-trusted, from the JWT
+   claim), never from a client-supplied `organizationId` for authorization decisions.
+2. After loading by id, verify the entity belongs to the current organization before
+   returning or mutating it. Return `NOT_FOUND` on mismatch, not `FORBIDDEN` — don't
+   confirm existence of another tenant's data.
+3. Validate any foreign reference (customer id, assigned user id, etc.) belongs to the
+   same organization before persisting.
+
+Treat a missing ownership check as a bug, not a style nit. See `300-security.mdc` for the
+full security checklist.

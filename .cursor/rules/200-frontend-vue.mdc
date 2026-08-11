@@ -1,0 +1,36 @@
+---
+description: Conventions for the Nuxt/Vue frontend (Planning.Web)
+globs:
+  - "Planning.Web/app/**/*.vue"
+  - "Planning.Web/app/**/*.ts"
+alwaysApply: false
+---
+
+# Frontend conventions (Planning.Web)
+
+- API access goes through the **orval-generated client** (`app/generated/**`) wrapped by
+  a `composables/api/use*Api.ts` composable, combined with TanStack Vue Query
+  (`composables/queries/*`) for server state. This is the target pattern for new code.
+- `utils/planningClient.ts` is a legacy hand-written client with manual
+  PascalCase/camelCase normalization (`normalizeRecord`). That dual-casing symptom means
+  the API contract is out of sync — don't copy this pattern into new modules. Prefer
+  migrating toward the generated client over extending the manual normalizer.
+- TypeScript `strict: true`; ESLint enforces `@typescript-eslint/no-explicit-any: 'error'`.
+  Don't use `any`/`as any` to route around a type error — fix the type.
+- Respect the existing ESLint config instead of reformatting around it: tabs for Vue
+  template indentation, single quotes, always-multiline trailing commas, one attribute
+  per line in templates, no `console.log` (only `info`/`warn`/`error` allowed).
+- Auth/session state lives in `stores/auth.ts` (Pinia), tokens in `useCookie`
+  (`planning_access_token`, `planning_refresh_token`, `planning_organization_id`). Route
+  gating lives in `middleware/*.global.ts`. Don't add a second, parallel auth-state
+  mechanism (e.g. localStorage) — extend the store.
+- Client-side validation (`app/schemas/*`) is UX only, never the security boundary — the
+  server-side FluentValidation validator is authoritative.
+
+## XSS is critical here, not routine
+
+Access/refresh tokens live in a JS-readable cookie (`useCookie`, not httpOnly) — any XSS
+is a full account takeover, not just a defacement. Treat unsanitized rendering of
+user-provided content (`v-html`, `innerHTML`, dynamically built URLs, `eval`) as high
+severity. Prefer plain interpolation; if `v-html` is ever unavoidable, sanitize first and
+call it out explicitly rather than leaving it implicit.

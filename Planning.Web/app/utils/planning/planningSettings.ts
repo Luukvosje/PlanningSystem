@@ -169,6 +169,12 @@ export function getISOWeekNumber(date: Date): number {
 }
 
 export function formatWeekDateRange(start: Date, end: Date): string {
+  if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+    const dayFmt = new Intl.DateTimeFormat('nl-NL', { day: 'numeric' })
+    const monthFmt = new Intl.DateTimeFormat('nl-NL', { month: 'short' })
+    return `${dayFmt.format(start)} – ${dayFmt.format(end)} ${monthFmt.format(end)}`
+  }
+
   const formatter = new Intl.DateTimeFormat('nl-NL', { day: 'numeric', month: 'short' })
   return `${formatter.format(start)} – ${formatter.format(end)}`
 }

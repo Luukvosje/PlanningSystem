@@ -87,6 +87,17 @@ public class PlanningController : ApiControllerBase
             return result.ToActionResult(this);
         });
 
+    [HttpPatch("{id:guid}/confirm")]
+    [Authorize(Policy = "CanManagePlanning")]
+    [ProducesResponseType(typeof(PlanningResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Confirm(Guid id)
+    {
+        var result = await _planningService.ConfirmAsync(id, HttpContext.RequestAborted);
+        return result.ToActionResult(this);
+    }
+
     [HttpPost("{id:guid}/duplicate")]
     [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(typeof(PlanningResponse), StatusCodes.Status201Created)]

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import {
+  confirmPlanning,
   createPlanning,
   deletePlanning,
   duplicatePlanning,
@@ -29,6 +30,7 @@ export function usePlanningApi() {
     create: (request: CreatePlanningRequest) => createPlanning(request),
     update: (id: string, request: UpdatePlanningRequest) => updatePlanning(id, request),
     move: (id: string, request: MovePlanningRequest) => movePlanning(id, request),
+    confirm: (id: string) => confirmPlanning(id),
     duplicate: (id: string, request?: DuplicatePlanningRequest) => duplicatePlanning(id, request),
     delete: (id: string) => deletePlanning(id),
     invalidatePlanning,
@@ -56,6 +58,12 @@ export function usePlanningApi() {
     useDeleteMutation: () =>
       useMutation({
         mutationFn: deletePlanning,
+        onSuccess: invalidatePlanning,
+      }),
+
+    useConfirmMutation: () =>
+      useMutation({
+        mutationFn: confirmPlanning,
         onSuccess: invalidatePlanning,
       }),
 

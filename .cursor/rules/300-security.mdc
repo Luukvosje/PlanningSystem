@@ -1,0 +1,32 @@
+---
+description: Security checklist applying to every change across the whole repo
+alwaysApply: true
+---
+
+# Security checklist — apply to every change, not just "security work"
+
+- **Tenant isolation first.** Any query/mutation on a tenant-owned entity must resolve the
+  organization from server-trusted context (JWT claim via `ICurrentUserContext`), never
+  from a client-supplied id, and must verify ownership after loading by id. See
+  `000-general.mdc`. This is the most common way a bug becomes a data leak here.
+- **Secrets never go in a committed file.** No JWT keys, connection strings with
+  credentials, or API keys in `appsettings*.json`, `.env` files that are tracked, or
+  frontend source. Use `dotnet user-secrets` / environment variables / a secret manager.
+  A hardcoded secret found in a tracked file is an incident — flag it, don't just move on.
+- **Never log secrets, tokens, or full bodies containing PII.** Keep error responses
+  generic outside Development (see `GlobalExceptionMiddleware`'s existing behavior) — the
+  client gets an error code and trace id, not the exception message, in production.
+- **Validate on both sides.** Client-side schema validation is UX only; the
+  FluentValidation validator on the API is the actual security boundary. Never skip or
+  weaken the server-side validator because the client already checks it.
+- **XSS is high severity here**, because auth tokens sit in a JS-readable cookie, not
+  httpOnly — successful XSS means account takeover. No `v-html`/`innerHTML` with
+  unsanitized user content, no dynamically constructed URLs from user input, no `eval`.
+- **SQL/queries stay parameterized.** EF Core LINQ / parameterized APIs only — never
+  string-concatenate user input into a query.
+- **New endpoints require an explicit authorization policy** (module + action-level).
+  An endpoint reachable by any authenticated user should be a stated, deliberate choice,
+  not an oversight from a missing `[Authorize(Policy = ...)]`.
+- **Don't loosen security behavior to make local debugging easier** (CORS, JWT
+  validation parameters, exception detail exposure) without reverting before commit —
+  and say so explicitly if you touch any of these, even temporarily.

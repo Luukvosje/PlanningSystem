@@ -1,0 +1,45 @@
+---
+description: Conventions for the .NET backend (Api, Application, Domain, Infrastructure)
+globs:
+  - "Planning.Api/**/*.cs"
+  - "Planning.Application/**/*.cs"
+  - "Planning.Domain/**/*.cs"
+  - "Planning.Infrastructure/**/*.cs"
+alwaysApply: false
+---
+
+# Backend conventions
+
+- **Result pattern, not exceptions, for expected failures.** Application services return
+  `Result` / `Result<T>` (`Success`, `Failure(message, errorCode)`). Reserve thrown
+  exceptions for domain invariant violations (caught as `ArgumentException` at the
+  service boundary) and truly unexpected failures (caught by `GlobalExceptionMiddleware`).
+- **FluentValidation** validates every request DTO. Register a validator in DI for any
+  new request type; controllers run it via `ApiControllerBase.ValidateAndExecuteAsync`.
+  Don't hand-roll null/range checks in the controller.
+- **Authorization policies, not bare `[Authorize]`.** Controllers declare a module policy
+  (e.g. `RequirePlanningModule`); mutating actions add an action policy (e.g.
+  `CanManagePlanning`). A new mutating endpoint with no explicit policy is a red flag —
+  surface it instead of shipping it silently.
+- Domain entities: private setters, static `Create(...)` factory method, mutation methods
+  (`Update`, `Move`, `Confirm`, ...) that validate invariants and throw `ArgumentException`
+  on violation. Keep this logic in the entity, not duplicated in the service.
+- Multi-tenancy ownership checks are mandatory on every tenant-entity query/mutation — see
+  `000-general.mdc`.
+- Async all the way through; always accept and pass `CancellationToken`.
+- Match the surrounding file's style (DTO shape, naming) rather than introducing a new
+  pattern in a single file.
+
+## Security specifics for this layer
+
+- Never put secrets (JWT signing key, connection strings with credentials, API keys) in
+  `appsettings.json` or any committed file — use `dotnet user-secrets`, environment
+  variables, or a secret manager. `appsettings.Development.json`/`appsettings.json` are
+  tracked in git in this repo; treat any real secret found there as an incident, not a
+  config detail.
+- EF Core queries stay parameterized (LINQ / `DbContext` APIs). Never build SQL via string
+  concatenation with user input.
+- `GlobalExceptionMiddleware` only exposes exception details in Development — don't widen
+  that when debugging, and don't log secrets/PII in exception handlers.
+- New endpoints need an explicit authorization policy (module + action) unless they are
+  genuinely meant to be open to any authenticated user, which should be a stated decision.

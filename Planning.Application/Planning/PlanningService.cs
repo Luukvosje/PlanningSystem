@@ -161,6 +161,29 @@ public class PlanningService : IPlanningService
         }
     }
 
+    public async Task<Result<PlanningResponse>> ConfirmAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var planningRecord = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
+
+        if (planningRecord is null || !BelongsToCurrentOrganization(planningRecord))
+        {
+            return Result<PlanningResponse>.Failure("Planning record not found.", "NOT_FOUND");
+        }
+
+        try
+        {
+            planningRecord.Confirm(DateTime.UtcNow);
+            await _planningRecordRepository.UpdateAsync(planningRecord, cancellationToken);
+            return await BuildSingleResponseAsync(planningRecord, cancellationToken);
+        }
+        catch (ArgumentException ex)
+        {
+            return Result<PlanningResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+        }
+    }
+
     public async Task<Result<PlanningResponse>> DuplicateAsync(
         Guid id,
         DuplicatePlanningRequest request,
