@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import type { PlanningRowLayout } from '~/utils/planning/boardPreferences'
+import type { PlanningRowLayout } from '~/utils/planning/boardPreferences';
 
-const model = defineModel<PlanningRowLayout>()
+const model = defineModel<PlanningRowLayout>();
+const { t } = useI18n();
 
-const options: { value: PlanningRowLayout; label: string; icon: string }[] = [
-	{ value: 'compact', label: 'Compact', icon: 'i-lucide-align-justify' },
-	{ value: 'spacious', label: 'Ruim', icon: 'i-lucide-layout-list' },
-]
+const options = computed<{ value: PlanningRowLayout, label: string, icon: string }[]>(() => [
+	{ value: 'compact', label: t('planning.settings.layoutCompact'), icon: 'i-lucide-align-justify' },
+	{ value: 'spacious', label: t('planning.settings.layoutSpacious'), icon: 'i-lucide-layout-list' },
+]);
 </script>
 
 <template>

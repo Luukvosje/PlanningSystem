@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { PlanningRecord } from '~/types/planning';
-import { CONCEPT_BLOCK_STYLE, formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils';
+import { CONCEPT_BLOCK_STYLE, formatTimeRange, getBlockColor, getIntlLocale } from '~/utils/planning/dateUtils';
 
 const props = withDefaults(defineProps<{
   shift: PlanningRecord
@@ -14,18 +14,20 @@ const props = withDefaults(defineProps<{
 
 const isConcept = computed(() => props.shift.status === 'Planned');
 const blockColor = computed(() =>
-  isConcept.value
-    ? CONCEPT_BLOCK_STYLE.backgroundColor
-    : getBlockColor(props.shift.color, props.shift.status),
+  isConcept.value ?
+    CONCEPT_BLOCK_STYLE.backgroundColor :
+    getBlockColor(props.shift.color, props.shift.status),
 );
 
 const blockStyle = computed(() =>
-  isConcept.value
-    ? { ...CONCEPT_BLOCK_STYLE, color: '#fff' }
-    : { backgroundColor: blockColor.value, color: '#fff' },
+  isConcept.value ?
+    { ...CONCEPT_BLOCK_STYLE, color: '#fff' } :
+    { backgroundColor: blockColor.value, color: '#fff' },
 );
 
-const timeLabel = computed(() => formatTimeRange(props.shift.startUtc, props.shift.endUtc));
+const { t, locale } = useI18n();
+const intlLocale = computed(() => getIntlLocale(locale.value));
+const timeLabel = computed(() => formatTimeRange(props.shift.startUtc, props.shift.endUtc, intlLocale.value));
 </script>
 
 <template>
@@ -35,7 +37,7 @@ const timeLabel = computed(() => formatTimeRange(props.shift.startUtc, props.shi
 		:style="blockStyle"
 	>
 		<p class="truncate text-sm font-semibold leading-tight text-white">
-			{{ shift.title || 'Dienst' }}
+			{{ shift.title || t('planning.shift') }}
 		</p>
 		<p class="mt-0.5 truncate text-xs leading-tight text-white/90 tabular-nums">
 			{{ timeLabel }}
@@ -86,7 +88,7 @@ const timeLabel = computed(() => formatTimeRange(props.shift.startUtc, props.shi
 					v-if="shift.notes"
 					class="text-xs text-muted leading-snug"
 				>
-					<span class="font-medium text-default">Notitie:</span>
+					<span class="font-medium text-default">{{ t('dashboard.note') }}:</span>
 					{{ shift.notes }}
 				</p>
 			</div>

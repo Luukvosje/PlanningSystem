@@ -4,6 +4,7 @@ import { getPlanningList } from '~/utils/planningClient';
 import { queryKeys } from '~/utils/queryKeys';
 import {
   addDays,
+  getIntlLocale,
   getMonday,
   isToday,
   toDateKey,
@@ -32,6 +33,8 @@ function pickDefaultDayKey(days: MyPlanningDay[]): string {
 
 export function useMyPlanningView() {
   const auth = useAuthStore();
+  const { locale } = useI18n();
+  const intlLocale = computed(() => getIntlLocale(locale.value));
 
   const weekStart = ref(getMonday(new Date()));
   const selectedDateKey = ref('');
@@ -111,7 +114,7 @@ export function useMyPlanningView() {
 
   const weekRangeLabel = computed(() => {
     const lastDay = addDays(weekStart.value, 6);
-    return formatWeekDateRange(weekStart.value, lastDay);
+    return formatWeekDateRange(weekStart.value, lastDay, intlLocale.value);
   });
 
   const isCurrentWeek = computed(

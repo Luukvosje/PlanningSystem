@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { MyPlanningDay } from '~/composables/planning/useMyPlanningView';
-import { formatAgendaDayHeader } from '~/utils/planning/dateUtils';
+import { formatAgendaDayHeader, getIntlLocale } from '~/utils/planning/dateUtils';
+
+const { t, locale } = useI18n();
+const intlLocale = computed(() => getIntlLocale(locale.value));
 
 const props = withDefaults(defineProps<{
   day?: MyPlanningDay | null
@@ -20,10 +23,12 @@ const shiftCountLabel = computed(() => {
   }
 
   if (!props.day.hasShifts) {
-    return 'Geen diensten';
+    return t('planning.noShifts');
   }
 
-  return `${props.day.shifts.length} ${props.day.shifts.length === 1 ? 'dienst' : 'diensten'}`;
+  return props.day.shifts.length === 1 ?
+    t('planning.shiftCountSingular', { count: props.day.shifts.length }) :
+    t('planning.shiftCountPlural', { count: props.day.shifts.length });
 });
 </script>
 
@@ -87,7 +92,7 @@ const shiftCountLabel = computed(() => {
 					class="w-full truncate text-center text-xs font-semibold uppercase tracking-wide text-muted"
 					:class="day.isToday ? 'text-secondary' : ''"
 				>
-					{{ formatAgendaDayHeader(day.date) }}
+					{{ formatAgendaDayHeader(day.date, intlLocale) }}
 				</p>
 			</div>
 
@@ -102,7 +107,7 @@ const shiftCountLabel = computed(() => {
 						class="truncate text-sm font-semibold tracking-wide uppercase"
 						:class="day.hasShifts ? 'text-default' : 'text-muted'"
 					>
-						{{ formatAgendaDayHeader(day.date) }}
+						{{ formatAgendaDayHeader(day.date, intlLocale) }}
 					</p>
 					<p class="mt-1 truncate text-xs text-muted">
 						{{ shiftCountLabel }}
@@ -114,7 +119,7 @@ const shiftCountLabel = computed(() => {
 					color="secondary"
 					variant="subtle"
 					size="sm"
-					label="Vandaag"
+					:label="t('dashboard.today')"
 					class="shrink-0"
 				/>
 			</div>
@@ -144,7 +149,7 @@ const shiftCountLabel = computed(() => {
 						class="size-8 text-muted"
 					/>
 					<p class="text-sm text-muted">
-						Geen dienst gepland
+						{{ t('planning.noShiftPlanned') }}
 					</p>
 				</div>
 			</div>

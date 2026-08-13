@@ -7,6 +7,16 @@ const auth = useAuthStore();
 const toast = useToast();
 const queryClient = useQueryClient();
 const route = useRoute();
+const { t, locale, setLocale } = useI18n();
+
+const languageOptions = [
+  { code: 'nl' as const, label: 'Nederlands', icon: 'i-circle-flags-nl' },
+  { code: 'en' as const, label: 'English', icon: 'i-circle-flags-gb' },
+];
+
+const currentLanguageIcon = computed(() =>
+  languageOptions.find((option) => option.code === locale.value)?.icon ?? languageOptions[0].icon,
+);
 
 const sidebarOpen = useLocalStorage('sidebar-open', true);
 const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -20,7 +30,7 @@ defineShortcuts({
 });
 
 const sidebarToggleLabel = computed(() =>
-  sidebarOpen.value ? 'Navigatie verbergen' : 'Navigatie tonen',
+  sidebarOpen.value ? t('layout.toggleSidebarHide') : t('layout.toggleSidebarShow'),
 );
 
 function closeMobileSidebar() {
@@ -60,7 +70,7 @@ watch(currentUser, (user) => {
 
 const organizationOptions = computed(() =>
   (organizations.value ?? []).map((org) => ({
-    label: org.organizationName ?? 'Onbekend',
+    label: org.organizationName ?? t('common.unknown'),
     value: org.organizationId ?? '',
   })),
 );
@@ -80,7 +90,7 @@ async function switchOrganization(orgId: string) {
   try {
     auth.selectOrganization(orgId);
     await invalidateOrgScopedQueries(queryClient);
-    toast.add({ title: 'Organisatie gewisseld', color: 'success' });
+    toast.add({ title: t('layout.organizationSwitched'), color: 'success' });
   } catch (error) {
     const { message } = useApiError(error);
     toast.add({ title: message.value, color: 'error' });
@@ -90,7 +100,7 @@ async function switchOrganization(orgId: string) {
 const userLabel = computed(() => {
   const user = auth.currentUser;
   if (!user) {
-    return 'Account';
+    return t('common.account');
   }
 
   return `${user.firstName} ${user.lastName}`;
@@ -108,14 +118,27 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
-      label: 'Instellingen',
+      label: t('nav.settings'),
       icon: 'i-lucide-settings',
       to: '/settings',
     },
   ],
   [
     {
-      label: 'Uitloggen',
+      label: t('layout.userMenu.language'),
+      icon: currentLanguageIcon.value,
+      children: languageOptions.map((option) => ({
+        label: option.label,
+        icon: option.icon,
+        type: 'checkbox' as const,
+        checked: locale.value === option.code,
+        onSelect: () => setLocale(option.code),
+      })),
+    },
+  ],
+  [
+    {
+      label: t('layout.userMenu.logout'),
       icon: 'i-lucide-log-out',
       color: 'error',
       onSelect: onLogout,
@@ -213,7 +236,7 @@ const userMenuContent = computed(() => ({
 							square
 							size="md"
 							class="data-[state=open]:bg-elevated"
-							aria-label="Account"
+							:aria-label="t('common.account')"
 						/>
 					</UDropdownMenu>
 				</div>
@@ -252,7 +275,7 @@ const userMenuContent = computed(() => ({
 							v-model="selectedOrganizationId"
 							:items="organizationOptions"
 							icon="i-lucide-building-2"
-							placeholder="Organisatie"
+							:placeholder="t('nav.organization')"
 							class="w-full"
 							size="sm"
 						/>
@@ -306,7 +329,7 @@ const userMenuContent = computed(() => ({
 					v-model="selectedOrganizationId"
 					:items="organizationOptions"
 					icon="i-lucide-building-2"
-					placeholder="Organisatie"
+					:placeholder="t('nav.organization')"
 					class="w-full"
 					size="sm"
 				/>
@@ -339,7 +362,7 @@ const userMenuContent = computed(() => ({
 					variant="ghost"
 					class="lg:hidden"
 					size="sm"
-					aria-label="Toggle sidebar"
+					:aria-label="t('layout.toggleSidebarMobile')"
 					@click="toggleSidebar"
 				/>
 				<UIcon
@@ -363,11 +386,11 @@ const userMenuContent = computed(() => ({
 					v-if="auth.isAuthenticated && !auth.hasOrganization"
 					color="warning"
 					variant="subtle"
-					title="Geen organisatie gekoppeld"
-					description="Maak een organisatie aan of vul een uitnodigingscode in."
+					:title="t('layout.noOrganizationAlert.title')"
+					:description="t('layout.noOrganizationAlert.description')"
 					:actions="[
-						{ label: 'Organisatie aanmaken', to: '/organizations/new' },
-						{ label: 'Code invullen', to: '/join', variant: 'outline' },
+						{ label: t('layout.noOrganizationAlert.createOrganization'), to: '/organizations/new' },
+						{ label: t('layout.noOrganizationAlert.enterCode'), to: '/join', variant: 'outline' },
 					]"
 					class="mb-4 shrink-0 max-lg:mb-3"
 				/>

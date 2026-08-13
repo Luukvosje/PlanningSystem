@@ -1,59 +1,70 @@
-import { z } from 'zod'
+import { z } from 'zod';
+import type { Composer } from 'vue-i18n';
 
-export const loginCredentialsSchema = z.object({
-  email: z
-    .string()
-    .min(1, 'E-mail is verplicht')
-    .email('Ongeldig e-mailadres')
-    .max(320, 'E-mailadres is te lang'),
-  password: z
-    .string()
-    .min(1, 'Wachtwoord is verplicht')
-    .max(128, 'Wachtwoord is te lang'),
-})
+type Translate = Composer['t']
 
-export const selectOrganizationSchema = z.object({
-  organizationId: z.string().min(1, 'Selecteer een organisatie'),
-})
+export function createLoginCredentialsSchema(t: Translate) {
+  return z.object({
+    email: z
+      .string()
+      .min(1, t('validation.email.required'))
+      .email(t('validation.email.invalid'))
+      .max(320, t('validation.email.tooLong')),
+    password: z
+      .string()
+      .min(1, t('validation.password.required'))
+      .max(128, t('validation.password.tooLong')),
+  });
+}
 
-export const registerSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, 'Voornaam is verplicht')
-    .max(100, 'Voornaam is te lang'),
-  lastName: z
-    .string()
-    .min(1, 'Achternaam is verplicht')
-    .max(100, 'Achternaam is te lang'),
-  email: z
-    .string()
-    .min(1, 'E-mail is verplicht')
-    .email('Ongeldig e-mailadres')
-    .max(320, 'E-mailadres is te lang'),
-  password: z
-    .string()
-    .min(8, 'Minimaal 8 tekens')
-    .max(128, 'Wachtwoord is te lang'),
-})
+export function createSelectOrganizationSchema(t: Translate) {
+  return z.object({
+    organizationId: z.string().min(1, t('validation.organization.required')),
+  });
+}
 
-export type LoginCredentialsSchema = z.infer<typeof loginCredentialsSchema>
-export type SelectOrganizationSchema = z.infer<typeof selectOrganizationSchema>
-export type RegisterSchema = z.infer<typeof registerSchema>
+export function createRegisterSchema(t: Translate) {
+  return z.object({
+    firstName: z
+      .string()
+      .min(1, t('validation.firstName.required'))
+      .max(100, t('validation.firstName.tooLong')),
+    lastName: z
+      .string()
+      .min(1, t('validation.lastName.required'))
+      .max(100, t('validation.lastName.tooLong')),
+    email: z
+      .string()
+      .min(1, t('validation.email.required'))
+      .email(t('validation.email.invalid'))
+      .max(320, t('validation.email.tooLong')),
+    password: z
+      .string()
+      .min(8, t('validation.password.minLength'))
+      .max(128, t('validation.password.tooLong')),
+  });
+}
 
-export const updateProfileSchema = z.object({
-  firstName: z
-    .string()
-    .min(1, 'Voornaam is verplicht')
-    .max(100, 'Voornaam is te lang'),
-  lastName: z
-    .string()
-    .min(1, 'Achternaam is verplicht')
-    .max(100, 'Achternaam is te lang'),
-  email: z
-    .string()
-    .min(1, 'E-mail is verplicht')
-    .email('Ongeldig e-mailadres')
-    .max(320, 'E-mailadres is te lang'),
-})
+export type LoginCredentialsSchema = z.infer<ReturnType<typeof createLoginCredentialsSchema>>
+export type SelectOrganizationSchema = z.infer<ReturnType<typeof createSelectOrganizationSchema>>
+export type RegisterSchema = z.infer<ReturnType<typeof createRegisterSchema>>
 
-export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>
+export function createUpdateProfileSchema(t: Translate) {
+  return z.object({
+    firstName: z
+      .string()
+      .min(1, t('validation.firstName.required'))
+      .max(100, t('validation.firstName.tooLong')),
+    lastName: z
+      .string()
+      .min(1, t('validation.lastName.required'))
+      .max(100, t('validation.lastName.tooLong')),
+    email: z
+      .string()
+      .min(1, t('validation.email.required'))
+      .email(t('validation.email.invalid'))
+      .max(320, t('validation.email.tooLong')),
+  });
+}
+
+export type UpdateProfileSchema = z.infer<ReturnType<typeof createUpdateProfileSchema>>

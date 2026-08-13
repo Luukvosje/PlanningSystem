@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MyPlanningDay } from '~/composables/planning/useMyPlanningView';
-import { formatCompactDayHeader } from '~/utils/planning/dateUtils';
+import { formatCompactDayHeader, getIntlLocale } from '~/utils/planning/dateUtils';
 
 const props = defineProps<{
   days: MyPlanningDay[]
@@ -11,9 +11,12 @@ const emit = defineEmits<{
   selectDay: [dateKey: string]
 }>();
 
+const { t, locale } = useI18n();
+const intlLocale = computed(() => getIntlLocale(locale.value));
+
 const dayItems = computed(() =>
   props.days.map((day) => {
-    const header = formatCompactDayHeader(day.date);
+    const header = formatCompactDayHeader(day.date, intlLocale.value);
     return {
       day,
       weekday: header.weekday,
@@ -35,7 +38,7 @@ function dayButtonClass(day: MyPlanningDay, selected: boolean) {
 	<div
 		class="grid grid-cols-7 divide-x divide-default"
 		role="tablist"
-		aria-label="Dagen van de week"
+		:aria-label="t('planning.daysOfWeek')"
 	>
 		<button
 			v-for="{ day, weekday, dayNumber, selected } in dayItems"

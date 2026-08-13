@@ -2,14 +2,15 @@
 definePageMeta({ layout: 'default' });
 
 const auth = useAuthStore();
+const { t } = useI18n();
 
 onMounted(() => auth.fetchMe());
 
 const { data: users, isLoading } = useUsers();
 
 const teamCount = computed(() => users.value?.length ?? 0);
-const organizationName = computed(() => auth.currentUser?.organizationName ?? 'Onbekend');
-const roleLabel = computed(() => getRoleLabel(auth.currentUser?.role));
+const organizationName = computed(() => auth.currentUser?.organizationName ?? t('common.unknown'));
+const roleLabel = computed(() => getRoleLabel(auth.currentUser?.role, t));
 const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 </script>
 
@@ -17,7 +18,7 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 	<LayoutPageContainer>
 		<LayoutPageHeader
 			title="Dashboard"
-			:subtitle="`Overzicht van ${organizationName}`"
+			:subtitle="t('dashboard.overview', { organization: organizationName })"
 		/>
 
 		<div class="flex flex-col gap-4 p-4 max-lg:p-2">
@@ -28,7 +29,7 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 					<div class="flex items-start justify-between">
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
-								Organisatie
+								{{ t('nav.organization') }}
 							</p>
 							<p class="mt-2 text-lg font-semibold">
 								{{ organizationName }}
@@ -40,12 +41,12 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 						/>
 					</div>
 				</UCard>
-			
+
 				<UCard :ui="{ body: 'p-6' }">
 					<div class="flex items-start justify-between">
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
-								Teamleden
+								{{ t('dashboard.teamMembers') }}
 							</p>
 							<p class="mt-2 text-lg font-semibold">
 								<UIcon
@@ -67,7 +68,7 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 					<div class="flex items-start justify-between">
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
-								Jouw rol
+								{{ t('dashboard.yourRole') }}
 							</p>
 							<p class="mt-2 text-lg font-semibold">
 								{{ roleLabel }}
@@ -85,10 +86,10 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 				<UCard>
 					<template #header>
 						<h2 class="font-semibold">
-							Snel naar
+							{{ t('dashboard.quickLinks') }}
 						</h2>
 					</template>
-				
+
 					<div class="flex flex-col gap-2">
 						<UButton
 							to="/planning"
@@ -96,7 +97,7 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 							icon="i-lucide-calendar-range"
 							block
 						>
-							Bekijk planning
+							{{ t('dashboard.viewPlanning') }}
 						</UButton>
 						<UButton
 							v-if="canManageOrganization(auth.currentUser?.role)"
@@ -105,20 +106,20 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 							icon="i-lucide-users"
 							block
 						>
-							Team bekijken
+							{{ t('dashboard.viewTeam') }}
 						</UButton>
 					</div>
 				</UCard>
-		
+
 				<UCard>
 					<template #header>
 						<h2 class="font-semibold">
-							Vandaag
+							{{ t('dashboard.today') }}
 						</h2>
 					</template>
 
 					<p class="text-sm text-muted">
-						Welkom terug. Gebruik de planning om taken voor deze week te bekijken{{ canManage ? ' en beheren' : '' }}.
+						{{ canManage ? t('dashboard.welcomeBackManage') : t('dashboard.welcomeBack') }}
 					</p>
 				</UCard>
 			</div>

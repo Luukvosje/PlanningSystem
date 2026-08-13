@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useQueryClient } from '@tanstack/vue-query';
 import InvitesCodeInput from '~/components/invites/CodeInput.vue';
-import { acceptInviteSchema } from '~/schemas/invite.schema';
+import { createAcceptInviteSchema } from '~/schemas/invite.schema';
 
 definePageMeta({ layout: 'auth' });
 
@@ -13,7 +13,9 @@ const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 const queryClient = useQueryClient();
+const { t } = useI18n();
 
+const acceptInviteSchema = createAcceptInviteSchema(t);
 const initialCode = ((route.query.code as string) ?? '').toUpperCase();
 
 const joinForm = useForm({
@@ -22,13 +24,13 @@ const joinForm = useForm({
   controls: [
     {
       name: 'code',
-      label: 'Uitnodigingscode',
+      label: t('invites.code'),
       required: true,
       component: InvitesCodeInput,
     },
   ],
   submit: computed(() => ({
-    label: auth.isAuthenticated ? 'Deelnemen' : 'Inloggen om deel te nemen',
+    label: auth.isAuthenticated ? t('invites.join') : t('invites.loginToJoin'),
     block: true,
   })),
   onSubmit: async (data) => {
@@ -42,7 +44,7 @@ const joinForm = useForm({
     await auth.fetchMe();
     await queryClient.invalidateQueries();
 
-    toast.add({ title: 'Uitnodiging geaccepteerd', color: 'success' });
+    toast.add({ title: t('invites.accepted'), color: 'success' });
     await router.push('/users');
   },
 });
@@ -56,10 +58,10 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 	<UCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
 			<h1 class="text-xl font-semibold">
-				Uitnodiging accepteren
+				{{ t('invites.acceptTitle') }}
 			</h1>
 			<p class="text-sm text-muted mt-1">
-				Vul de code in die je van je organisator hebt ontvangen.
+				{{ t('invites.acceptDescription') }}
 			</p>
 		</template>
 
@@ -74,7 +76,7 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 						class="py-2"
 					>
 						<UiLoadingIndicator
-							label="Code controleren..."
+							:label="t('invites.checkingCode')"
 							size="sm"
 						/>
 					</div>
@@ -82,10 +84,10 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 						v-else-if="preview"
 						:color="preview.isValid ? 'info' : 'warning'"
 						variant="subtle"
-						:title="preview.organizationName ?? 'Organisatie'"
+						:title="preview.organizationName ?? t('nav.organization')"
 						:description="preview.isValid
-							? 'Je wordt toegevoegd aan deze organisatie als medewerker'
-							: 'Deze code is verlopen of al gebruikt'"
+							? t('invites.previewValid')
+							: t('invites.previewInvalid')"
 					/>
 				</div>
 			</template>
@@ -93,12 +95,12 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 
 		<template #footer>
 			<p class="text-sm text-muted text-center">
-				Nog geen account?
+				{{ t('auth.noAccountYet') }}
 				<NuxtLink
 					:to="{ path: '/register', query: { redirect: '/join', code: joinForm.state.code } }"
 					class="text-primary font-medium"
 				>
-					Registreren
+					{{ t('auth.register') }}
 				</NuxtLink>
 			</p>
 		</template>

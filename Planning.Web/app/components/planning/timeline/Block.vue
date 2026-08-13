@@ -2,7 +2,7 @@
 import type { PlanningRecord } from '~/types/planning';
 import type { UnavailablePeriod } from '~/types/availability';
 import { useElementBounding } from '@vueuse/core';
-import { CONCEPT_BLOCK_STYLE, formatTimeRange, getBlockColor } from '~/utils/planning/dateUtils';
+import { CONCEPT_BLOCK_STYLE, formatTimeRange, getBlockColor, getIntlLocale } from '~/utils/planning/dateUtils';
 
 const props = defineProps<{
   record: PlanningRecord
@@ -12,6 +12,8 @@ const props = defineProps<{
   availabilityPeriods?: UnavailablePeriod[]
 }>();
 
+const { t, locale } = useI18n();
+const intlLocale = computed(() => getIntlLocale(locale.value));
 const store = usePlanningStore();
 const { canManage } = usePlanningPermissions();
 const { data: users } = useUsers();
@@ -25,9 +27,9 @@ const headerHeight = inject<Ref<number>>('timelineHeaderHeight', ref(0));
 
 const isConcept = computed(() => props.record.status === 'Planned');
 const blockColor = computed(() =>
-  isConcept.value
-    ? CONCEPT_BLOCK_STYLE.backgroundColor
-    : getBlockColor(props.record.color, props.record.status),
+  isConcept.value ?
+    CONCEPT_BLOCK_STYLE.backgroundColor :
+    getBlockColor(props.record.color, props.record.status),
 );
 const availabilityWarning = computed(() => checkRecord(props.record));
 const isDragging = computed(() => draggingId.value === props.record.id);
@@ -41,7 +43,7 @@ const tooltipDisabled = computed(() =>
   !!resizingId.value,
 );
 const interactionHint = computed(() =>
-  canManage.value ? 'Klik om te bewerken' : 'Klik om te openen',
+  canManage.value ? t('planning.clickToEdit') : t('planning.clickToOpen'),
 );
 
 const blockRef = ref<HTMLElement | null>(null);
@@ -178,7 +180,7 @@ function onContextMenu(event: MouseEvent) {
 				v-if="availabilityWarning.hasConflict"
 				class="absolute top-0.5 right-0.5 z-20 pointer-events-none"
 				:class="store.showBlockColor ? 'text-amber-200' : 'text-amber-500'"
-				title="Niet beschikbaar"
+				:title="t('availability.unavailable')"
 			>
 				<UIcon
 					name="i-lucide-triangle-alert"
@@ -231,7 +233,7 @@ function onContextMenu(event: MouseEvent) {
 				v-if="displayLayout.widthPx > 80"
 				class="min-w-0 text-[10px] leading-tight opacity-75 truncate shrink-0"
 			>
-				{{ formatTimeRange(record.startUtc, record.endUtc) }}
+				{{ formatTimeRange(record.startUtc, record.endUtc, intlLocale) }}
 			</p>
 
 			<!-- Spacious-only: klant + beschrijving -->

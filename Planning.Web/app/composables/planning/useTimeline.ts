@@ -32,6 +32,7 @@ import {
   addDays,
   formatCompactDayHeader,
   formatDayHeader,
+  getIntlLocale,
   getMonday,
   startOfMonth,
 } from '~/utils/planning/dateUtils';
@@ -68,17 +69,15 @@ export interface TimelinePeriodHeader {
 /** @deprecated Prefer TimelinePeriodHeader */
 export type TimelineWeekHeader = TimelinePeriodHeader
 
-const monthLabelFormatter = new Intl.DateTimeFormat('nl-NL', {
-  month: 'long',
-  year: 'numeric',
-});
-
 function monthKeyForDate(date: Date): string {
   return startOfMonth(date).toISOString();
 }
 
-function formatMonthLabel(date: Date): string {
-  return monthLabelFormatter.format(date);
+function formatMonthLabel(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
 }
 
 function groupDaysByKey(
@@ -98,6 +97,7 @@ function groupDaysByKey(
 function buildWeekPeriodHeaders(
   dayGroups: Map<string, TimelineDayHeader[]>,
   primaryBorder: ReturnType<typeof getPrimaryBorderMode>,
+  locale: string,
 ): TimelinePeriodHeader[] {
   const entries = [...dayGroups.entries()];
   return entries.map(([, days], index) => {
@@ -112,7 +112,7 @@ function buildWeekPeriodHeaders(
     return {
       key: days[0]!.weekKey,
       label: `Week ${getISOWeekNumber(startDate)}`,
-      dateRange: formatWeekDateRange(startDate, endDate),
+      dateRange: formatWeekDateRange(startDate, endDate, locale),
       left: days[0]!.left,
       width: days.reduce((total, day) => total + day.width, 0),
       isPrimaryBorderEnd,
@@ -122,12 +122,13 @@ function buildWeekPeriodHeaders(
 
 function buildMonthPeriodHeaders(
   dayGroups: Map<string, TimelineDayHeader[]>,
+  locale: string,
 ): TimelinePeriodHeader[] {
   return [...dayGroups.entries()].map(([, days]) => {
     const startDate = days[0]!.date;
     return {
       key: days[0]!.monthKey,
-      label: formatMonthLabel(startDate),
+      label: formatMonthLabel(startDate, locale),
       left: days[0]!.left,
       width: days.reduce((total, day) => total + day.width, 0),
       isPrimaryBorderEnd: true,
@@ -156,6 +157,8 @@ function getDayIndexForIso(utcIso: string, rangeStart: Date): number {
 
 export function useTimeline() {
   const store = usePlanningStore();
+  const { locale } = useI18n();
+  const intlLocale = computed(() => getIntlLocale(locale.value));
   const { importantWorkTimes, openingHours } = usePlanningSettings();
   const containerWidth = inject<Ref<number>>('timelineContainerWidth', ref(0));
   const rowRecords = inject<Ref<Map<string, PlanningRecord[]>>>('timelineRowRecords', ref(new Map()));
@@ -244,8 +247,8 @@ export function useTimeline() {
 
         const base: TimelineDayHeader = {
           date,
-          label: formatDayHeader(date),
-          compact: formatCompactDayHeader(date),
+          label: formatDayHeader(date, intlLocale.value),
+          compact: formatCompactDayHeader(date, intlLocale.value),
           left,
           width,
           isWeekend,
@@ -264,8 +267,8 @@ export function useTimeline() {
         return {
           ...base,
           window,
-          gridLines: getCompactTimelineGridLines(store.zoom, dayWidth.value, window, importantWorkTimes.value),
-          importantGridLines: getCompactImportantGridLines(dayWidth.value, window, importantWorkTimes.value),
+          gridLines: getCompactTimelineGridLines(store.zoom, dayWidth.value, window, importantWorkTimes.value, intlLocale.value),
+          importantGridLines: getCompactImportantGridLines(dayWidth.value, window, importantWorkTimes.value, intlLocale.value),
           isEmptyDay: dayRecords.length === 0,
         };
       })
@@ -285,11 +288,11 @@ export function useTimeline() {
   );
 
   const weekHeaders = computed(() =>
-    buildWeekPeriodHeaders(weekGroups.value, primaryBorder.value),
+    buildWeekPeriodHeaders(weekGroups.value, primaryBorder.value, intlLocale.value),
   );
 
   const monthHeaders = computed(() =>
-    buildMonthPeriodHeaders(monthGroups.value),
+    buildMonthPeriodHeaders(monthGroups.value, intlLocale.value),
   );
 
   const showPeriodHeaders = computed(() => periodMode.value !== null);
@@ -327,16 +330,16 @@ export function useTimeline() {
 
   const isZoomedOut = computed(() => isZoomedOutView(store.zoom, slotWidth.value));
 
-  const timeSlotMarkers = computed(() => getTimeSlotMarkers(store.zoom, dayWidth.value));
+  const timeSlotMarkers = computed(() => getTimeSlotMarkers(store.zoom, dayWidth.value, intlLocale.value));
 
-  const timelineGridLines = computed(() => getTimelineGridLines(store.zoom, dayWidth.value, importantWorkTimes.value));
+  const timelineGridLines = computed(() => getTimelineGridLines(store.zoom, dayWidth.value, importantWorkTimes.value, intlLocale.value));
 
   const importantGridLines = computed(() =>
-    getImportantGridLines(dayWidth.value, importantWorkTimes.value),
+    getImportantGridLines(dayWidth.value, importantWorkTimes.value, intlLocale.value),
   );
 
   /** Coarse vertical lines for calendar zoom levels (day / week / month). */
-  const coarseGridLines = computed(() => getCoarseGridLines(store.zoom, dayWidth.value));
+  const coarseGridLines = computed(() => getCoarseGridLines(store.zoom, dayWidth.value, intlLocale.value));
 
   const showTimeSlots = computed(() => showsTimeSlots(store.zoom));
 
@@ -349,7 +352,9 @@ export function useTimeline() {
       // Use precomputed left offset; weekend days snap to their left edge
       const dayLeft = dayLeftMap.value.get(dayKey) ?? 0;
       const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-      if (isWeekend) return dayLeft;
+      if (isWeekend) {
+return dayLeft;
+}
       const fracMs = new Date(utcIso).getTime() - day.getTime();
       const fracPx = (fracMs / (24 * 60 * 60 * 1000)) * dayWidth.value;
       return dayLeft + fracPx;
@@ -375,8 +380,12 @@ export function useTimeline() {
       for (const [key, left] of entries) {
         const date = new Date(key);
         const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-        if (isWeekend) continue;
-        if (left <= px) bestKey = key;
+        if (isWeekend) {
+continue;
+}
+        if (left <= px) {
+bestKey = key;
+}
       }
       const dayStart = new Date(bestKey);
       dayStart.setHours(0, 0, 0, 0);

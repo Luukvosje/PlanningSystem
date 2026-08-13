@@ -1,0 +1,396 @@
+{
+  "common": {
+    "unknown": "Onbekend",
+    "account": "Account",
+    "actions": {
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "delete": "Verwijderen",
+      "edit": "Bewerken",
+      "add": "Toevoegen",
+      "create": "Aanmaken",
+      "search": "Zoeken",
+      "confirm": "Bevestigen",
+      "close": "Sluiten"
+    },
+    "loading": "Laden...",
+    "colorMode": {
+      "group": "Kleurmodus",
+      "light": "Licht",
+      "lightMode": "Lichte modus",
+      "dark": "Donker",
+      "darkMode": "Donkere modus"
+    }
+  },
+  "nav": {
+    "menu": "Menu",
+    "dashboard": "Dashboard",
+    "planning": "Planning",
+    "timeline": "Tijdlijn",
+    "availability": "Beschikbaarheid",
+    "relations": "Relaties",
+    "customers": "Klanten",
+    "management": "Beheer",
+    "team": "Team",
+    "organization": "Organisatie",
+    "invites": "Uitnodigen",
+    "settings": "Instellingen"
+  },
+  "auth": {
+    "email": "E-mail",
+    "password": "Wachtwoord",
+    "login": "Inloggen",
+    "continue": "Doorgaan",
+    "noAccountYet": "Nog geen account?",
+    "register": "Registreren",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "accountCreated": "Account aangemaakt",
+    "accountCreatedDescription": "Je kunt nu inloggen.",
+    "createAccount": "Account aanmaken",
+    "alreadyHaveAccount": "Al een account?",
+    "landingTagline": "Plan je team eenvoudig en overzichtelijk."
+  },
+  "validation": {
+    "email": {
+      "required": "E-mail is verplicht",
+      "invalid": "Ongeldig e-mailadres",
+      "tooLong": "E-mailadres is te lang"
+    },
+    "password": {
+      "required": "Wachtwoord is verplicht",
+      "tooLong": "Wachtwoord is te lang",
+      "minLength": "Minimaal 8 tekens"
+    },
+    "organization": {
+      "required": "Selecteer een organisatie"
+    },
+    "firstName": {
+      "required": "Voornaam is verplicht",
+      "tooLong": "Voornaam is te lang"
+    },
+    "lastName": {
+      "required": "Achternaam is verplicht",
+      "tooLong": "Achternaam is te lang"
+    },
+    "inviteCode": {
+      "required": "Uitnodigingscode is verplicht",
+      "tooLong": "Uitnodigingscode is te lang"
+    },
+    "name": {
+      "required": "Naam is verplicht",
+      "tooLong": "Naam is te lang"
+    },
+    "address": {
+      "tooLong": "Adres is te lang"
+    }
+  },
+  "availability": {
+    "unavailable": "Niet beschikbaar",
+    "conflictMessage": "{name} is volgens zijn beschikbaarheid niet beschikbaar.",
+    "time": {
+      "allDay": "hele dag",
+      "until": "tot {end}",
+      "after": "na {start}"
+    },
+    "weekday": {
+      "monday": "maandag",
+      "tuesday": "dinsdag",
+      "wednesday": "woensdag",
+      "thursday": "donderdag",
+      "friday": "vrijdag",
+      "saturday": "zaterdag",
+      "sunday": "zondag"
+    },
+    "weekly": {
+      "allDay": "Iedere {day} niet beschikbaar",
+      "partial": "Iedere {day} {time}",
+      "range": "Iedere {day} {time} niet beschikbaar"
+    },
+    "pageDescription": "Je bent standaard beschikbaar. Voeg alleen blokkades of uitzonderingen toe wanneer je niet kunt werken.",
+    "timePreset": {
+      "wholeDay": "Hele dag",
+      "until": "Tot een tijdstip",
+      "after": "Vanaf een tijdstip",
+      "custom": "Eigen tijdsblok"
+    },
+    "editWeeklyRule": "Wekelijkse regel bewerken",
+    "editException": "Uitzondering bewerken",
+    "newWeeklyRule": "Wekelijkse blokkade",
+    "newException": "Eenmalige uitzondering",
+    "day": "Dag",
+    "date": "Datum",
+    "until": "Tot",
+    "from": "Vanaf",
+    "start": "Start",
+    "end": "Einde",
+    "reasonOptional": "Reden (optioneel)",
+    "reasonPlaceholder": "Bijv. vakantie, dokter",
+    "managingOther": "Je beheert de beschikbaarheid van een medewerker.",
+    "loading": "Beschikbaarheid laden...",
+    "weeklyBlocks": "Wekelijkse blokkades",
+    "weeklyBlocksDescription": "Vaste momenten waarop je niet beschikbaar bent.",
+    "noWeeklyBlocks": "Geen vaste blokkades. Je bent standaard beschikbaar.",
+    "oneTimeExceptions": "Eenmalige uitzonderingen",
+    "oneTimeExceptionsDescription": "Vakantie, afspraken of andere uitzonderingen op een datum.",
+    "noOneTimeExceptions": "Geen eenmalige uitzonderingen."
+  },
+  "customers": {
+    "loading": "Klanten laden...",
+    "loadingOne": "Klant laden...",
+    "searchPlaceholder": "Zoeken op naam, e-mail of adres...",
+    "empty": "Nog geen klanten.",
+    "emptyManage": "Nog geen klanten. Voeg je eerste klant toe.",
+    "add": "Klant toevoegen",
+    "noResults": "Geen klanten gevonden.",
+    "created": "Klant aangemaakt",
+    "updated": "Klant bijgewerkt",
+    "deleted": "Klant verwijderd",
+    "backToList": "Terug naar klanten",
+    "deleteTitle": "Klant verwijderen",
+    "deleteDescription": "Weet je zeker dat je deze klant wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "fields": {
+      "name": "Naam",
+      "email": "E-mail",
+      "address": "Adres"
+    },
+    "create": {
+      "title": "Nieuwe klant",
+      "description": "Voeg een klant toe aan je organisatie.",
+      "submit": "Klant aanmaken"
+    },
+    "edit": {
+      "title": "Klant bewerken",
+      "description": "Pas de gegevens van deze klant aan."
+    }
+  },
+  "invites": {
+    "code": "Uitnodigingscode",
+    "join": "Deelnemen",
+    "loginToJoin": "Inloggen om deel te nemen",
+    "accepted": "Uitnodiging geaccepteerd",
+    "acceptTitle": "Uitnodiging accepteren",
+    "acceptDescription": "Vul de code in die je van je organisator hebt ontvangen.",
+    "checkingCode": "Code controleren...",
+    "previewValid": "Je wordt toegevoegd aan deze organisatie als medewerker",
+    "previewInvalid": "Deze code is verlopen of al gebruikt",
+    "enterCode": "Uitnodigingscode invullen",
+    "codeCopied": "Code gekopieerd",
+    "validUntil": "Geldig tot {date}",
+    "copied": "Gekopieerd",
+    "copy": "Kopieer",
+    "codePlaceholder": "Bijv. AB12CD34",
+    "created": "Uitnodiging aangemaakt",
+    "create": {
+      "title": "Team uitnodigen",
+      "description": "Genereer een code en deel deze met je teamlid. De code is 24 uur geldig.",
+      "submit": "Code genereren"
+    }
+  },
+  "roles": {
+    "owner": "Eigenaar",
+    "admin": "Beheerder",
+    "planner": "Planner",
+    "employee": "Medewerker"
+  },
+  "dashboard": {
+    "overview": "Overzicht van {organization}",
+    "teamMembers": "Teamleden",
+    "yourRole": "Jouw rol",
+    "quickLinks": "Snel naar",
+    "viewPlanning": "Bekijk planning",
+    "viewTeam": "Team bekijken",
+    "today": "Vandaag",
+    "welcomeBack": "Welkom terug. Gebruik de planning om taken voor deze week te bekijken.",
+    "welcomeBackManage": "Welkom terug. Gebruik de planning om taken voor deze week te bekijken en beheren.",
+    "nextShift": "Volgende dienst",
+    "loadingShift": "Dienst laden...",
+    "note": "Notitie",
+    "noShiftsPlanned": "Geen geplande diensten",
+    "noShiftsPlannedDescription": "Er staan momenteel geen toekomstige diensten voor je ingepland."
+  },
+  "users": {
+    "roleUpdated": "Rol bijgewerkt",
+    "loading": "Team laden...",
+    "searchPlaceholder": "Zoeken op naam, e-mail, rol of status...",
+    "empty": "Nog geen teamleden. Nodig iemand uit via een code.",
+    "noResults": "Geen teamleden gevonden.",
+    "active": "Actief",
+    "inactive": "Inactief",
+    "columns": {
+      "name": "Naam",
+      "email": "E-mail",
+      "role": "Rol",
+      "status": "Status"
+    },
+    "backToList": "Terug naar team",
+    "loadingOne": "Teamlid laden...",
+    "modules": {
+      "title": "Modules",
+      "description": "Bepaal welke modules deze gebruiker mag gebruiken."
+    }
+  },
+  "planning": {
+    "status": {
+      "planned": "Gepland",
+      "confirmed": "Bevestigd",
+      "completed": "Afgerond",
+      "cancelled": "Geannuleerd"
+    },
+    "viewMode": {
+      "day": "Dag",
+      "week": "Week"
+    },
+    "withoutCustomer": "Zonder klant",
+    "duplicate": "Dupliceren",
+    "previousPeriod": "Vorige periode",
+    "nextPeriod": "Volgende periode",
+    "new": "Nieuw",
+    "employees": "Medewerkers",
+    "clearFilters": "Wis filters",
+    "overlap": "Overlap",
+    "saved": "Opgeslagen",
+    "bookingConfirmed": "Boeking bevestigd",
+    "chooseColor": "Kleur kiezen",
+    "color": "Kleur",
+    "sidebar": {
+      "createTitle": "Nieuwe planning",
+      "detailsTitle": "Planning details"
+    },
+    "fields": {
+      "title": "Titel",
+      "employee": "Medewerker",
+      "customer": "Klant",
+      "period": "Periode",
+      "description": "Beschrijving",
+      "notes": "Notities"
+    },
+    "zoom": {
+      "hour": "Uur",
+      "hourAbbreviation": "u",
+      "dayPart": "Dagdeel",
+      "day": "Dag",
+      "week": "Week",
+      "month": "Maand"
+    },
+    "settings": {
+      "view": "Weergave",
+      "snapToBlocks": "Uitlijnen op blokken",
+      "snapToBlocksDescription": "Sleep en vergroot blokken uitgelijnd op andere blokken",
+      "showAvailabilityDescription": "Toon wanneer medewerkers niet beschikbaar zijn",
+      "showConcepts": "Toon concepten",
+      "showConceptsDescription": "Toon geplande (niet-bevestigde) opdrachten",
+      "showBlockColor": "Toon blok kleur",
+      "showBlockColorDescription": "Gebruik aangepaste blok kleuren",
+      "showWeekends": "Toon weekeinden",
+      "showWeekendsDescription": "Markeer zaterdag en zondag",
+      "showFullDay": "Toon volledige dag",
+      "showFullDayDescription": "Toon alle uren, ook buiten openingstijden",
+      "layoutCompact": "Compact",
+      "layoutSpacious": "Ruim"
+    },
+    "loading": "Planning laden...",
+    "loadingShifts": "Diensten laden...",
+    "noShiftsToday": "Geen diensten op deze dag.",
+    "tooltip": {
+      "location": "Locatie",
+      "role": "Functie",
+      "project": "Project"
+    },
+    "noResourcesToDisplay": "Geen resources om weer te geven.",
+    "clickToEdit": "Klik om te bewerken",
+    "clickToOpen": "Klik om te openen",
+    "openShift": "Open dienst",
+    "noShifts": "Geen diensten",
+    "shiftCountSingular": "{count} dienst",
+    "shiftCountPlural": "{count} diensten",
+    "noShiftPlanned": "Geen dienst gepland",
+    "daysOfWeek": "Dagen van de week",
+    "previousWeek": "Vorige week",
+    "nextWeek": "Volgende week",
+    "thisWeek": "Deze week",
+    "shift": "Dienst"
+  },
+  "organizations": {
+    "loading": "Organisatie laden...",
+    "details": "Gegevens",
+    "manageDescription": "Beheer de gegevens van je organisatie.",
+    "created": "Organisatie aangemaakt",
+    "invited": "Uitgenodigd?",
+    "fields": {
+      "name": "Naam",
+      "email": "E-mail organisatie"
+    },
+    "create": {
+      "title": "Organisatie aanmaken",
+      "description": "Maak een nieuwe organisatie aan.",
+      "firstOrgDescription": "Maak je eerste organisatie aan om te beginnen met plannen."
+    },
+    "logo": {
+      "title": "Logo",
+      "alt": "Organisatielogo",
+      "constraints": "PNG, JPG, WebP of GIF. Maximaal 2 MB.",
+      "upload": "Logo uploaden"
+    },
+    "modules": {
+      "description": "Bepaal welke modules beschikbaar zijn voor de hele organisatie.",
+      "loading": "Modules laden...",
+      "adminAlwaysAccess": "Beheerders hebben altijd toegang tot alle beschikbare modules"
+    },
+    "planningSettings": {
+      "title": "Planninginstellingen",
+      "description": "Belangrijke werktijden en openingstijden voor de planningweergave.",
+      "loading": "Planninginstellingen laden...",
+      "importantTimes": "Belangrijke werktijden",
+      "importantTimesDescription": "Deze tijden worden benadrukt op de planning en gebruikt voor smart snap bij nieuwe diensten.",
+      "addTime": "Tijd toevoegen",
+      "openingHours": "Openingstijden",
+      "openingHoursDescription": "Uren buiten openingstijden worden subtiel donkerder weergegeven. Plannen blijft overal mogelijk.",
+      "save": "Planninginstellingen opslaan",
+      "preview": "Voorbeeld in de planning",
+      "previewDescription": "Belangrijke tijden worden als dikkere lijnen getoond. Bij het plannen van diensten wordt automatisch naar deze tijden gesnapt."
+    }
+  },
+  "settings": {
+    "description": "Beheer je persoonlijke gegevens.",
+    "loadingProfile": "Profiel laden...",
+    "profile": "Profiel"
+  },
+  "dateTimeRange": {
+    "day": "{count} dag",
+    "daysPlural": "{count} dagen",
+    "hours": "{count} uur",
+    "minutes": "{count} min",
+    "lessThanOneMinute": "< 1 min",
+    "endAfterStart": "Einde moet na de start liggen",
+    "multipleDays": "Meerdere dagen",
+    "start": "Start",
+    "end": "Einde",
+    "time": "Tijd",
+    "endBeforeStartSuggestion": "Eindtijd ligt vóór de starttijd. Wil je de volgende dag gebruiken?",
+    "plusOneDay": "+1 dag",
+    "today": "Vandaag",
+    "tomorrow": "Morgen"
+  },
+  "errors": {
+    "validationFailed": "Er zijn een of meer validatiefouten opgetreden.",
+    "unknown": "Onbekende fout",
+    "genericFormError": "Er is iets misgegaan. Probeer het later opnieuw."
+  },
+  "layout": {
+    "toggleSidebarShow": "Navigatie tonen",
+    "toggleSidebarHide": "Navigatie verbergen",
+    "toggleSidebarMobile": "Zijbalk in-/uitschakelen",
+    "organizationSwitched": "Organisatie gewisseld",
+    "userMenu": {
+      "language": "Taal",
+      "logout": "Uitloggen"
+    },
+    "noOrganizationAlert": {
+      "title": "Geen organisatie gekoppeld",
+      "description": "Maak een organisatie aan of vul een uitnodigingscode in.",
+      "createOrganization": "Organisatie aanmaken",
+      "enterCode": "Code invullen"
+    }
+  }
+}

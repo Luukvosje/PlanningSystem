@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { loginCredentialsSchema, selectOrganizationSchema } from '~/schemas/auth.schema';
+import { createLoginCredentialsSchema, createSelectOrganizationSchema } from '~/schemas/auth.schema';
 import type { OrganizationMembership } from '~/types/api-error';
 
 definePageMeta({ layout: 'auth' });
@@ -9,6 +9,10 @@ const FormView = resolveComponent('FormView');
 const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
+
+const loginCredentialsSchema = createLoginCredentialsSchema(t);
+const selectOrganizationSchema = createSelectOrganizationSchema(t);
 
 const memberships = ref<OrganizationMembership[]>([]);
 const showOrgPicker = ref(false);
@@ -27,20 +31,20 @@ const credentialsForm = useForm({
   controls: [
     {
       name: 'email',
-      label: 'E-mail',
+      label: t('auth.email'),
       type: 'email',
       required: true,
       props: { autocomplete: 'email' },
     },
     {
       name: 'password',
-      label: 'Wachtwoord',
+      label: t('auth.password'),
       type: 'password',
       required: true,
       props: { autocomplete: 'current-password' },
     },
   ],
-  submit: { label: 'Inloggen', block: true },
+  submit: { label: t('auth.login'), block: true },
   onSubmit: async (data) => {
     const result = await auth.login(data);
 
@@ -60,7 +64,7 @@ const credentialsForm = useForm({
 
 const orgOptions = computed(() =>
   memberships.value.map((m) => ({
-    label: m.organizationName ?? 'Onbekend',
+    label: m.organizationName ?? t('common.unknown'),
     value: m.organizationId,
   })),
 );
@@ -71,13 +75,13 @@ const orgForm = useForm({
   controls: computed(() => [
     {
       name: 'organizationId',
-      label: 'Organisatie',
+      label: t('nav.organization'),
       type: 'select',
       required: true,
       props: { items: orgOptions.value },
     },
   ]),
-  submit: { label: 'Doorgaan', block: true },
+  submit: { label: t('auth.continue'), block: true },
   onSubmit: async (data) => {
     await auth.selectOrganization(data.organizationId);
     await auth.fetchMe();
@@ -90,7 +94,7 @@ const orgForm = useForm({
 	<UCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
 			<h1 class="text-xl font-semibold">
-				Inloggen
+				{{ t('auth.login') }}
 			</h1>
 		</template>
 
@@ -108,12 +112,12 @@ const orgForm = useForm({
 
 		<template #footer>
 			<p class="text-sm text-muted text-center">
-				Nog geen account?
+				{{ t('auth.noAccountYet') }}
 				<NuxtLink
 					to="/register"
 					class="text-primary font-medium"
 				>
-					Registreren
+					{{ t('auth.register') }}
 				</NuxtLink>
 			</p>
 		</template>

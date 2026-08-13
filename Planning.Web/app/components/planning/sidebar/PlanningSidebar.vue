@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PlanningFormData } from '~/types/planning';
 
+const { t } = useI18n();
 const store = usePlanningStore();
 const { canManage, selectedRecord, createRecord, deleteRecord, duplicateRecord } = usePlanning();
 const api = usePlanningApi();
@@ -85,23 +86,23 @@ const customerOptions = computed(() => {
     list = list.filter((c) => c.id && store.filters.customerIds.includes(c.id));
   }
   return list.map((c) => ({
-    label: c.name ?? 'Onbekend',
+    label: c.name ?? t('common.unknown'),
     value: c.id!,
   }));
 });
 
-const baseStatusOptions = [
-  { label: 'Gepland', value: 'Planned' },
-  { label: 'Afgerond', value: 'Completed' },
-  { label: 'Geannuleerd', value: 'Cancelled' },
-];
+const baseStatusOptions = computed(() => [
+  { label: t('planning.status.planned'), value: 'Planned' },
+  { label: t('planning.status.completed'), value: 'Completed' },
+  { label: t('planning.status.cancelled'), value: 'Cancelled' },
+]);
 
-// 'Confirmed' wordt alleen bereikt via de Bevestigen-actie, niet via deze vrije lijst.
-// Als een record al bevestigd is blijft de optie zichtbaar zodat de huidige status klopt.
+// 'Confirmed' is only reached via the Confirm action, not via this free list.
+// If a record is already confirmed, the option stays visible so the current status is correct.
 const statusOptions = computed(() =>
   form.status === 'Confirmed' ?
-    [{ label: 'Bevestigd', value: 'Confirmed' }, ...baseStatusOptions] :
-    baseStatusOptions,
+    [{ label: t('planning.status.confirmed'), value: 'Confirmed' }, ...baseStatusOptions.value] :
+    baseStatusOptions.value,
 );
 
 const isSaving = ref(false);
@@ -190,7 +191,7 @@ return;
       endUtc: form.endUtc,
     });
     api.invalidatePlanning();
-    toast.add({ title: 'Opgeslagen', color: 'success' });
+    toast.add({ title: t('planning.saved'), color: 'success' });
   } catch (error) {
     const { message, validationErrors } = useApiError(error);
     errorMessage.value = message.value;
@@ -222,7 +223,7 @@ return;
 }
   try {
     await confirmMutation.mutateAsync(selectedRecord.value.id);
-    toast.add({ title: 'Boeking bevestigd', color: 'success' });
+    toast.add({ title: t('planning.bookingConfirmed'), color: 'success' });
   } catch (error) {
     const { message } = useApiError(error);
     errorMessage.value = message.value;
@@ -244,7 +245,7 @@ return;
 					class="h-5 max-h-full"
 				/>
 				<h2 class="text-lg font-medium">
-					{{ isCreateMode ? 'Nieuwe planning' : 'Planning details' }}
+					{{ isCreateMode ? t('planning.sidebar.createTitle') : t('planning.sidebar.detailsTitle') }}
 				</h2>
 			</div>
 		</template>
@@ -264,7 +265,7 @@ return;
 						variant="subtle"
 						size="sm"
 					>
-						Overlap
+						{{ t('planning.overlap') }}
 					</UBadge>
 				</div>
 
@@ -283,7 +284,7 @@ return;
 				/>
 
 				<UFormField
-					label="Titel"
+					:label="t('planning.fields.title')"
 					name="title"
 					required
 					:error="fieldError('Title')"
@@ -297,7 +298,7 @@ return;
 				</UFormField>
 
 				<UFormField
-					label="Medewerker"
+					:label="t('planning.fields.employee')"
 					name="assignedUserId"
 					required
 					:error="fieldError('AssignedUserId')"
@@ -313,7 +314,7 @@ return;
 				</UFormField>
 
 				<UFormField
-					label="Klant"
+					:label="t('planning.fields.customer')"
 					name="customerId"
 					:error="fieldError('CustomerId')"
 				>
@@ -329,7 +330,7 @@ return;
 				</UFormField>
 
 				<UFormField
-					label="Periode"
+					:label="t('planning.fields.period')"
 					name="startUtc"
 					:error="periodFieldError"
 				>
@@ -341,7 +342,7 @@ return;
 				</UFormField>
 
 				<UFormField
-					label="Status"
+					:label="t('users.columns.status')"
 					name="status"
 					:error="fieldError('Status')"
 				>
@@ -356,7 +357,7 @@ return;
 				</UFormField>
 
 				<UFormField
-					label="Beschrijving"
+					:label="t('planning.fields.description')"
 					name="description"
 					:error="fieldError('Description')"
 				>
@@ -369,7 +370,7 @@ return;
 				</UFormField>
 
 				<UFormField
-					label="Notities"
+					:label="t('planning.fields.notes')"
 					name="notes"
 					:error="fieldError('Notes')"
 				>
@@ -386,7 +387,7 @@ return;
 					class="flex flex-wrap gap-2 pt-2"
 				>
 					<UButton
-						:label="isCreateMode ? 'Aanmaken' : 'Opslaan'"
+						:label="isCreateMode ? t('common.actions.create') : t('common.actions.save')"
 						:loading="isSaving"
 						@click="() => { save() }"
 					/>
@@ -395,21 +396,21 @@ return;
 							v-if="selectedRecord?.status === 'Planned'"
 							icon="i-lucide-check"
 							color="success"
-							label="Bevestigen"
+							:label="t('common.actions.confirm')"
 							:loading="confirmMutation.isPending.value"
 							@click="() => { onConfirm() }"
 						/>
 						<UButton
 							variant="outline"
 							icon="i-lucide-copy"
-							label="Dupliceer"
+							:label="t('planning.duplicate')"
 							@click="() => { onDuplicate() }"
 						/>
 						<UButton
 							variant="outline"
 							color="error"
 							icon="i-lucide-trash-2"
-							label="Verwijder"
+							:label="t('common.actions.delete')"
 							@click="() => { onDelete() }"
 						/>
 					</template>

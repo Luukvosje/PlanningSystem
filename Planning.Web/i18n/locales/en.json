@@ -1,0 +1,396 @@
+{
+  "common": {
+    "unknown": "Unknown",
+    "account": "Account",
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "add": "Add",
+      "create": "Create",
+      "search": "Search",
+      "confirm": "Confirm",
+      "close": "Close"
+    },
+    "loading": "Loading...",
+    "colorMode": {
+      "group": "Color mode",
+      "light": "Light",
+      "lightMode": "Light mode",
+      "dark": "Dark",
+      "darkMode": "Dark mode"
+    }
+  },
+  "nav": {
+    "menu": "Menu",
+    "dashboard": "Dashboard",
+    "planning": "Planning",
+    "timeline": "Timeline",
+    "availability": "Availability",
+    "relations": "Relations",
+    "customers": "Customers",
+    "management": "Management",
+    "team": "Team",
+    "organization": "Organization",
+    "invites": "Invite",
+    "settings": "Settings"
+  },
+  "auth": {
+    "email": "Email",
+    "password": "Password",
+    "login": "Log in",
+    "continue": "Continue",
+    "noAccountYet": "Don't have an account yet?",
+    "register": "Register",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "accountCreated": "Account created",
+    "accountCreatedDescription": "You can now log in.",
+    "createAccount": "Create account",
+    "alreadyHaveAccount": "Already have an account?",
+    "landingTagline": "Plan your team simply and clearly."
+  },
+  "validation": {
+    "email": {
+      "required": "Email is required",
+      "invalid": "Invalid email address",
+      "tooLong": "Email address is too long"
+    },
+    "password": {
+      "required": "Password is required",
+      "tooLong": "Password is too long",
+      "minLength": "At least 8 characters"
+    },
+    "organization": {
+      "required": "Select an organization"
+    },
+    "firstName": {
+      "required": "First name is required",
+      "tooLong": "First name is too long"
+    },
+    "lastName": {
+      "required": "Last name is required",
+      "tooLong": "Last name is too long"
+    },
+    "inviteCode": {
+      "required": "Invite code is required",
+      "tooLong": "Invite code is too long"
+    },
+    "name": {
+      "required": "Name is required",
+      "tooLong": "Name is too long"
+    },
+    "address": {
+      "tooLong": "Address is too long"
+    }
+  },
+  "availability": {
+    "unavailable": "Unavailable",
+    "conflictMessage": "{name} is unavailable according to their availability.",
+    "time": {
+      "allDay": "all day",
+      "until": "until {end}",
+      "after": "after {start}"
+    },
+    "weekday": {
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday",
+      "sunday": "Sunday"
+    },
+    "weekly": {
+      "allDay": "Every {day} unavailable",
+      "partial": "Every {day} {time}",
+      "range": "Every {day} {time} unavailable"
+    },
+    "pageDescription": "You are available by default. Only add blocks or exceptions when you can't work.",
+    "timePreset": {
+      "wholeDay": "All day",
+      "until": "Until a time",
+      "after": "From a time",
+      "custom": "Custom time block"
+    },
+    "editWeeklyRule": "Edit weekly rule",
+    "editException": "Edit exception",
+    "newWeeklyRule": "Weekly block",
+    "newException": "One-time exception",
+    "day": "Day",
+    "date": "Date",
+    "until": "Until",
+    "from": "From",
+    "start": "Start",
+    "end": "End",
+    "reasonOptional": "Reason (optional)",
+    "reasonPlaceholder": "E.g. vacation, doctor",
+    "managingOther": "You are managing an employee's availability.",
+    "loading": "Loading availability...",
+    "weeklyBlocks": "Weekly blocks",
+    "weeklyBlocksDescription": "Fixed times when you are unavailable.",
+    "noWeeklyBlocks": "No fixed blocks. You are available by default.",
+    "oneTimeExceptions": "One-time exceptions",
+    "oneTimeExceptionsDescription": "Vacation, appointments, or other exceptions on a date.",
+    "noOneTimeExceptions": "No one-time exceptions."
+  },
+  "customers": {
+    "loading": "Loading customers...",
+    "loadingOne": "Loading customer...",
+    "searchPlaceholder": "Search by name, email or address...",
+    "empty": "No customers yet.",
+    "emptyManage": "No customers yet. Add your first customer.",
+    "add": "Add customer",
+    "noResults": "No customers found.",
+    "created": "Customer created",
+    "updated": "Customer updated",
+    "deleted": "Customer deleted",
+    "backToList": "Back to customers",
+    "deleteTitle": "Delete customer",
+    "deleteDescription": "Are you sure you want to delete this customer? This action cannot be undone.",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "address": "Address"
+    },
+    "create": {
+      "title": "New customer",
+      "description": "Add a customer to your organization.",
+      "submit": "Create customer"
+    },
+    "edit": {
+      "title": "Edit customer",
+      "description": "Update this customer's details."
+    }
+  },
+  "invites": {
+    "code": "Invite code",
+    "join": "Join",
+    "loginToJoin": "Log in to join",
+    "accepted": "Invite accepted",
+    "acceptTitle": "Accept invite",
+    "acceptDescription": "Enter the code you received from your organizer.",
+    "checkingCode": "Checking code...",
+    "previewValid": "You will be added to this organization as a team member",
+    "previewInvalid": "This code has expired or has already been used",
+    "enterCode": "Enter invite code",
+    "codeCopied": "Code copied",
+    "validUntil": "Valid until {date}",
+    "copied": "Copied",
+    "copy": "Copy",
+    "codePlaceholder": "E.g. AB12CD34",
+    "created": "Invite created",
+    "create": {
+      "title": "Invite team member",
+      "description": "Generate a code and share it with your team member. The code is valid for 24 hours.",
+      "submit": "Generate code"
+    }
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Admin",
+    "planner": "Planner",
+    "employee": "Employee"
+  },
+  "dashboard": {
+    "overview": "Overview of {organization}",
+    "teamMembers": "Team members",
+    "yourRole": "Your role",
+    "quickLinks": "Quick links",
+    "viewPlanning": "View planning",
+    "viewTeam": "View team",
+    "today": "Today",
+    "welcomeBack": "Welcome back. Use the planning to view tasks for this week.",
+    "welcomeBackManage": "Welcome back. Use the planning to view and manage tasks for this week.",
+    "nextShift": "Next shift",
+    "loadingShift": "Loading shift...",
+    "note": "Note",
+    "noShiftsPlanned": "No shifts planned",
+    "noShiftsPlannedDescription": "You currently have no upcoming shifts scheduled."
+  },
+  "users": {
+    "roleUpdated": "Role updated",
+    "loading": "Loading team...",
+    "searchPlaceholder": "Search by name, email, role or status...",
+    "empty": "No team members yet. Invite someone using a code.",
+    "noResults": "No team members found.",
+    "active": "Active",
+    "inactive": "Inactive",
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status"
+    },
+    "backToList": "Back to team",
+    "loadingOne": "Loading team member...",
+    "modules": {
+      "title": "Modules",
+      "description": "Decide which modules this user can use."
+    }
+  },
+  "planning": {
+    "status": {
+      "planned": "Planned",
+      "confirmed": "Confirmed",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "viewMode": {
+      "day": "Day",
+      "week": "Week"
+    },
+    "withoutCustomer": "Without customer",
+    "duplicate": "Duplicate",
+    "previousPeriod": "Previous period",
+    "nextPeriod": "Next period",
+    "new": "New",
+    "employees": "Employees",
+    "clearFilters": "Clear filters",
+    "overlap": "Overlap",
+    "saved": "Saved",
+    "bookingConfirmed": "Booking confirmed",
+    "chooseColor": "Choose color",
+    "color": "Color",
+    "sidebar": {
+      "createTitle": "New planning",
+      "detailsTitle": "Planning details"
+    },
+    "fields": {
+      "title": "Title",
+      "employee": "Employee",
+      "customer": "Customer",
+      "period": "Period",
+      "description": "Description",
+      "notes": "Notes"
+    },
+    "zoom": {
+      "hour": "Hour",
+      "hourAbbreviation": "h",
+      "dayPart": "Part of day",
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
+    "settings": {
+      "view": "View",
+      "snapToBlocks": "Snap to blocks",
+      "snapToBlocksDescription": "Drag and resize blocks aligned to other blocks",
+      "showAvailabilityDescription": "Show when employees are unavailable",
+      "showConcepts": "Show drafts",
+      "showConceptsDescription": "Show planned (unconfirmed) assignments",
+      "showBlockColor": "Show block color",
+      "showBlockColorDescription": "Use custom block colors",
+      "showWeekends": "Show weekends",
+      "showWeekendsDescription": "Highlight Saturday and Sunday",
+      "showFullDay": "Show full day",
+      "showFullDayDescription": "Show all hours, including outside opening times",
+      "layoutCompact": "Compact",
+      "layoutSpacious": "Spacious"
+    },
+    "loading": "Loading planning...",
+    "loadingShifts": "Loading shifts...",
+    "noShiftsToday": "No shifts on this day.",
+    "tooltip": {
+      "location": "Location",
+      "role": "Role",
+      "project": "Project"
+    },
+    "noResourcesToDisplay": "No resources to display.",
+    "clickToEdit": "Click to edit",
+    "clickToOpen": "Click to open",
+    "openShift": "Open shift",
+    "noShifts": "No shifts",
+    "shiftCountSingular": "{count} shift",
+    "shiftCountPlural": "{count} shifts",
+    "noShiftPlanned": "No shift planned",
+    "daysOfWeek": "Days of the week",
+    "previousWeek": "Previous week",
+    "nextWeek": "Next week",
+    "thisWeek": "This week",
+    "shift": "Shift"
+  },
+  "organizations": {
+    "loading": "Loading organization...",
+    "details": "Details",
+    "manageDescription": "Manage your organization's details.",
+    "created": "Organization created",
+    "invited": "Invited?",
+    "fields": {
+      "name": "Name",
+      "email": "Organization email"
+    },
+    "create": {
+      "title": "Create organization",
+      "description": "Create a new organization.",
+      "firstOrgDescription": "Create your first organization to start planning."
+    },
+    "logo": {
+      "title": "Logo",
+      "alt": "Organization logo",
+      "constraints": "PNG, JPG, WebP or GIF. Maximum 2 MB.",
+      "upload": "Upload logo"
+    },
+    "modules": {
+      "description": "Decide which modules are available for the whole organization.",
+      "loading": "Loading modules...",
+      "adminAlwaysAccess": "Admins always have access to all available modules"
+    },
+    "planningSettings": {
+      "title": "Planning settings",
+      "description": "Important working times and opening hours for the planning view.",
+      "loading": "Loading planning settings...",
+      "importantTimes": "Important working times",
+      "importantTimesDescription": "These times are highlighted on the planning and used for smart snap on new shifts.",
+      "addTime": "Add time",
+      "openingHours": "Opening hours",
+      "openingHoursDescription": "Hours outside opening times are shown subtly darker. Planning remains possible everywhere.",
+      "save": "Save planning settings",
+      "preview": "Preview in the planning",
+      "previewDescription": "Important times are shown as thicker lines. When planning shifts, snapping to these times happens automatically."
+    }
+  },
+  "settings": {
+    "description": "Manage your personal details.",
+    "loadingProfile": "Loading profile...",
+    "profile": "Profile"
+  },
+  "dateTimeRange": {
+    "day": "{count} day",
+    "daysPlural": "{count} days",
+    "hours": "{count} hr",
+    "minutes": "{count} min",
+    "lessThanOneMinute": "< 1 min",
+    "endAfterStart": "End must be after the start",
+    "multipleDays": "Multiple days",
+    "start": "Start",
+    "end": "End",
+    "time": "Time",
+    "endBeforeStartSuggestion": "End time is before the start time. Use the next day?",
+    "plusOneDay": "+1 day",
+    "today": "Today",
+    "tomorrow": "Tomorrow"
+  },
+  "errors": {
+    "validationFailed": "One or more validation errors occurred.",
+    "unknown": "Unknown error",
+    "genericFormError": "Something went wrong. Please try again later."
+  },
+  "layout": {
+    "toggleSidebarShow": "Show navigation",
+    "toggleSidebarHide": "Hide navigation",
+    "toggleSidebarMobile": "Toggle sidebar",
+    "organizationSwitched": "Organization switched",
+    "userMenu": {
+      "language": "Language",
+      "logout": "Log out"
+    },
+    "noOrganizationAlert": {
+      "title": "No organization linked",
+      "description": "Create an organization or enter an invite code.",
+      "createOrganization": "Create organization",
+      "enterCode": "Enter code"
+    }
+  }
+}

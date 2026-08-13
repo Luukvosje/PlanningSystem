@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Planning.Api.Authorization;
@@ -135,6 +136,16 @@ else
 {
     app.UseHttpsRedirection();
 }
+
+// Drives FluentValidation's built-in default messages (e.g. "'{Field}' must not be empty.")
+// into the requester's language. The frontend sends this as a plain Accept-Language
+// header matching its active i18n locale ('nl' or 'en'); custom .WithMessage(...) text and
+// Application/Domain-layer messages are NOT covered by this (they're static English strings)
+// — those are translated client-side, see Planning.Web/app/utils/backendMessages.ts.
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .SetDefaultCulture("nl")
+    .AddSupportedCultures("nl", "en")
+    .AddSupportedUICultures("nl", "en"));
 
 app.UseCors("Frontend");
 

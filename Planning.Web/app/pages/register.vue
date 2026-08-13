@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { registerSchema } from '~/schemas/auth.schema';
+import { createRegisterSchema } from '~/schemas/auth.schema';
 
 definePageMeta({ layout: 'auth' });
 
@@ -9,6 +9,9 @@ const auth = useAuthStore();
 const router = useRouter();
 const route = useRoute();
 const toast = useToast();
+const { t } = useI18n();
+
+const registerSchema = createRegisterSchema(t);
 
 const registerForm = useForm({
   schema: registerSchema,
@@ -21,14 +24,14 @@ const registerForm = useForm({
   controls: [
     {
       name: 'firstName',
-      label: 'Voornaam',
+      label: t('auth.firstName'),
       type: 'input',
       required: true,
       props: { autocomplete: 'given-name' },
     },
     {
       name: 'lastName',
-      label: 'Achternaam',
+      label: t('auth.lastName'),
       type: 'input',
       required: true,
       hidden: true,
@@ -36,24 +39,24 @@ const registerForm = useForm({
     },
     {
       name: 'email',
-      label: 'E-mail',
+      label: t('auth.email'),
       type: 'email',
       required: true,
       props: { autocomplete: 'email' },
     },
     {
       name: 'password',
-      label: 'Wachtwoord',
+      label: t('auth.password'),
       type: 'password',
       required: true,
       props: { autocomplete: 'new-password' },
     },
   ],
-  submit: { label: 'Registreren', block: true },
+  submit: { label: t('auth.register'), block: true },
   onSubmit: async (data) => {
     await auth.register(data);
 
-    toast.add({ title: 'Account aangemaakt', description: 'Je kunt nu inloggen.', color: 'success' });
+    toast.add({ title: t('auth.accountCreated'), description: t('auth.accountCreatedDescription'), color: 'success' });
 
     const redirect = route.query.redirect as string | undefined;
     const inviteCode = route.query.code as string | undefined;
@@ -72,7 +75,7 @@ const registerForm = useForm({
 	<UCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
 			<h1 class="text-xl font-semibold">
-				Account aanmaken
+				{{ t('auth.createAccount') }}
 			</h1>
 		</template>
 
@@ -83,7 +86,7 @@ const registerForm = useForm({
 			<template #control-firstName="{ form }">
 				<div class="grid grid-cols-2 gap-4">
 					<UFormField
-						label="Voornaam"
+						:label="t('auth.firstName')"
 						name="firstName"
 						required
 					>
@@ -95,7 +98,7 @@ const registerForm = useForm({
 						/>
 					</UFormField>
 					<UFormField
-						label="Achternaam"
+						:label="t('auth.lastName')"
 						name="lastName"
 						required
 					>
@@ -112,12 +115,12 @@ const registerForm = useForm({
 
 		<template #footer>
 			<p class="text-sm text-muted text-center">
-				Al een account?
+				{{ t('auth.alreadyHaveAccount') }}
 				<NuxtLink
 					to="/login"
 					class="text-primary font-medium"
 				>
-					Inloggen
+					{{ t('auth.login') }}
 				</NuxtLink>
 			</p>
 		</template>

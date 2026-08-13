@@ -15,6 +15,7 @@ const props = defineProps<{
   availabilityPeriods?: UnavailablePeriod[]
 }>();
 
+const { t } = useI18n();
 const store = usePlanningStore();
 
 const containerRef = useTemplateRef<HTMLElement>('containerRef');
@@ -311,7 +312,7 @@ watch(
 					class="size-10 text-muted mx-auto mb-3"
 				/>
 				<p class="text-muted">
-					Geen resources om weer te geven.
+					{{ t('planning.noResourcesToDisplay') }}
 				</p>
 			</div>
 			<div

@@ -1,72 +1,74 @@
 <script setup lang="ts">
-import type { AppModule, UserResponse } from '~/generated/models'
+import type { AppModule, UserResponse } from '~/generated/models';
 import {
   getUserModuleToggleStates,
   modulesFromSettings,
   modulesToRequest,
-} from '~/utils/modules'
+} from '~/utils/modules';
 
 const props = defineProps<{
   user: UserResponse
-}>()
+}>();
 
-const { data: organization } = useCurrentOrganization()
-const { updateUserModules } = useModulesApi()
+const { t } = useI18n();
+const { data: organization } = useCurrentOrganization();
+const { updateUserModules } = useModulesApi();
 
-const moduleState = ref<Record<AppModule, boolean>>(modulesFromSettings([]))
+const moduleState = ref<Record<AppModule, boolean>>(modulesFromSettings([]));
 
 const toggleStates = computed(() =>
   getUserModuleToggleStates(
     props.user.role,
     props.user.modules,
     organization.value?.modules,
+    t,
   ),
-)
+);
 
 watch(
   () => [props.user.modules, props.user.role, organization.value?.modules] as const,
   () => {
-    const states = toggleStates.value
+    const states = toggleStates.value;
     moduleState.value = ALL_MODULES.reduce((result, module) => {
-      result[module] = states[module].disabled
-        ? states[module].checked
-        : modulesFromSettings(props.user.modules)[module]
-      return result
-    }, {} as Record<AppModule, boolean>)
+      result[module] = states[module].disabled ?
+        states[module].checked :
+        modulesFromSettings(props.user.modules)[module];
+      return result;
+    }, {} as Record<AppModule, boolean>);
   },
   { immediate: true },
-)
+);
 
 function save() {
   if (!props.user.id) {
-    return
+    return;
   }
 
   updateUserModules.mutate({
     userId: props.user.id,
     request: modulesToRequest(moduleState.value),
-  })
+  });
 }
 </script>
 
 <template>
-  <UCard>
-    <template #header>
-      <div>
-        <h3 class="font-semibold">
-          Modules
-        </h3>
-        <p class="text-sm text-muted">
-          Bepaal welke modules deze gebruiker mag gebruiken.
-        </p>
-      </div>
-    </template>
+	<UCard>
+		<template #header>
+			<div>
+				<h3 class="font-semibold">
+					{{ t('users.modules.title') }}
+				</h3>
+				<p class="text-sm text-muted">
+					{{ t('users.modules.description') }}
+				</p>
+			</div>
+		</template>
 
-    <ModulesToggles
-      v-model="moduleState"
-      :toggle-states="toggleStates"
-      :saving="updateUserModules.isPending.value"
-      @save="save"
-    />
-  </UCard>
+		<ModulesToggles
+			v-model="moduleState"
+			:toggle-states="toggleStates"
+			:saving="updateUserModules.isPending.value"
+			@save="save"
+		/>
+	</UCard>
 </template>

@@ -19,6 +19,7 @@ const emit = defineEmits<{
   selectDate: [date: Date]
 }>();
 
+const { t } = useI18n();
 const calendarOpen = ref(false);
 
 const calendarDefaultDate = computed(() =>
@@ -48,7 +49,7 @@ function goToTodayAndClose() {
 				variant="outline"
 				color="neutral"
 				icon="i-lucide-chevron-left"
-				aria-label="Vorige week"
+				:aria-label="t('planning.previousWeek')"
 				:size="size"
 				@click="emit('previous')"
 			/>
@@ -56,7 +57,7 @@ function goToTodayAndClose() {
 				variant="outline"
 				color="neutral"
 				icon="i-lucide-chevron-right"
-				aria-label="Volgende week"
+				:aria-label="t('planning.nextWeek')"
 				:size="size"
 				@click="emit('next')"
 			/>
@@ -66,7 +67,7 @@ function goToTodayAndClose() {
 			v-if="!isCurrentWeek"
 			variant="outline"
 			color="neutral"
-			label="Vandaag"
+			:label="t('dashboard.today')"
 			class="shrink-0"
 			:size="size"
 			@click="emit('today')"
@@ -92,7 +93,7 @@ function goToTodayAndClose() {
 					/>
 					<UButton
 						variant="outline"
-						label="Deze week"
+						:label="t('planning.thisWeek')"
 						block
 						@click="goToTodayAndClose"
 					/>

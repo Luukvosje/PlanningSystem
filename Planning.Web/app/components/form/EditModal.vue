@@ -15,6 +15,7 @@ const emit = defineEmits<{
 
 provide(EDIT_INJECTION_KEY, props.edit);
 
+const { t } = useI18n();
 const FormView = resolveComponent('FormView');
 
 const title = computed(() => unref(props.edit.title as MaybeRef<string>));
@@ -102,7 +103,7 @@ watch(open, (value) => {
 					variant="outline"
 					@click="edit.close()"
 				>
-					Sluiten
+					{{ t('common.actions.close') }}
 				</UButton>
 			</div>
 		</template>

@@ -5,13 +5,14 @@ import { canAccessModule } from '~/utils/modules';
 export function useAppNavigation() {
   const route = useRoute();
   const auth = useAuthStore();
+  const { t } = useI18n();
   const modules = computed(() => auth.currentUser?.modules);
 
   const navigationItems = computed<NavigationMenuItem[][]>(() => {
     const main: NavigationMenuItem[] = [
-      { label: 'Menu', type: 'label' },
+      { label: t('nav.menu'), type: 'label' },
       {
-        label: 'Dashboard',
+        label: t('nav.dashboard'),
         icon: 'i-lucide-layout-dashboard',
         to: '/dashboard',
       },
@@ -19,17 +20,17 @@ export function useAppNavigation() {
 
     if (canAccessModule(AppModule.Planning, modules.value)) {
       main.push({
-        label: 'Planning',
+        label: t('nav.planning'),
         icon: 'i-lucide-calendar-check',
         to: '/planning',
       });
       main.push({
-        label: 'Tijdlijn',
+        label: t('nav.timeline'),
         icon: 'i-lucide-gantt-chart',
         to: '/timeline',
       });
       main.push({
-        label: 'Beschikbaarheid',
+        label: t('nav.availability'),
         icon: 'i-lucide-calendar-clock',
         to: '/beschikbaarheid',
       });
@@ -39,9 +40,9 @@ export function useAppNavigation() {
 
     if (canAccessModule(AppModule.Klant, modules.value)) {
       groups.push([
-        { label: 'Relaties', type: 'label' },
+        { label: t('nav.relations'), type: 'label' },
         {
-          label: 'Klanten',
+          label: t('nav.customers'),
           icon: 'i-lucide-contact',
           to: '/customers',
         },
@@ -53,20 +54,20 @@ export function useAppNavigation() {
 
       if (canAccessModule(AppModule.Beheer, modules.value)) {
         children.push({
-          label: 'Team',
+          label: t('nav.team'),
           icon: 'i-lucide-users',
           to: '/users',
         });
       }
 
       children.push({
-        label: 'Organisatie',
+        label: t('nav.organization'),
         icon: 'i-lucide-building-2',
         to: '/organizations',
       });
 
       groups.push([
-        { label: 'Beheer', type: 'label' },
+        { label: t('nav.management'), type: 'label' },
         ...children,
       ]);
     }
@@ -76,15 +77,15 @@ export function useAppNavigation() {
 
   const pageTitle = computed(() => {
     const titles: Record<string, string> = {
-      '/dashboard': 'Dashboard',
-      '/planning': 'Planning',
-      '/timeline': 'Tijdlijn',
-      '/beschikbaarheid': 'Beschikbaarheid',
-      '/customers': 'Klanten',
-      '/users': 'Team',
-      '/organizations': 'Organisatie',
-      '/invites': 'Uitnodigen',
-      '/settings': 'Instellingen',
+      '/dashboard': t('nav.dashboard'),
+      '/planning': t('nav.planning'),
+      '/timeline': t('nav.timeline'),
+      '/beschikbaarheid': t('nav.availability'),
+      '/customers': t('nav.customers'),
+      '/users': t('nav.team'),
+      '/organizations': t('nav.organization'),
+      '/invites': t('nav.invites'),
+      '/settings': t('nav.settings'),
     };
 
     for (const [path, title] of Object.entries(titles)) {
@@ -93,7 +94,7 @@ export function useAppNavigation() {
       }
     }
 
-    return 'Planning';
+    return t('nav.planning');
   });
 
   return {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
+const { t } = useI18n();
 const store = usePlanningStore();
-const { filters, statusOptions, hasActiveFilters, clearFilters } = usePlanningFilters();
+const { filters: _filters, statusOptions, hasActiveFilters, clearFilters } = usePlanningFilters();
 const { data: users } = useUsers();
 const { data: customers } = useCustomers();
 
@@ -13,7 +14,7 @@ const userOptions = computed(() =>
 
 const customerOptions = computed(() =>
   (customers.value ?? []).map((c) => ({
-    label: c.name ?? 'Onbekend',
+    label: c.name ?? t('common.unknown'),
     value: c.id!,
   })),
 );
@@ -24,7 +25,7 @@ const customerOptions = computed(() =>
 		<UInput
 			v-model="store.filters.search"
 			icon="i-lucide-search"
-			placeholder="Zoeken..."
+			:placeholder="t('common.actions.search') + '...'"
 			class="w-48"
 			size="sm"
 		/>
@@ -35,7 +36,7 @@ const customerOptions = computed(() =>
 			value-key="value"
 			label-key="label"
 			multiple
-			placeholder="Medewerkers"
+			:placeholder="t('planning.employees')"
 			class="w-44"
 			size="sm"
 		/>
@@ -46,7 +47,7 @@ const customerOptions = computed(() =>
 			value-key="value"
 			label-key="label"
 			multiple
-			placeholder="Klanten"
+			:placeholder="t('nav.customers')"
 			class="w-44"
 			size="sm"
 		/>
@@ -57,7 +58,7 @@ const customerOptions = computed(() =>
 			value-key="value"
 			label-key="label"
 			multiple
-			placeholder="Status"
+			:placeholder="t('users.columns.status')"
 			class="w-36"
 			size="sm"
 		/>
@@ -67,7 +68,7 @@ const customerOptions = computed(() =>
 			variant="ghost"
 			size="sm"
 			icon="i-lucide-x"
-			label="Wis filters"
+			:label="t('planning.clearFilters')"
 			@click="() => { clearFilters() }"
 		/>
 	</div>

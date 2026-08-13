@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TimelineRow } from '~/types/planning';
 
+const { t } = useI18n();
 const store = usePlanningStore();
 const { records, isInitialLoading, error } = usePlanning();
 const { availabilityPeriods } = usePlanningAvailability(records);
@@ -15,9 +16,9 @@ const boardLoading = computed(() =>
 );
 
 const visibleRecords = computed(() =>
-  store.showConcepts
-    ? records.value
-    : records.value.filter((r) => r.status !== 'Planned'),
+  store.showConcepts ?
+    records.value :
+    records.value.filter((r) => r.status !== 'Planned'),
 );
 
 const timelineRows = computed<TimelineRow[]>(() => {
@@ -32,7 +33,7 @@ const timelineRows = computed<TimelineRow[]>(() => {
 
     rows = customerList.map((customer) => ({
       id: customer.id!,
-      label: customer.name ?? 'Onbekend',
+      label: customer.name ?? t('common.unknown'),
       records: visibleRecords.value.filter((r) => r.customerId === customer.id),
     }));
 
@@ -41,7 +42,7 @@ const timelineRows = computed<TimelineRow[]>(() => {
       if (unassigned.length > 0) {
         rows.unshift({
           id: '__unassigned__',
-          label: 'Zonder klant',
+          label: t('planning.withoutCustomer'),
           records: unassigned,
         });
       }
@@ -68,9 +69,9 @@ function openCreate() {
   const filteredUserIds = store.filters.userIds;
   const filteredCustomerIds = store.filters.customerIds;
   const activeUsers = (users.value ?? []).filter((u) => u.isActive !== false);
-  const preferredUser = filteredUserIds.length > 0
-    ? activeUsers.find((u) => u.id && filteredUserIds.includes(u.id))
-    : activeUsers[0];
+  const preferredUser = filteredUserIds.length > 0 ?
+    activeUsers.find((u) => u.id && filteredUserIds.includes(u.id)) :
+    activeUsers[0];
   if (!preferredUser?.id) {
     return;
   }
@@ -80,9 +81,9 @@ function openCreate() {
   const end = new Date(start);
   end.setHours(end.getHours() + 1);
 
-  const customerId = filteredCustomerIds.length === 1
-    ? filteredCustomerIds[0]!
-    : undefined;
+  const customerId = filteredCustomerIds.length === 1 ?
+    filteredCustomerIds[0]! :
+    undefined;
 
   store.openCreateSidebar({
     assignedUserId: preferredUser.id,

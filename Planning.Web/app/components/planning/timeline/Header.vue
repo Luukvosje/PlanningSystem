@@ -15,6 +15,7 @@ const {
   isZoomedOut,
 } = useTimeline();
 
+const { t } = useI18n();
 const store = usePlanningStore();
 
 const headerRef = useTemplateRef<HTMLElement>('headerRef');
@@ -75,7 +76,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 				class="sticky left-0 z-30 flex shrink-0 items-center border-r border-default bg-default px-3 py-2"
 				:style="{ width: `${rowLabelWidth}px` }"
 			>
-				<span class="text-xs font-medium text-muted uppercase tracking-wide">{{ store.rowMode === 'resource' ? 'Team' : 'Klant' }}</span>
+				<span class="text-xs font-medium text-muted uppercase tracking-wide">{{ store.rowMode === 'resource' ? t('nav.team') : t('planning.fields.customer') }}</span>
 			</div>
 
 			<div

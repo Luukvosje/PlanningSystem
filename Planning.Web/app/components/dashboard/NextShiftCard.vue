@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { formatRelativePlanningDate, formatTimeRange } from '~/utils/planning/dateUtils';
+import { formatRelativePlanningDate, formatTimeRange, getIntlLocale } from '~/utils/planning/dateUtils';
 
 const { nextShift, isLoading } = useNextPlanningShift();
+const { t, locale } = useI18n();
+const intlLocale = computed(() => getIntlLocale(locale.value));
 </script>
 
 <template>
@@ -9,12 +11,12 @@ const { nextShift, isLoading } = useNextPlanningShift();
 		<div class="flex flex-col gap-4">
 			<div class="min-w-0 space-y-3">
 				<p class="text-xs font-semibold uppercase tracking-wider text-muted">
-					Volgende dienst
+					{{ t('dashboard.nextShift') }}
 				</p>
 
 				<div v-if="isLoading">
 					<UiLoadingIndicator
-						label="Dienst laden..."
+						:label="t('dashboard.loadingShift')"
 						size="sm"
 					/>
 				</div>
@@ -24,10 +26,10 @@ const { nextShift, isLoading } = useNextPlanningShift();
 					class="space-y-1"
 				>
 					<p class="text-lg font-semibold">
-						{{ formatRelativePlanningDate(nextShift.startUtc) }}
+						{{ formatRelativePlanningDate(nextShift.startUtc, intlLocale, t) }}
 					</p>
 					<p class="text-sm text-muted">
-						{{ formatTimeRange(nextShift.startUtc, nextShift.endUtc) }}
+						{{ formatTimeRange(nextShift.startUtc, nextShift.endUtc, intlLocale) }}
 					</p>
 					<p
 						v-if="nextShift.customerName"
@@ -45,7 +47,7 @@ const { nextShift, isLoading } = useNextPlanningShift();
 						v-if="nextShift.notes"
 						class="text-sm text-muted"
 					>
-						<span class="font-medium text-default">Notitie:</span>
+						<span class="font-medium text-default">{{ t('dashboard.note') }}:</span>
 						{{ nextShift.notes }}
 					</p>
 				</div>
@@ -55,10 +57,10 @@ const { nextShift, isLoading } = useNextPlanningShift();
 					class="space-y-1"
 				>
 					<p class="text-sm font-medium">
-						Geen geplande diensten
+						{{ t('dashboard.noShiftsPlanned') }}
 					</p>
 					<p class="text-sm text-muted">
-						Er staan momenteel geen toekomstige diensten voor je ingepland.
+						{{ t('dashboard.noShiftsPlannedDescription') }}
 					</p>
 				</div>
 			</div>
@@ -72,7 +74,7 @@ const { nextShift, isLoading } = useNextPlanningShift();
 					to="/planning"
 					variant="outline"
 					icon="i-lucide-calendar-range"
-					label="Bekijk planning"
+					:label="t('dashboard.viewPlanning')"
 				/>
 			</div>
 		</div>

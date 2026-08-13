@@ -2,13 +2,15 @@
 import type { DropdownMenuItem } from '@nuxt/ui';
 import type { TimelineZoom } from '~/types/planning';
 import {
-  ZOOM_PRESETS,
   getZoomLabel,
+  getZoomPresets,
 } from '~/utils/planning/timelineMath';
 
+const { t } = useI18n();
 const store = usePlanningStore();
 
-const zoomLabel = computed(() => getZoomLabel(store.zoom));
+const zoomLabel = computed(() => getZoomLabel(store.zoom, t));
+const zoomPresets = computed(() => getZoomPresets(t));
 
 type ZoomPresetMenuItem = DropdownMenuItem & {
   selected: boolean
@@ -17,7 +19,7 @@ type ZoomPresetMenuItem = DropdownMenuItem & {
 };
 
 const items = computed<ZoomPresetMenuItem[][]>(() => [
-  ZOOM_PRESETS.map((preset) => ({
+  zoomPresets.value.map((preset) => ({
     label: preset.label,
     zoom: preset.value,
     keypress: preset.keypress,
@@ -63,7 +65,7 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
 
-  const preset = ZOOM_PRESETS.find(
+  const preset = zoomPresets.value.find(
     (p) => p.keypress === event.key.toLowerCase(),
   );
 
@@ -85,8 +87,8 @@ onUnmounted(() => {
 	<UFieldGroup>
 		<UDropdownMenu
 			:items="items"
-            :arrow="true"
-            :content="{align: 'start', alignOffset: 0, sideOffset: 0}"
+			:arrow="true"
+			:content="{align: 'start', alignOffset: 0, sideOffset: 0}"
 			:ui="{
 				content: 'w-(--reka-dropdown-menu-trigger-width) min-w-44',
 				group: 'flex flex-col gap-1 p-1.5',

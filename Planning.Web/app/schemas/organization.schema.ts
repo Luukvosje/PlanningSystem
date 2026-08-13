@@ -1,15 +1,20 @@
-import { z } from 'zod'
+import { z } from 'zod';
+import type { Composer } from 'vue-i18n';
 
-export const organizationSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Naam is verplicht')
-    .max(200, 'Naam is te lang'),
-  email: z
-    .string()
-    .min(1, 'E-mail is verplicht')
-    .email('Ongeldig e-mailadres')
-    .max(320, 'E-mailadres is te lang'),
-})
+type Translate = Composer['t']
 
-export type OrganizationSchema = z.infer<typeof organizationSchema>
+export function createOrganizationSchema(t: Translate) {
+  return z.object({
+    name: z
+      .string()
+      .min(1, t('validation.name.required'))
+      .max(200, t('validation.name.tooLong')),
+    email: z
+      .string()
+      .min(1, t('validation.email.required'))
+      .email(t('validation.email.invalid'))
+      .max(320, t('validation.email.tooLong')),
+  });
+}
+
+export type OrganizationSchema = z.infer<ReturnType<typeof createOrganizationSchema>>

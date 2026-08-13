@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useQueryClient } from '@tanstack/vue-query';
-import { organizationSchema } from '~/schemas/organization.schema';
+import { createOrganizationSchema } from '~/schemas/organization.schema';
 
 definePageMeta({ layout: 'auth' });
 
@@ -11,15 +11,18 @@ const orgsApi = useOrganizationsApi();
 const router = useRouter();
 const queryClient = useQueryClient();
 const toast = useToast();
+const { t } = useI18n();
+
+const organizationSchema = createOrganizationSchema(t);
 
 const organizationForm = useForm({
   schema: organizationSchema,
   initialState: { name: '', email: '' },
   controls: [
-    { name: 'name', label: 'Naam', type: 'input', required: true },
-    { name: 'email', label: 'E-mail organisatie', type: 'email', required: true },
+    { name: 'name', label: t('organizations.fields.name'), type: 'input', required: true },
+    { name: 'email', label: t('organizations.fields.email'), type: 'email', required: true },
   ],
-  submit: { label: 'Organisatie aanmaken', block: true },
+  submit: { label: t('organizations.create.title'), block: true },
   onSubmit: async (data) => {
     const response = await orgsApi.create(data);
 
@@ -29,7 +32,7 @@ const organizationForm = useForm({
     await auth.fetchMe();
     await queryClient.invalidateQueries();
 
-    toast.add({ title: 'Organisatie aangemaakt', color: 'success' });
+    toast.add({ title: t('organizations.created'), color: 'success' });
     await router.push('/users');
   },
 });
@@ -39,10 +42,10 @@ const organizationForm = useForm({
 	<UCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
 			<h1 class="text-xl font-semibold">
-				Organisatie aanmaken
+				{{ t('organizations.create.title') }}
 			</h1>
 			<p class="text-sm text-muted mt-1">
-				Maak je eerste organisatie aan om te beginnen met plannen.
+				{{ t('organizations.create.firstOrgDescription') }}
 			</p>
 		</template>
 
@@ -53,12 +56,12 @@ const organizationForm = useForm({
 
 		<template #footer>
 			<p class="text-sm text-muted text-center">
-				Uitgenodigd?
+				{{ t('organizations.invited') }}
 				<NuxtLink
 					to="/join"
 					class="text-primary font-medium"
 				>
-					Code invullen
+					{{ t('invites.enterCode') }}
 				</NuxtLink>
 			</p>
 		</template>

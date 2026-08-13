@@ -1,4 +1,17 @@
+import type { Composer } from 'vue-i18n';
 import type { PlanningStatus } from '~/types/planning';
+
+type Translate = Composer['t'];
+
+const INTL_LOCALES: Record<string, string> = {
+  nl: 'nl-NL',
+  en: 'en-US',
+};
+
+/** Map an app locale code (e.g. 'nl', 'en') to a full BCP-47 tag for Intl formatters. */
+export function getIntlLocale(code: string): string {
+  return INTL_LOCALES[code] ?? 'en-US';
+}
 
 export const STATUS_COLORS: Record<PlanningStatus, string> = {
   Planned: '#94A3B8',
@@ -24,19 +37,20 @@ export const COLOR_PRESETS = [
   '#84CC16',
 ];
 
-export function getStatusLabel(status: PlanningStatus): string {
+export function getStatusLabel(status: PlanningStatus, t: Translate): string {
   const labels: Record<PlanningStatus, string> = {
-    Planned: 'Gepland',
-    Confirmed: 'Bevestigd',
-    Completed: 'Afgerond',
-    Cancelled: 'Geannuleerd',
+    Planned: t('planning.status.planned'),
+    Confirmed: t('planning.status.confirmed'),
+    Completed: t('planning.status.completed'),
+    Cancelled: t('planning.status.cancelled'),
   };
   return labels[status];
 }
 
 export function getBlockColor(color?: string | null, status?: PlanningStatus): string {
-  if (color)
-    return color;
+  if (color) {
+return color;
+}
   if (status) {
     return STATUS_COLORS[status];
   }
@@ -112,15 +126,15 @@ export function snapToMinutes(date: Date, minutes: number): Date {
   return copy;
 }
 
-export function formatTimeRange(startUtc: string, endUtc: string): string {
-  const formatter = new Intl.DateTimeFormat('nl-NL', {
+export function formatTimeRange(startUtc: string, endUtc: string, locale: string): string {
+  const formatter = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
   });
   return `${formatter.format(new Date(startUtc))} – ${formatter.format(new Date(endUtc))}`;
 }
 
-export function formatRelativePlanningDate(dateUtc: string): string {
+export function formatRelativePlanningDate(dateUtc: string, locale: string, t: Translate): string {
   const date = new Date(dateUtc);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -128,30 +142,30 @@ export function formatRelativePlanningDate(dateUtc: string): string {
   const diffDays = Math.round((target.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
 
   if (diffDays === 0) {
-    return 'Vandaag';
+    return t('dateTimeRange.today');
   }
   if (diffDays === 1) {
-    return 'Morgen';
+    return t('dateTimeRange.tomorrow');
   }
 
-  return new Intl.DateTimeFormat('nl-NL', {
+  return new Intl.DateTimeFormat(locale, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   }).format(date);
 }
 
-export function formatDayHeader(date: Date): string {
-  return new Intl.DateTimeFormat('nl-NL', {
+export function formatDayHeader(date: Date, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
   }).format(date);
 }
 
-export function formatCompactDayHeader(date: Date): { weekday: string, day: string } {
+export function formatCompactDayHeader(date: Date, locale: string): { weekday: string, day: string } {
   return {
-    weekday: new Intl.DateTimeFormat('nl-NL', { weekday: 'short' }).format(date),
+    weekday: new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(date),
     day: String(date.getDate()),
   };
 }
@@ -172,13 +186,13 @@ export function isToday(date: Date): boolean {
 }
 
 /** Compact day header for employee agenda cards, e.g. "MA 14 JUL". */
-export function formatAgendaDayHeader(date: Date): string {
-  const weekday = new Intl.DateTimeFormat('nl-NL', { weekday: 'short' })
+export function formatAgendaDayHeader(date: Date, locale: string): string {
+  const weekday = new Intl.DateTimeFormat(locale, { weekday: 'short' })
     .format(date)
     .replace('.', '')
     .toUpperCase();
   const day = String(date.getDate());
-  const month = new Intl.DateTimeFormat('nl-NL', { month: 'short' })
+  const month = new Intl.DateTimeFormat(locale, { month: 'short' })
     .format(date)
     .replace('.', '')
     .toUpperCase();

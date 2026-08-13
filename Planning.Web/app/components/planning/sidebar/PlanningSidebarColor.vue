@@ -9,14 +9,18 @@ const emit = defineEmits<{
   'update:color': [value: string];
 }>();
 
+const { t } = useI18n();
 const { canManage } = usePlanning();
 const isHovered = ref(false);
 </script>
 
 <template>
-	<UPopover :arrow="true" :content="{ side: 'bottom', align: 'center', sideOffset: 8 }">
+	<UPopover
+		:arrow="true"
+		:content="{ side: 'bottom', align: 'center', sideOffset: 8 }"
+	>
 		<UTooltip
-			:title="`Kleur kiezen`"
+			:title="t('planning.chooseColor')"
 		>
 			<UButton
 				variant="ghost"
@@ -44,7 +48,7 @@ const isHovered = ref(false);
 					:class="c === props.color ? 'ring-primary-500' : 'ring-transparent'"
 					:style="{ backgroundColor: c }"
 					:disabled="!canManage"
-					:aria-label="`Kleur ${c}`"
+					:aria-label="`${t('planning.color')} ${c}`"
 					@click="emit('update:color', c)"
 				/>
 			</div>

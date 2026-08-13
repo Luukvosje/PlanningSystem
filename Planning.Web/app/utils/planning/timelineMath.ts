@@ -1,3 +1,4 @@
+import type { Composer } from 'vue-i18n';
 import type { TimelineZoom } from '~/types/planning';
 import type { OpeningHoursEntry } from '~/utils/planning/planningSettings';
 import {
@@ -6,6 +7,8 @@ import {
   sortImportantTimes,
 } from '~/utils/planning/planningSettings';
 import { addDays } from './dateUtils';
+
+type Translate = Composer['t'];
 
 export const COMPACT_PADDING_MINUTES = 30;
 export const DEFAULT_OFFICE_START = '07:00';
@@ -50,8 +53,12 @@ export type PlanningLayoutMode = 'compact' | 'spacious' | 'default';
 
 /** Returns the lane height for the given zoom level and optional layout mode. */
 export function getLaneHeight(zoom: TimelineZoom, layout: PlanningLayoutMode = 'default'): number {
-  if (layout === 'compact') return LANE_HEIGHT_COMPACT;
-  if (layout === 'spacious') return LANE_HEIGHT_SPACIOUS;
+  if (layout === 'compact') {
+return LANE_HEIGHT_COMPACT;
+}
+  if (layout === 'spacious') {
+return LANE_HEIGHT_SPACIOUS;
+}
   return DETAIL_ZOOM_LEVELS.includes(zoom) ? LANE_HEIGHT_DETAIL : LANE_HEIGHT;
 }
 
@@ -90,27 +97,28 @@ export const ZOOM_LADDER: readonly TimelineZoom[] = [
   'month',
 ] as const;
 
-export const ZOOM_PRESETS: readonly { value: TimelineZoom, label: string, keypress: string }[] = [
-  { value: '1h', label: 'Uur', keypress: 'u' },
-  { value: '4h', label: 'Dagdeel', keypress: '4' },
-  { value: 'day', label: 'Dag', keypress: 'd' },
-  { value: 'week', label: 'Week', keypress: 'w' },
-  { value: 'month', label: 'Maand', keypress: 'm' },
-] as const;
+export function getZoomPresets(t: Translate): { value: TimelineZoom, label: string, keypress: string }[] {
+  return [
+    { value: '1h', label: t('planning.zoom.hour'), keypress: 'u' },
+    { value: '4h', label: t('planning.zoom.dayPart'), keypress: '4' },
+    { value: 'day', label: t('planning.zoom.day'), keypress: 'd' },
+    { value: 'week', label: t('planning.zoom.week'), keypress: 'w' },
+    { value: 'month', label: t('planning.zoom.month'), keypress: 'm' },
+  ];
+}
 
-const ZOOM_LABELS: Record<TimelineZoom, string> = {
-  '15m': '15m',
-  '30m': '30m',
-  '1h': 'Uur',
-  '2h': '2u',
-  '4h': 'Dagdeel',
-  day: 'Dag',
-  week: 'Week',
-  month: 'Maand',
-};
-
-export function getZoomLabel(zoom: TimelineZoom): string {
-  return ZOOM_LABELS[zoom];
+export function getZoomLabel(zoom: TimelineZoom, t: Translate): string {
+  const labels: Record<TimelineZoom, string> = {
+    '15m': '15m',
+    '30m': '30m',
+    '1h': t('planning.zoom.hour'),
+    '2h': `2${t('planning.zoom.hourAbbreviation')}`,
+    '4h': t('planning.zoom.dayPart'),
+    day: t('planning.zoom.day'),
+    week: t('planning.zoom.week'),
+    month: t('planning.zoom.month'),
+  };
+  return labels[zoom];
 }
 
 export function getZoomLadderIndex(zoom: TimelineZoom): number {
@@ -353,7 +361,7 @@ export interface TimeSlotMarker {
   showLabel: boolean
 }
 
-export function getTimeSlotMarkers(zoom: TimelineZoom, dayWidth: number): TimeSlotMarker[] {
+export function getTimeSlotMarkers(zoom: TimelineZoom, dayWidth: number, locale: string): TimeSlotMarker[] {
   const slotMinutes = ZOOM_MINUTES[zoom];
   if (slotMinutes >= 24 * 60) {
     return [];
@@ -367,7 +375,7 @@ export function getTimeSlotMarkers(zoom: TimelineZoom, dayWidth: number): TimeSl
     { hour: '2-digit', minute: '2-digit' } :
     { hour: '2-digit' };
 
-  const formatter = new Intl.DateTimeFormat('nl-NL', timeOptions);
+  const formatter = new Intl.DateTimeFormat(locale, timeOptions);
   const markers: TimeSlotMarker[] = [];
 
   for (let i = 0; i < slotsPerDay; i++) {
@@ -405,8 +413,9 @@ export interface TimelineGridLine {
 export function getImportantGridLines(
   dayWidth: number,
   importantTimes: string[],
+  locale: string,
 ): TimelineGridLine[] {
-  const formatter = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  const formatter = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
 
   return importantTimes.map((time) => {
     const minutes = parseTimeToMinutesFromString(time);
@@ -437,12 +446,13 @@ function minutesToDayPx(minutes: number, dayWidth: number): number {
 export function getCoarseGridLines(
   zoom: TimelineZoom,
   dayWidth: number,
+  locale: string,
 ): TimelineGridLine[] {
   if (zoom === 'day') {
     // Lines every 4 hours; skip index 0 (leftPx = 0 overlaps the day's left border)
     const intervalMinutes = 4 * 60;
     const count = (24 * 60) / intervalMinutes; // 6
-    const formatter = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' });
+    const formatter = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
     return Array.from({ length: count }, (_, i) => {
       const totalMinutes = i * intervalMinutes;
       const date = new Date(2000, 0, 1, Math.floor(totalMinutes / 60), totalMinutes % 60);
@@ -480,6 +490,7 @@ export function getTimelineGridLines(
   zoom: TimelineZoom,
   dayWidth: number,
   importantTimes: string[],
+  locale: string,
 ): TimelineGridLine[] {
   const slotMinutes = ZOOM_MINUTES[zoom];
   if (slotMinutes >= 24 * 60) {
@@ -492,7 +503,7 @@ export function getTimelineGridLines(
   const showLabels = slotWidth >= MIN_LABEL_SLOT_WIDTH;
 
   if (zoomedOut) {
-    return getImportantGridLines(dayWidth, importantTimes).map((line) => ({
+    return getImportantGridLines(dayWidth, importantTimes, locale).map((line) => ({
       ...line,
       showLabel: showLabels,
     }));
@@ -501,7 +512,7 @@ export function getTimelineGridLines(
   const timeOptions: Intl.DateTimeFormatOptions = slotMinutes < 60 ?
     { hour: '2-digit', minute: '2-digit' } :
     { hour: '2-digit' };
-  const formatter = new Intl.DateTimeFormat('nl-NL', timeOptions);
+  const formatter = new Intl.DateTimeFormat(locale, timeOptions);
 
   const lines: TimelineGridLine[] = [];
 
@@ -710,8 +721,9 @@ export function getCompactImportantGridLines(
   dayWidth: number,
   window: DayTimeWindow,
   importantTimes: string[],
+  locale: string,
 ): TimelineGridLine[] {
-  const formatter = new Intl.DateTimeFormat('nl-NL', { hour: '2-digit', minute: '2-digit' });
+  const formatter = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
   const { start: dayStart } = dayBounds(window.start);
   const windowStartMs = window.start.getTime();
   const windowEndMs = window.end.getTime();
@@ -738,6 +750,7 @@ export function getCompactTimelineGridLines(
   dayWidth: number,
   window: DayTimeWindow,
   importantTimes: string[],
+  locale: string,
 ): TimelineGridLine[] {
   const slotMinutes = ZOOM_MINUTES[zoom];
   if (slotMinutes >= 24 * 60) {
@@ -752,7 +765,7 @@ export function getCompactTimelineGridLines(
   const showLabels = slotWidth >= MIN_LABEL_SLOT_WIDTH;
 
   if (zoomedOut) {
-    return getCompactImportantGridLines(dayWidth, window, importantTimes).map((line) => ({
+    return getCompactImportantGridLines(dayWidth, window, importantTimes, locale).map((line) => ({
       ...line,
       showLabel: showLabels,
     }));
@@ -766,7 +779,7 @@ export function getCompactTimelineGridLines(
   const timeOptions: Intl.DateTimeFormatOptions = slotMinutes < 60 ?
     { hour: '2-digit', minute: '2-digit' } :
     { hour: '2-digit' };
-  const formatter = new Intl.DateTimeFormat('nl-NL', timeOptions);
+  const formatter = new Intl.DateTimeFormat(locale, timeOptions);
 
   const lines: TimelineGridLine[] = [];
 

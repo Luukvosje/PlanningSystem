@@ -19,12 +19,13 @@ const {
   selectDay,
 } = useMyPlanningView();
 
+const { t } = useI18n();
 const viewMode = ref<MyPlanningViewMode>('week');
 
-const viewModes: { label: string, value: MyPlanningViewMode, icon: string }[] = [
-  { label: 'Dag', value: 'day', icon: 'i-lucide-calendar' },
-  { label: 'Week', value: 'week', icon: 'i-lucide-calendar-range' },
-];
+const viewModes = computed<{ label: string, value: MyPlanningViewMode, icon: string }[]>(() => [
+  { label: t('planning.viewMode.day'), value: 'day', icon: 'i-lucide-calendar' },
+  { label: t('planning.viewMode.week'), value: 'week', icon: 'i-lucide-calendar-range' },
+]);
 
 const periodLabel = computed(() => `${weekLabel.value} · ${weekRangeLabel.value}`);
 

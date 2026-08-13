@@ -1,13 +1,18 @@
-import { z } from 'zod'
+import { z } from 'zod';
+import type { Composer } from 'vue-i18n';
 
-export const acceptInviteSchema = z.object({
-  code: z
-    .string()
-    .min(1, 'Uitnodigingscode is verplicht')
-    .max(16, 'Uitnodigingscode is te lang'),
-})
+type Translate = Composer['t']
 
-export const createInviteSchema = z.object({})
+export function createAcceptInviteSchema(t: Translate) {
+  return z.object({
+    code: z
+      .string()
+      .min(1, t('validation.inviteCode.required'))
+      .max(16, t('validation.inviteCode.tooLong')),
+  });
+}
 
-export type AcceptInviteSchema = z.infer<typeof acceptInviteSchema>
+export const createInviteSchema = z.object({});
+
+export type AcceptInviteSchema = z.infer<ReturnType<typeof createAcceptInviteSchema>>
 export type CreateInviteSchema = z.infer<typeof createInviteSchema>

@@ -22,11 +22,26 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: ['@pinia/nuxt', '@nuxt/ui', '@nuxt/eslint'],
+  modules: ['@pinia/nuxt', '@nuxt/ui', '@nuxt/eslint', '@nuxtjs/i18n'],
 
   colorMode: {
     preference: 'light',
     fallback: 'light',
+  },
+
+  i18n: {
+    defaultLocale: 'nl',
+    locales: [
+      { code: 'nl', language: 'nl-NL', name: 'Nederlands', file: 'nl.json' },
+      { code: 'en', language: 'en-US', name: 'English', file: 'en.json' },
+    ],
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'planning_locale',
+      fallbackLocale: 'nl',
+    },
+    vueI18n: './i18n.config.ts',
   },
 
   css: ['~/assets/css/main.css'],

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { PlanningRowMode } from '~/types/planning';
 
+const { t } = useI18n();
 const store = usePlanningStore();
 
-const rowModes: { label: string, value: PlanningRowMode, icon: string }[] = [
-  { label: 'Team', value: 'resource', icon: 'i-lucide-users' },
-  { label: 'Klanten', value: 'customer', icon: 'i-lucide-building-2' },
-];
+const rowModes = computed<{ label: string, value: PlanningRowMode, icon: string }[]>(() => [
+  { label: t('nav.team'), value: 'resource', icon: 'i-lucide-users' },
+  { label: t('nav.customers'), value: 'customer', icon: 'i-lucide-building-2' },
+]);
 </script>
 <template>
 	<div class="flex justify-between">
@@ -29,7 +30,7 @@ const rowModes: { label: string, value: PlanningRowMode, icon: string }[] = [
 				v-if="!store.isTodayInView"
 				variant="outline"
 				color="neutral"
-				label="Vandaag"
+				:label="t('dashboard.today')"
 				@click="store.goToToday()"
 			/>
 			<UFieldGroup>
@@ -37,14 +38,14 @@ const rowModes: { label: string, value: PlanningRowMode, icon: string }[] = [
 					variant="outline"
 					color="neutral"
 					icon="i-lucide-chevron-left"
-					aria-label="Vorige periode"
+					:aria-label="t('planning.previousPeriod')"
 					@click="store.shiftPeriod(-1)"
 				/>
 				<UButton
 					variant="outline"
 					color="neutral"
 					icon="i-lucide-chevron-right"
-					aria-label="Volgende periode"
+					:aria-label="t('planning.nextPeriod')"
 					@click="store.shiftPeriod(1)"
 				/>
 			</UFieldGroup>
@@ -54,7 +55,7 @@ const rowModes: { label: string, value: PlanningRowMode, icon: string }[] = [
 			<!-- <UButton
 				v-if="canManage"
 				icon="i-lucide-plus"
-				label="Nieuw"
+				:label="t('planning.new')"
 				@click="() => { emit('create') }"
 			/> -->
 		</div>

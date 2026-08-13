@@ -10,6 +10,8 @@ const props = withDefaults(defineProps<{
 const start = defineModel<Date>('start', { required: true });
 const end = defineModel<Date>('end', { required: true });
 
+const { t } = useI18n();
+
 const {
   startTime,
   startDate,
@@ -47,7 +49,7 @@ const {
 				size="sm"
 				icon="i-lucide-calendar-range"
 			>
-				Meerdere dagen
+				{{ t('dateTimeRange.multipleDays') }}
 			</UBadge>
 
 			<span
@@ -60,11 +62,11 @@ const {
 
 		<div class="space-y-2">
 			<p class="text-sm font-medium text-highlighted">
-				Start
+				{{ t('dateTimeRange.start') }}
 			</p>
 			<div class="grid grid-cols-2 gap-2">
 				<UFormField
-					label="Tijd"
+					:label="t('dateTimeRange.time')"
 					name="startTime"
 				>
 					<UInputTime
@@ -76,7 +78,7 @@ const {
 					/>
 				</UFormField>
 				<UFormField
-					label="Datum"
+					:label="t('availability.date')"
 					name="startDate"
 				>
 					<UInputDate
@@ -91,11 +93,11 @@ const {
 
 		<div class="space-y-2">
 			<p class="text-sm font-medium text-highlighted">
-				Einde
+				{{ t('dateTimeRange.end') }}
 			</p>
 			<div class="grid grid-cols-2 gap-2">
 				<UFormField
-					label="Tijd"
+					:label="t('dateTimeRange.time')"
 					name="endTime"
 				>
 					<UInputTime
@@ -107,7 +109,7 @@ const {
 					/>
 				</UFormField>
 				<UFormField
-					label="Datum"
+					:label="t('availability.date')"
 					name="endDate"
 				>
 					<UInputDate
@@ -125,13 +127,13 @@ const {
 			class="flex items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2"
 		>
 			<p class="text-xs text-warning">
-				Eindtijd ligt vóór de starttijd. Wil je de volgende dag gebruiken?
+				{{ t('dateTimeRange.endBeforeStartSuggestion') }}
 			</p>
 			<UButton
 				size="xs"
 				variant="soft"
 				color="warning"
-				label="+1 dag"
+				:label="t('dateTimeRange.plusOneDay')"
 				:disabled="disabled"
 				@click="applyNextDayEnd"
 			/>

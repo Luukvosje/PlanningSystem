@@ -1,66 +1,76 @@
-import { UserRole } from '~/generated/models'
+import { UserRole } from '~/generated/models';
+import type { Composer } from 'vue-i18n';
 
-const roleLabels: Record<UserRole, string> = {
-  [UserRole.Owner]: 'Eigenaar',
-  [UserRole.Admin]: 'Beheerder',
-  [UserRole.Planner]: 'Planner',
-  [UserRole.Employee]: 'Medewerker',
+type Translate = Composer['t']
+
+function roleLabels(t: Translate): Record<UserRole, string> {
+  return {
+    [UserRole.Owner]: t('roles.owner'),
+    [UserRole.Admin]: t('roles.admin'),
+    [UserRole.Planner]: t('roles.planner'),
+    [UserRole.Employee]: t('roles.employee'),
+  };
 }
 
-export function getRoleLabel(role?: UserRole | string | null): string {
+export function getRoleLabel(role: UserRole | string | null | undefined, t: Translate): string {
   if (!role) {
-    return 'Onbekend'
+    return t('common.unknown');
   }
 
-  return roleLabels[role as UserRole] ?? role
+  return roleLabels(t)[role as UserRole] ?? role;
 }
 
 export function canManageOrganization(role?: UserRole | string | null): boolean {
-  return role === UserRole.Owner || role === UserRole.Admin
+  return role === UserRole.Owner || role === UserRole.Admin;
 }
 
 export function canManageInvites(role?: UserRole | string | null): boolean {
-  return canManageOrganization(role)
+  return canManageOrganization(role);
 }
 
 export function canManagePlanning(role?: UserRole | string | null): boolean {
-  return role === UserRole.Owner
-    || role === UserRole.Admin
-    || role === UserRole.Planner
+  return role === UserRole.Owner ||
+    role === UserRole.Admin ||
+    role === UserRole.Planner;
 }
 
 /** Owner, Admin and Planner can manage customers; Employee (viewer) is read-only. */
 export function canManageCustomers(role?: UserRole | string | null): boolean {
-  return canManagePlanning(role)
+  return canManagePlanning(role);
 }
 
-export const assignableRoleOptions = [
-  { label: 'Beheerder', value: UserRole.Admin },
-  { label: 'Planner', value: UserRole.Planner },
-  { label: 'Medewerker', value: UserRole.Employee },
-]
+function assignableRoleOptions(t: Translate) {
+  return [
+    { label: t('roles.admin'), value: UserRole.Admin },
+    { label: t('roles.planner'), value: UserRole.Planner },
+    { label: t('roles.employee'), value: UserRole.Employee },
+  ];
+}
 
 export function canEditUserRole(
   managerRole?: UserRole | string | null,
   targetRole?: UserRole | string | null,
 ): boolean {
   if (!canManageOrganization(managerRole)) {
-    return false
+    return false;
   }
 
-  return targetRole !== UserRole.Owner
+  return targetRole !== UserRole.Owner;
 }
 
 export function getAssignableRoleOptions(
+  t: Translate,
   currentUserId?: string | null,
   targetUser?: { id?: string, role?: UserRole | string | null },
 ) {
+  const options = assignableRoleOptions(t);
+
   if (
-    targetUser?.id === currentUserId
-    && targetUser?.role === UserRole.Admin
+    targetUser?.id === currentUserId &&
+    targetUser?.role === UserRole.Admin
   ) {
-    return assignableRoleOptions.filter(option => option.value === UserRole.Admin)
+    return options.filter((option) => option.value === UserRole.Admin);
   }
 
-  return assignableRoleOptions
+  return options;
 }

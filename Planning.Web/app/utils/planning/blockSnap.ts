@@ -1,8 +1,8 @@
-import type { UnavailablePeriod } from '~/types/availability'
-import type { PlanningRecord } from '~/types/planning'
-import { getUnavailableOverlaysForMatrix } from '~/utils/planning/availabilityMath'
-import { snapPxToImportantTime } from '~/utils/planning/planningSettings'
-import { SNAP_MINUTES, snapPx } from '~/utils/planning/timelineMath'
+import type { UnavailablePeriod } from '~/types/availability';
+import type { PlanningRecord } from '~/types/planning';
+import { getUnavailableOverlaysForMatrix } from '~/utils/planning/availabilityMath';
+import { snapPxToImportantTime } from '~/utils/planning/planningSettings';
+import { SNAP_MINUTES, snapPx } from '~/utils/planning/timelineMath';
 
 export interface BlockBounds {
   recordId: string
@@ -23,42 +23,42 @@ export function getRowBlockBounds(
   excludeRecordId?: string,
 ): BlockBounds[] {
   return records
-    .filter(record => record.id !== excludeRecordId)
+    .filter((record) => record.id !== excludeRecordId)
     .map((record) => {
-      const leftPx = timeToPx(record.startUtc)
-      const rightPx = timeToPx(record.endUtc)
-      return { recordId: record.id, leftPx, rightPx }
-    })
+      const leftPx = timeToPx(record.startUtc);
+      const rightPx = timeToPx(record.endUtc);
+      return { recordId: record.id, leftPx, rightPx };
+    });
 }
 
 export function collectBlockSnapPoints(bounds: BlockBounds[]): number[] {
-  const points = new Set<number>()
+  const points = new Set<number>();
   for (const bound of bounds) {
-    points.add(bound.leftPx)
-    points.add(bound.rightPx)
+    points.add(bound.leftPx);
+    points.add(bound.rightPx);
   }
-  return [...points]
+  return [...points];
 }
 
 export function collectOverlaySnapPoints(
   overlays: Array<{ leftPx: number, widthPx: number }>,
 ): number[] {
-  const points = new Set<number>()
+  const points = new Set<number>();
   for (const overlay of overlays) {
-    points.add(overlay.leftPx)
-    points.add(overlay.leftPx + overlay.widthPx)
+    points.add(overlay.leftPx);
+    points.add(overlay.leftPx + overlay.widthPx);
   }
-  return [...points]
+  return [...points];
 }
 
 export function mergeSnapPoints(...pointSets: number[][]): number[] {
-  const points = new Set<number>()
+  const points = new Set<number>();
   for (const set of pointSets) {
     for (const point of set) {
-      points.add(point)
+      points.add(point);
     }
   }
-  return [...points]
+  return [...points];
 }
 
 export function getRowAvailabilitySnapPoints(
@@ -70,9 +70,11 @@ export function getRowAvailabilitySnapPoints(
   rowMode: 'resource' | 'customer',
 ): number[] {
   if (rowMode !== 'resource' || availabilityPeriods.length === 0) {
-    return []
+    return [];
   }
 
+  // Snap points only need leftPx/widthPx; the tooltip text is discarded, so a
+  // passthrough translate function is fine here (no Vue/i18n context in this pure util).
   const overlays = getUnavailableOverlaysForMatrix(
     [],
     rowId,
@@ -80,13 +82,14 @@ export function getRowAvailabilitySnapPoints(
     rangeEnd,
     dayWidth,
     availabilityPeriods,
-  )
+    (key: string) => key,
+  );
 
-  return collectOverlaySnapPoints(overlays)
+  return collectOverlaySnapPoints(overlays);
 }
 
 function getSnapThreshold(dayWidth: number, snapMinutes = SNAP_MINUTES): number {
-  return (snapMinutes / (24 * 60)) * dayWidth
+  return (snapMinutes / (24 * 60)) * dayWidth;
 }
 
 export function snapPxToTimeline(
@@ -99,32 +102,32 @@ export function snapPxToTimeline(
     blockSnapPoints = [],
     importantTimes = [],
     snapMinutes = SNAP_MINUTES,
-  } = options
+  } = options;
 
-  const importantSnap = snapPxToImportantTime(px, dayWidth, importantTimes)
+  const importantSnap = snapPxToImportantTime(px, dayWidth, importantTimes);
   if (importantSnap !== null) {
-    return importantSnap
+    return importantSnap;
   }
 
   if (snapToBlocks && blockSnapPoints.length > 0) {
-    const threshold = getSnapThreshold(dayWidth, snapMinutes)
-    let nearestBlockPx: number | null = null
-    let nearestBlockDistance = Infinity
+    const threshold = getSnapThreshold(dayWidth, snapMinutes);
+    let nearestBlockPx: number | null = null;
+    let nearestBlockDistance = Infinity;
 
     for (const point of blockSnapPoints) {
-      const distance = Math.abs(px - point)
+      const distance = Math.abs(px - point);
       if (distance <= threshold && distance < nearestBlockDistance) {
-        nearestBlockDistance = distance
-        nearestBlockPx = point
+        nearestBlockDistance = distance;
+        nearestBlockPx = point;
       }
     }
 
     if (nearestBlockPx !== null) {
-      return nearestBlockPx
+      return nearestBlockPx;
     }
   }
 
-  return snapPx(px, dayWidth, snapMinutes)
+  return snapPx(px, dayWidth, snapMinutes);
 }
 
 export function snapDragLeftPx(
@@ -138,41 +141,41 @@ export function snapDragLeftPx(
     blockSnapPoints = [],
     importantTimes = [],
     snapMinutes = SNAP_MINUTES,
-  } = options
+  } = options;
 
-  const importantSnap = snapPxToImportantTime(rawLeftPx, dayWidth, importantTimes)
+  const importantSnap = snapPxToImportantTime(rawLeftPx, dayWidth, importantTimes);
   if (importantSnap !== null) {
-    return importantSnap
+    return importantSnap;
   }
 
-  const importantRightSnap = snapPxToImportantTime(rawLeftPx + widthPx, dayWidth, importantTimes)
+  const importantRightSnap = snapPxToImportantTime(rawLeftPx + widthPx, dayWidth, importantTimes);
   if (importantRightSnap !== null) {
-    return importantRightSnap - widthPx
+    return importantRightSnap - widthPx;
   }
 
   if (!snapToBlocks || blockSnapPoints.length === 0) {
-    return snapPx(rawLeftPx, dayWidth, snapMinutes)
+    return snapPx(rawLeftPx, dayWidth, snapMinutes);
   }
 
-  const threshold = getSnapThreshold(dayWidth, snapMinutes)
-  const blockCandidates: number[] = []
+  const threshold = getSnapThreshold(dayWidth, snapMinutes);
+  const blockCandidates: number[] = [];
 
   for (const point of blockSnapPoints) {
     if (Math.abs(rawLeftPx - point) <= threshold) {
-      blockCandidates.push(point)
+      blockCandidates.push(point);
     }
 
-    const leftForRightSnap = point - widthPx
+    const leftForRightSnap = point - widthPx;
     if (Math.abs(rawLeftPx + widthPx - point) <= threshold) {
-      blockCandidates.push(leftForRightSnap)
+      blockCandidates.push(leftForRightSnap);
     }
   }
 
   if (blockCandidates.length > 0) {
     return blockCandidates.reduce((best, candidate) =>
       Math.abs(candidate - rawLeftPx) < Math.abs(best - rawLeftPx) ? candidate : best,
-    )
+    );
   }
 
-  return snapPx(rawLeftPx, dayWidth, snapMinutes)
+  return snapPx(rawLeftPx, dayWidth, snapMinutes);
 }

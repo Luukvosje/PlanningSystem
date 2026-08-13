@@ -1,6 +1,7 @@
 <script setup lang="ts">
-const store = usePlanningStore()
-const { canManage } = usePlanningPermissions()
+const { t } = useI18n();
+const store = usePlanningStore();
+const { canManage } = usePlanningPermissions();
 
 interface ToggleSetting {
 	type: 'toggle'
@@ -25,22 +26,22 @@ interface LayoutSetting {
 type Setting = ToggleSetting | SeparatorSetting | LabelSetting | LayoutSetting
 
 const settings = computed((): Setting[] => [
-	{ type: 'label', label: 'Weergave' },
+	{ type: 'label', label: t('planning.settings.view') },
 	{ type: 'layout' },
 	{ type: 'separator' },
-	{ type: 'label', label: 'Instellingen' },
+	{ type: 'label', label: t('nav.settings') },
 	...(canManage.value ? [{
 		type: 'toggle' as const,
 		key: 'snapToBlocks' as const,
-		label: 'Uitlijnen op blokken',
-		description: 'Sleep en vergroot blokken uitgelijnd op andere blokken',
+		label: t('planning.settings.snapToBlocks'),
+		description: t('planning.settings.snapToBlocksDescription'),
 	}] : []),
-	{ type: 'toggle', key: 'showAvailability', label: 'Beschikbaarheid', description: 'Toon wanneer medewerkers niet beschikbaar zijn' },
-	{ type: 'toggle', key: 'showConcepts', label: 'Toon concepten', description: 'Toon geplande (niet-bevestigde) opdrachten' },
-	{ type: 'toggle', key: 'showBlockColor', label: 'Toon blok kleur', description: 'Gebruik aangepaste blok kleuren' },
-	{ type: 'toggle', key: 'showWeekends', label: 'Toon weekeinden', description: 'Markeer zaterdag en zondag' },
-	{ type: 'toggle', key: 'showFullDay', label: 'Toon volledige dag', description: 'Toon alle uren, ook buiten openingstijden' },
-])
+	{ type: 'toggle', key: 'showAvailability', label: t('nav.availability'), description: t('planning.settings.showAvailabilityDescription') },
+	{ type: 'toggle', key: 'showConcepts', label: t('planning.settings.showConcepts'), description: t('planning.settings.showConceptsDescription') },
+	{ type: 'toggle', key: 'showBlockColor', label: t('planning.settings.showBlockColor'), description: t('planning.settings.showBlockColorDescription') },
+	{ type: 'toggle', key: 'showWeekends', label: t('planning.settings.showWeekends'), description: t('planning.settings.showWeekendsDescription') },
+	{ type: 'toggle', key: 'showFullDay', label: t('planning.settings.showFullDay'), description: t('planning.settings.showFullDayDescription') },
+]);
 </script>
 
 <template>

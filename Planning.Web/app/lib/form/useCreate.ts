@@ -1,12 +1,13 @@
-import { computed, markRaw, type Component, type ComputedRef, type Ref } from 'vue'
-import type { z } from 'zod'
-import { LazyFormCreateModal } from '#components'
-import { registerCreate, syncCreateOptions, useCreateRegistry } from './create-registry'
-import type { FormControl, FormSubmitConfig, MaybeRefOrGetter } from './control-types'
-import { resolveMaybeRefOrGetter } from './control-types'
-import { Form, useForm, type FormClassOptions } from './Form'
+import { computed, markRaw, type Component, type ComputedRef, type Ref } from 'vue';
+import type { z } from 'zod';
+import { LazyFormCreateModal } from '#components';
+import { registerCreate, syncCreateOptions, useCreateRegistry } from './create-registry';
+import type { FormSubmitConfig, MaybeRefOrGetter } from './control-types';
+import { resolveMaybeRefOrGetter } from './control-types';
+import { useForm, type FormClassOptions } from './Form';
 
-export const CREATE_INJECTION_KEY = Symbol('form-create')
+
+export const CREATE_INJECTION_KEY = Symbol('form-create');
 
 export type CreateFooterMode = 'submit' | 'close-only'
 
@@ -46,28 +47,29 @@ export function useCreate<TSchema extends z.ZodType>(
   id: symbol,
   options: UseCreateOptions<TSchema>,
 ): CreateInstance<TSchema> {
-  const optionsRef = syncCreateOptions(id, options)
+  const optionsRef = syncCreateOptions(id, options);
 
-  const existing = useCreateRegistry().value.find(item => item.id === id)
+  const existing = useCreateRegistry().value.find((item) => item.id === id);
 
   if (existing) {
-    return existing as CreateInstance<TSchema>
+    return existing as CreateInstance<TSchema>;
   }
 
-  const overlay = useOverlay()
-  const modal = overlay.create(LazyFormCreateModal)
+  const { t } = useI18n();
+  const overlay = useOverlay();
+  const modal = overlay.create(LazyFormCreateModal);
 
-  const title = computed(() => resolveMaybeRefOrGetter(optionsRef.value.title))
-  const description = computed(() => optionsRef.value.description
-    ? resolveMaybeRefOrGetter(optionsRef.value.description)
-    : undefined)
+  const title = computed(() => resolveMaybeRefOrGetter(optionsRef.value.title));
+  const description = computed(() => optionsRef.value.description ?
+    resolveMaybeRefOrGetter(optionsRef.value.description) :
+    undefined);
 
-  const submitLabel = computed(() => resolveMaybeRefOrGetter(optionsRef.value.submitLabel ?? 'Opslaan'))
-  const cancelLabel = computed(() => resolveMaybeRefOrGetter(optionsRef.value.cancelLabel ?? 'Annuleren'))
-  const footerMode = computed(() => resolveMaybeRefOrGetter(optionsRef.value.footerMode ?? 'submit'))
-  const modalUi = computed(() => optionsRef.value.modalUi ?? { content: 'sm:max-w-lg' })
-  const bodyExtra = computed(() => optionsRef.value.bodyExtra)
-  const extensions = computed(() => optionsRef.value.extensions ?? {})
+  const submitLabel = computed(() => resolveMaybeRefOrGetter(optionsRef.value.submitLabel ?? t('common.actions.save')));
+  const cancelLabel = computed(() => resolveMaybeRefOrGetter(optionsRef.value.cancelLabel ?? t('common.actions.cancel')));
+  const footerMode = computed(() => resolveMaybeRefOrGetter(optionsRef.value.footerMode ?? 'submit'));
+  const modalUi = computed(() => optionsRef.value.modalUi ?? { content: 'sm:max-w-lg' });
+  const bodyExtra = computed(() => optionsRef.value.bodyExtra);
+  const extensions = computed(() => optionsRef.value.extensions ?? {});
 
   const form = markRaw(useForm({
     schema: options.schema,
@@ -77,26 +79,26 @@ export function useCreate<TSchema extends z.ZodType>(
     genericErrorMessage: options.genericErrorMessage,
     submit: options.submit ?? { hidden: true },
     onSubmit: async (data) => {
-      await optionsRef.value.onSubmit(data)
+      await optionsRef.value.onSubmit(data);
       if (optionsRef.value.closeOnSuccess !== false) {
-        close()
+        close();
       }
     },
-  }))
+  }));
 
   function handleClosed() {
-    form.reset()
-    optionsRef.value.onClose?.()
+    form.reset();
+    optionsRef.value.onClose?.();
   }
 
   function open() {
-    form.reset()
-    optionsRef.value.onOpen?.()
-    modal.open({ create: instance as CreateInstance }).then(handleClosed)
+    form.reset();
+    optionsRef.value.onOpen?.();
+    modal.open({ create: instance as CreateInstance }).then(handleClosed);
   }
 
   function close() {
-    modal.close()
+    modal.close();
   }
 
   const instance: CreateInstance<TSchema> = {
@@ -112,7 +114,7 @@ export function useCreate<TSchema extends z.ZodType>(
     extensions,
     open,
     close,
-  }
+  };
 
-  return registerCreate(instance) as CreateInstance<TSchema>
+  return registerCreate(instance) as CreateInstance<TSchema>;
 }
