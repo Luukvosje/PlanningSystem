@@ -1,6 +1,7 @@
 using Planning.Application.Common;
 using Planning.Domain.Availability;
 using Planning.Domain.Enums;
+using Planning.Domain.Planning;
 using Planning.Domain.Users;
 
 namespace Planning.Application.Availability;
@@ -9,15 +10,18 @@ public class AvailabilityRuleService : IAvailabilityRuleService
 {
     private readonly IAvailabilityRuleRepository _ruleRepository;
     private readonly IUserRepository _userRepository;
+    private readonly IPlanningRecordRepository _planningRecordRepository;
     private readonly ICurrentUserContext _currentUserContext;
 
     public AvailabilityRuleService(
         IAvailabilityRuleRepository ruleRepository,
         IUserRepository userRepository,
+        IPlanningRecordRepository planningRecordRepository,
         ICurrentUserContext currentUserContext)
     {
         _ruleRepository = ruleRepository;
         _userRepository = userRepository;
+        _planningRecordRepository = planningRecordRepository;
         _currentUserContext = currentUserContext;
     }
 
@@ -38,7 +42,7 @@ public class AvailabilityRuleService : IAvailabilityRuleService
         }
 
         var rules = await _ruleRepository.GetByEmployeeIdAsync(organizationId, employeeId, cancellationToken);
-        var items = rules.Select(AvailabilityRuleMapper.ToResponse).ToList();
+        var items = rules.Select(rule => AvailabilityRuleMapper.ToResponse(rule)).ToList();
         return Result<AvailabilityRulesListResponse>.Success(new AvailabilityRulesListResponse(items));
     }
 
@@ -119,7 +123,11 @@ public class AvailabilityRuleService : IAvailabilityRuleService
             };
 
             await _ruleRepository.AddAsync(rule, cancellationToken);
-            return Result<AvailabilityRuleResponse>.Success(AvailabilityRuleMapper.ToResponse(rule));
+
+            var schedulingConflict = rule.Date is { } createdDate
+                && await HasSchedulingConflictAsync(organizationId, rule.EmployeeId, createdDate, rule.StartTime, rule.EndTime, cancellationToken);
+
+            return Result<AvailabilityRuleResponse>.Success(AvailabilityRuleMapper.ToResponse(rule, schedulingConflict));
         }
         catch (ArgumentException ex)
         {
@@ -186,7 +194,11 @@ public class AvailabilityRuleService : IAvailabilityRuleService
             }
 
             await _ruleRepository.UpdateAsync(existing, cancellationToken);
-            return Result<AvailabilityRuleResponse>.Success(AvailabilityRuleMapper.ToResponse(existing));
+
+            var schedulingConflict = existing.Date is { } updatedDate
+                && await HasSchedulingConflictAsync(organizationId, existing.EmployeeId, updatedDate, existing.StartTime, existing.EndTime, cancellationToken);
+
+            return Result<AvailabilityRuleResponse>.Success(AvailabilityRuleMapper.ToResponse(existing, schedulingConflict));
         }
         catch (ArgumentException ex)
         {
@@ -265,6 +277,38 @@ public class AvailabilityRuleService : IAvailabilityRuleService
 
     private bool CanManageAnyEmployee() =>
         _currentUserContext.Role is UserRole.Owner or UserRole.Admin or UserRole.Planner;
+
+    private async Task<bool> HasSchedulingConflictAsync(
+        Guid organizationId,
+        Guid employeeId,
+        DateOnly date,
+        TimeOnly startTime,
+        TimeOnly endTime,
+        CancellationToken cancellationToken)
+    {
+        var dayStartUtc = date.ToDateTime(TimeOnly.MinValue);
+        var dayEndUtc = dayStartUtc.AddDays(1);
+
+        var (records, _) = await _planningRecordRepository.GetByOrganizationAndRangeAsync(
+            organizationId,
+            dayStartUtc,
+            dayEndUtc,
+            new[] { employeeId },
+            null,
+            null,
+            null,
+            1,
+            int.MaxValue,
+            cancellationToken);
+
+        var ruleStartUtc = date.ToDateTime(startTime);
+        var ruleEndUtc = date.ToDateTime(endTime);
+
+        return records.Any(record =>
+            record.Status != PlanningStatus.Cancelled
+            && record.StartUtc < ruleEndUtc
+            && record.EndUtc > ruleStartUtc);
+    }
 
     private async Task<bool> EmployeeExistsInOrganizationAsync(
         Guid employeeId,

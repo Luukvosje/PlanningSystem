@@ -20,6 +20,7 @@ function normalizeRule(raw: Record<string, unknown>): AvailabilityRule {
     reason: (raw.reason ?? raw.Reason) as string | null | undefined,
     createdAtUtc: (raw.createdAtUtc ?? raw.CreatedAtUtc) as string | undefined,
     updatedAtUtc: (raw.updatedAtUtc ?? raw.UpdatedAtUtc) as string | undefined,
+    schedulingConflict: Boolean(raw.schedulingConflict ?? raw.SchedulingConflict),
   }
 }
 

@@ -11,7 +11,8 @@
       "create": "Aanmaken",
       "search": "Zoeken",
       "confirm": "Bevestigen",
-      "close": "Sluiten"
+      "close": "Sluiten",
+      "discard": "Wijzigingen negeren"
     },
     "loading": "Laden...",
     "colorMode": {
@@ -20,6 +21,14 @@
       "lightMode": "Lichte modus",
       "dark": "Donker",
       "darkMode": "Donkere modus"
+    },
+    "unsavedChanges": {
+      "text": "Je hebt niet-opgeslagen wijzigingen",
+      "title": "Niet-opgeslagen wijzigingen",
+      "description": "Je hebt niet-opgeslagen wijzigingen op deze pagina. Wil je deze opslaan voordat je verdergaat?",
+      "save": "Opslaan en doorgaan",
+      "discard": "Wijzigingen negeren en doorgaan",
+      "cancel": "Op pagina blijven"
     }
   },
   "nav": {
@@ -107,7 +116,7 @@
       "partial": "Iedere {day} {time}",
       "range": "Iedere {day} {time} niet beschikbaar"
     },
-    "pageDescription": "Je bent standaard beschikbaar. Voeg alleen blokkades of uitzonderingen toe wanneer je niet kunt werken.",
+    "pageDescription": "Beheer hier de vaste blokkades en uitzonderingen van een teamlid. Je eigen weekpatroon staat onder Instellingen, je eigen uitzonderingen onder Mijn planning.",
     "timePreset": {
       "wholeDay": "Hele dag",
       "until": "Tot een tijdstip",
@@ -133,7 +142,9 @@
     "noWeeklyBlocks": "Geen vaste blokkades. Je bent standaard beschikbaar.",
     "oneTimeExceptions": "Eenmalige uitzonderingen",
     "oneTimeExceptionsDescription": "Vakantie, afspraken of andere uitzonderingen op een datum.",
-    "noOneTimeExceptions": "Geen eenmalige uitzonderingen."
+    "noOneTimeExceptions": "Geen eenmalige uitzonderingen.",
+    "conflictWarningTitle": "Let op: dienst al ingepland",
+    "conflictWarningDescription": "Er staat al een dienst gepland op deze datum. Overleg eventueel met de planner."
   },
   "customers": {
     "loading": "Klanten laden...",
@@ -326,6 +337,10 @@
       "description": "Maak een nieuwe organisatie aan.",
       "firstOrgDescription": "Maak je eerste organisatie aan om te beginnen met plannen."
     },
+    "select": {
+      "title": "Kies een organisatie",
+      "description": "Je hoort bij meerdere organisaties. Kies met welke je verder wilt gaan."
+    },
     "logo": {
       "title": "Logo",
       "alt": "Organisatielogo",
@@ -381,6 +396,9 @@
     "toggleSidebarShow": "Navigatie tonen",
     "toggleSidebarHide": "Navigatie verbergen",
     "toggleSidebarMobile": "Zijbalk in-/uitschakelen",
+    "headerActions": {
+      "open": "Acties"
+    },
     "organizationSwitched": "Organisatie gewisseld",
     "userMenu": {
       "language": "Taal",

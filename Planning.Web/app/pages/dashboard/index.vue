@@ -21,11 +21,11 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 			:subtitle="t('dashboard.overview', { organization: organizationName })"
 		/>
 
-		<div class="flex flex-col gap-4 p-4 max-lg:p-2">
+		<div class="flex flex-col gap-4 ">
 			<DashboardNextShiftCard />
 			
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-				<UCard>
+				<LayoutCard>
 					<div class="flex items-start justify-between">
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -40,9 +40,9 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 							class="size-5 text-secondary"
 						/>
 					</div>
-				</UCard>
+				</LayoutCard>
 
-				<UCard :ui="{ body: 'p-6' }">
+				<LayoutCard>
 					<div class="flex items-start justify-between">
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -62,9 +62,9 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 							class="size-5 text-secondary"
 						/>
 					</div>
-				</UCard>
+				</LayoutCard>
 
-				<UCard :ui="{ body: 'p-6' }">
+				<LayoutCard>
 					<div class="flex items-start justify-between">
 						<div>
 							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -79,17 +79,11 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 							class="size-5 text-secondary"
 						/>
 					</div>
-				</UCard>
+				</LayoutCard>
 			</div>
 
 			<div class="grid gap-4 sm:grid-cols-2">
-				<UCard>
-					<template #header>
-						<h2 class="font-semibold">
-							{{ t('dashboard.quickLinks') }}
-						</h2>
-					</template>
-
+				<LayoutCard :title="t('dashboard.quickLinks')">
 					<div class="flex flex-col gap-2">
 						<UButton
 							to="/planning"
@@ -109,19 +103,13 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 							{{ t('dashboard.viewTeam') }}
 						</UButton>
 					</div>
-				</UCard>
+				</LayoutCard>
 
-				<UCard>
-					<template #header>
-						<h2 class="font-semibold">
-							{{ t('dashboard.today') }}
-						</h2>
-					</template>
-
+				<LayoutCard :title="t('dashboard.today')">
 					<p class="text-sm text-muted">
 						{{ canManage ? t('dashboard.welcomeBackManage') : t('dashboard.welcomeBack') }}
 					</p>
-				</UCard>
+				</LayoutCard>
 			</div>
 		</div>
 	</LayoutPageContainer>

@@ -10,13 +10,36 @@ export default defineAppConfig({
       dark: 'i-lucide-moon',
     },
     button: {
+      slots: {
+        base: 'rounded-sm',
+      },
       defaultVariants: {
         color: 'secondary',
       },
     },
+    input: {
+      slots: {
+        base: 'rounded-sm',
+      },
+    },
+    modal: {
+      variants: {
+        fullscreen: {
+          false: {
+            content: 'rounded-xl',
+          },
+        },
+      },
+    },
+    card: {
+      slots: {
+        header: 'p-3 sm:p-4',
+        body: 'p-3 sm:p-4',
+        footer: 'p-3 sm:p-4',
+      },
+    },
     table: {
       slots: {
-        root: 'border border-default rounded-xl',
         base: 'h-full',
         tbody: 'h-full [&_tr:has([data-slot=empty])]:h-full',
         empty: 'h-full align-middle',

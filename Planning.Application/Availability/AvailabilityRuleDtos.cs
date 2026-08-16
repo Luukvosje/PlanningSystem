@@ -31,7 +31,8 @@ public sealed record AvailabilityRuleResponse(
     AvailabilityRuleStatus Status,
     string? Reason,
     DateTime CreatedAtUtc,
-    DateTime UpdatedAtUtc);
+    DateTime UpdatedAtUtc,
+    bool SchedulingConflict = false);
 
 public sealed record AvailabilityRulesListResponse(
     IReadOnlyList<AvailabilityRuleResponse> Items);

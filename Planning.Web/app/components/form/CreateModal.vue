@@ -39,6 +39,16 @@ const showInlineSubmit = computed(() => {
   return !createdInvite?.value;
 });
 
+const { confirm: confirmUnsavedChanges } = useUnsavedChangesConfirm();
+
+async function requestCancel() {
+  if (form.value.isDirty.value && (await confirmUnsavedChanges()) !== 'discard') {
+    return;
+  }
+
+  props.create.close();
+}
+
 watch(open, (value) => {
   if (!value) {
     emit('close');
@@ -52,6 +62,8 @@ watch(open, (value) => {
 		:title="title"
 		:description="description"
 		:ui="modalUi"
+		:dismissible="!form.isDirty.value"
+		@close:prevent="requestCancel"
 		@after:leave="emit('after:leave')"
 	>
 		<template #body>
@@ -85,7 +97,7 @@ watch(open, (value) => {
 					v-if="showFooterSubmit"
 					variant="outline"
 					:disabled="isSubmitting"
-					@click="create.close()"
+					@click="requestCancel()"
 				>
 					{{ cancelLabel }}
 				</UButton>
@@ -93,7 +105,7 @@ watch(open, (value) => {
 				<UButton
 					v-if="showFooterSubmit"
 					:loading="isSubmitting"
-					@click="form.submit()"
+					@click="() => { form.submit(); }"
 				>
 					{{ submitLabel }}
 				</UButton>
@@ -101,7 +113,7 @@ watch(open, (value) => {
 				<UButton
 					v-else
 					variant="outline"
-					@click="create.close()"
+					@click="requestCancel()"
 				>
 					{{ t('common.actions.close') }}
 				</UButton>

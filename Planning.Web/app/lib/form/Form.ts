@@ -1,4 +1,4 @@
-import { computed, reactive, ref, type ComputedRef, type Ref } from 'vue';
+import { computed, defineComponent, h, onScopeDispose, reactive, ref, type Component, type ComputedRef, type Ref } from 'vue';
 import type { z } from 'zod';
 import type { Form as UFormInstance, FormSubmitEvent } from '#ui/types';
 import { isApiError } from '~/types/api-error';
@@ -6,6 +6,8 @@ import type { FormControl, FormSubmitConfig, MaybeRefOrGetter } from './control-
 import { resolveMaybeRefOrGetter } from './control-types';
 import { toFormErrors, type ServerErrorPayload } from './types';
 import { translateBackendMessage } from '~/utils/backendMessages';
+import { registerDirtyForm, unregisterDirtyForm } from './dirty-registry';
+import FormView from '~/components/form/View.vue';
 
 export interface FormClassOptions<TSchema extends z.ZodType> {
   schema: TSchema
@@ -16,6 +18,22 @@ export interface FormClassOptions<TSchema extends z.ZodType> {
   /** Default: blur only (submit always validates via UForm). */
   validateOn?: Array<'blur' | 'input' | 'change'>
   genericErrorMessage?: string
+  /**
+   * Opts into the "settings-style" form: label-left/value-right grid layout, a
+   * dirty-aware sticky save/cancel bar, and route-leave-guard registration.
+   * Default: false (current vertical-stack behavior, unchanged).
+   */
+  grid?: boolean
+  /** Rendered by `form.render` above the controls loop. */
+  header?: Component
+  /** Rendered by `form.render` below the submit area. */
+  footer?: Component
+  /**
+   * Internal escape hatch: `useCreate`/`useEdit` set this to `false` so their
+   * modal forms don't register for the route-leave guard (modals guard their
+   * own close flow instead). Default: true.
+   */
+  trackNavigation?: boolean
 }
 
 export class Form<TSchema extends z.ZodType> {
@@ -27,6 +45,10 @@ export class Form<TSchema extends z.ZodType> {
   formRef: Ref<UFormInstance<z.infer<TSchema>> | null> = ref(null);
   controls: ComputedRef<FormControl[]>;
   submitConfig: ComputedRef<FormSubmitConfig>;
+  grid: boolean;
+  header: Component | undefined;
+  footer: Component | undefined;
+  isDirty: ComputedRef<boolean>;
 
   private readonly onSubmitFn: (data: z.infer<TSchema>) => Promise<void> | void;
   private readonly genericErrorMessage: string | undefined;
@@ -35,6 +57,9 @@ export class Form<TSchema extends z.ZodType> {
   private readonly initialState: Partial<z.infer<TSchema>>;
   private readonly controlsSource: MaybeRefOrGetter<FormControl[]>;
   private readonly submitSource: MaybeRefOrGetter<FormSubmitConfig>;
+  private lastSavedSnapshot: Ref<string>;
+  private lastSubmitSucceeded: boolean | null = null;
+  private renderComponent: Component | undefined;
 
   constructor(options: FormClassOptions<TSchema>) {
     this.schema = options.schema;
@@ -50,7 +75,21 @@ export class Form<TSchema extends z.ZodType> {
     this.submitSource = options.submit ?? computed(() => ({ label: this.t('common.actions.save') }));
     this.controls = computed(() => resolveMaybeRefOrGetter(this.controlsSource));
     this.submitConfig = computed(() => resolveMaybeRefOrGetter(this.submitSource));
+    this.grid = options.grid ?? false;
+    this.header = options.header;
+    this.footer = options.footer;
+    this.lastSavedSnapshot = ref(JSON.stringify(this.state));
+    this.isDirty = computed(() => JSON.stringify(this.state) !== this.lastSavedSnapshot.value);
+
+    if (this.grid && options.trackNavigation !== false) {
+      registerDirtyForm(this);
+      onScopeDispose(() => unregisterDirtyForm(this));
+    }
   }
+
+  markClean = () => {
+    this.lastSavedSnapshot.value = JSON.stringify(this.state);
+  };
 
   handleSubmit = async (event: FormSubmitEvent<z.infer<TSchema>>) => {
     this.submitError.value = null;
@@ -58,7 +97,10 @@ export class Form<TSchema extends z.ZodType> {
 
     try {
       await this.onSubmitFn(event.data);
+      this.lastSubmitSucceeded = true;
+      this.markClean();
     } catch (err: unknown) {
+      this.lastSubmitSucceeded = false;
       this.applyServerErrors(err);
     } finally {
       this.isSubmitting.value = false;
@@ -99,11 +141,38 @@ export class Form<TSchema extends z.ZodType> {
     this.formRef.value?.clear();
     Object.assign(this.state as object, structuredClone(newState ?? this.initialState));
     this.submitError.value = null;
+    this.markClean();
   };
 
-  submit = async () => {
-    await this.formRef.value?.submit();
+  /** Reverts unsaved edits back to the last clean (constructed/reset/saved) snapshot. */
+  discard = () => {
+    this.formRef.value?.clear();
+    Object.assign(this.state as object, JSON.parse(this.lastSavedSnapshot.value));
+    this.submitError.value = null;
   };
+
+  /** Resolves `true` only if the submit actually ran and `onSubmit` didn't throw. */
+  submit = async (): Promise<boolean> => {
+    this.lastSubmitSucceeded = null;
+    await this.formRef.value?.submit();
+    return this.lastSubmitSucceeded === true;
+  };
+
+  /**
+   * A component with `form` already bound, for `<component :is="form.render">`.
+   * Slots (including per-control `#control-${name}` overrides) pass through untouched.
+   */
+  get render(): Component {
+    if (!this.renderComponent) {
+      this.renderComponent = defineComponent({
+        name: 'FormRender',
+        inheritAttrs: false,
+        setup: (_, { slots, attrs }) => () => h(FormView, { form: this, ...attrs }, slots),
+      });
+    }
+
+    return this.renderComponent;
+  }
 }
 
 export function useForm<TSchema extends z.ZodType>(options: FormClassOptions<TSchema>) {

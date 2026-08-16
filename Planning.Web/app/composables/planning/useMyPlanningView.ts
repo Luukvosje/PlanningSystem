@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/vue-query';
 import type { PlanningRecord } from '~/types/planning';
+import type { AvailabilityRule } from '~/types/availability';
 import { getPlanningList } from '~/utils/planningClient';
 import { queryKeys } from '~/utils/queryKeys';
 import {
@@ -17,6 +18,7 @@ export interface MyPlanningDay {
   dateKey: string
   shifts: PlanningRecord[]
   hasShifts: boolean
+  exceptions: AvailabilityRule[]
   isToday: boolean
   isWeekend: boolean
 }
@@ -70,18 +72,26 @@ export function useMyPlanningView() {
       .sort((a, b) => new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime()),
   );
 
+  const { data: rulesData } = useAvailabilityRules({ employeeId: userId });
+
+  const oneTimeRules = computed(() =>
+    (rulesData.value?.items ?? []).filter((rule) => rule.type === 'OneTime'),
+  );
+
   const days = computed<MyPlanningDay[]>(() =>
     weekDays.value.map((date) => {
       const dateKey = toDateKey(date);
       const shifts = records.value.filter(
         (record) => toDateKey(new Date(record.startUtc)) === dateKey,
       );
+      const exceptions = oneTimeRules.value.filter((rule) => rule.date === dateKey);
 
       return {
         date,
         dateKey,
         shifts,
         hasShifts: shifts.length > 0,
+        exceptions,
         isToday: isToday(date),
         isWeekend: date.getDay() === 0 || date.getDay() === 6,
       };

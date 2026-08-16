@@ -8,6 +8,15 @@
   --color-teal-600: #006a61;
 }
 
+:root {
+  --ui-border: var(--ui-color-neutral-300);
+  --ui-radius: 0.375rem;
+}
+
+.dark {
+  --ui-border: var(--ui-color-neutral-700);
+}
+
 body {
   font-family: var(--font-sans);
 }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { HeaderAction } from '~/types/headerActions';
+
 type MyPlanningViewMode = 'day' | 'week';
 
 definePageMeta({ layout: false });
@@ -32,36 +34,45 @@ const periodLabel = computed(() => `${weekLabel.value} · ${weekRangeLabel.value
 function setViewMode(mode: MyPlanningViewMode) {
   viewMode.value = mode;
 }
+
+const headerActions = computed<HeaderAction[]>(() => [
+  {
+    type: 'select',
+    key: 'viewMode',
+    label: t('planning.settings.view'),
+    value: viewMode.value,
+    items: viewModes.value,
+    desktop: 'buttons',
+    onUpdate: (value) => {
+      if (value === 'day' || value === 'week') {
+        setViewMode(value);
+      }
+    },
+  },
+  {
+    type: 'slot',
+    key: 'period',
+  },
+]);
 </script>
 
 <template>
 	<NuxtLayout name="default">
 		<template #actions>
-			<div class="flex min-w-0 flex-wrap items-center justify-end gap-2 max-lg:gap-1.5">
-				<UFieldGroup>
-					<UButton
-						v-for="mode in viewModes"
-						:key="mode.value"
-						:icon="mode.icon"
-						:label="mode.label"
-						:variant="viewMode === mode.value ? 'solid' : 'outline'"
-						:color="viewMode === mode.value ? 'secondary' : 'neutral'"
+			<LayoutHeaderActions :items="headerActions">
+				<template #period>
+					<PlanningMyPeriodNav
+						:label="periodLabel"
+						:week-start="weekStart"
+						:is-current-week="isCurrentWeek"
 						size="sm"
-						@click="setViewMode(mode.value)"
+						@previous="navigatePrevious"
+						@next="navigateNext"
+						@today="goToToday"
+						@select-date="selectWeekContaining"
 					/>
-				</UFieldGroup>
-
-				<PlanningMyPeriodNav
-					:label="periodLabel"
-					:week-start="weekStart"
-					:is-current-week="isCurrentWeek"
-					size="sm"
-					@previous="navigatePrevious"
-					@next="navigateNext"
-					@today="goToToday"
-					@select-date="selectWeekContaining"
-				/>
-			</div>
+				</template>
+			</LayoutHeaderActions>
 		</template>
 
 		<div class="flex h-full min-h-0 w-full max-w-none flex-col overflow-hidden">

@@ -13,9 +13,9 @@ const { t } = useI18n();
 
 <template>
 	<div class="space-y-4">
-		<UCard>
+		<LayoutCard>
 			<div class="space-y-2">
-				<h2 class="text-xl font-semibold">
+				<h2 class="font-semibold">
 					{{ user.firstName }} {{ user.lastName }}
 				</h2>
 				<p class="text-muted">
@@ -39,7 +39,7 @@ const { t } = useI18n();
 					/>
 				</div>
 			</div>
-		</UCard>
+		</LayoutCard>
 
 		<!-- <UsersModulesCard v-if="canManage" :user="user" /> -->
 	</div>

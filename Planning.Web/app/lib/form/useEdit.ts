@@ -80,6 +80,7 @@ export function useEdit<TSchema extends z.ZodType, TEntity>(
     validateOn: options.validateOn,
     genericErrorMessage: options.genericErrorMessage,
     submit: options.submit ?? { hidden: true },
+    trackNavigation: false,
     onSubmit: async (data) => {
       if (!entity.value) {
         return;

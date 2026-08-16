@@ -18,6 +18,7 @@ export interface AvailabilityRule {
   reason?: string | null
   createdAtUtc?: string
   updatedAtUtc?: string
+  schedulingConflict?: boolean
 }
 
 export interface AvailabilityRulesListResponse {

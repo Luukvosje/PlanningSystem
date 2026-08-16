@@ -77,18 +77,10 @@ function save() {
 </script>
 
 <template>
-	<UCard>
-		<template #header>
-			<div>
-				<h3 class="font-semibold">
-					{{ t('organizations.planningSettings.title') }}
-				</h3>
-				<p class="text-sm text-muted">
-					{{ t('organizations.planningSettings.description') }}
-				</p>
-			</div>
-		</template>
-
+	<LayoutCard
+		:title="t('organizations.planningSettings.title')"
+		:description="t('organizations.planningSettings.description')"
+	>
 		<UiLoadingIndicator
 			v-if="isLoading"
 			:label="t('organizations.planningSettings.loading')"
@@ -187,5 +179,5 @@ function save() {
 				@click="save"
 			/>
 		</div>
-	</UCard>
+	</LayoutCard>
 </template>

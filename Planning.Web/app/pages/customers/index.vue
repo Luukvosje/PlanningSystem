@@ -103,39 +103,41 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
 				class="max-w-md shrink-0"
 			/>
 
-			<UTable
-				v-model:global-filter="globalFilter"
-				:data="customers ?? []"
-				:columns="columns"
-				:global-filter-options="{
-					globalFilterFn: (row, _columnId, filterValue) => matchesCustomerFilter(row.original, filterValue),
-				}"
-				sticky
-				class="min-h-0 flex-1"
-				@select="onRowSelect"
-			>
-				<template #empty>
-					<div class="flex h-full min-h-48 flex-col items-center justify-center gap-3 py-6">
-						<template v-if="!(customers?.length) && !globalFilter">
-							<p class="text-muted text-sm">
-								{{ canManage ? t('customers.emptyManage') : t('customers.empty') }}
-							</p>
-							<UButton
-								v-if="canManage"
-								@click="customerCreate.open()"
+			<div class="min-h-0 flex-1 overflow-hidden rounded-xl border border-default">
+				<UTable
+					v-model:global-filter="globalFilter"
+					:data="customers ?? []"
+					:columns="columns"
+					:global-filter-options="{
+						globalFilterFn: (row, _columnId, filterValue) => matchesCustomerFilter(row.original, filterValue),
+					}"
+					sticky
+					class="h-full"
+					@select="onRowSelect"
+				>
+					<template #empty>
+						<div class="flex h-full min-h-48 flex-col items-center justify-center gap-3 py-6">
+							<template v-if="!(customers?.length) && !globalFilter">
+								<p class="text-muted text-sm">
+									{{ canManage ? t('customers.emptyManage') : t('customers.empty') }}
+								</p>
+								<UButton
+									v-if="canManage"
+									@click="customerCreate.open()"
+								>
+									{{ t('customers.add') }}
+								</UButton>
+							</template>
+							<p
+								v-else
+								class="text-muted text-sm"
 							>
-								{{ t('customers.add') }}
-							</UButton>
-						</template>
-						<p
-							v-else
-							class="text-muted text-sm"
-						>
-							{{ t('customers.noResults') }}
-						</p>
-					</div>
-				</template>
-			</UTable>
+								{{ t('customers.noResults') }}
+							</p>
+						</div>
+					</template>
+				</UTable>
+			</div>
 		</div>
 	</LayoutPageContainer>
 </template>

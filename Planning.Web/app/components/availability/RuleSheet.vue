@@ -6,6 +6,7 @@ const props = defineProps<{
   employeeId: string
   type: AvailabilityRuleType
   rule?: AvailabilityRule | null
+  defaultDate?: string
 }>();
 
 const emit = defineEmits<{
@@ -98,8 +99,12 @@ function resetForm() {
     reason.value = props.rule.reason ?? '';
     fromTimes(props.rule.startTime, props.rule.endTime);
   } else if (props.type === 'OneTime') {
-    const today = new Date();
-    date.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    if (props.defaultDate) {
+      date.value = props.defaultDate;
+    } else {
+      const today = new Date();
+      date.value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    }
   }
 }
 

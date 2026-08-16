@@ -7,7 +7,7 @@ const intlLocale = computed(() => getIntlLocale(locale.value));
 </script>
 
 <template>
-	<UCard>
+	<LayoutCard>
 		<div class="flex flex-col gap-4">
 			<div class="min-w-0 space-y-3">
 				<p class="text-xs font-semibold uppercase tracking-wider text-muted">
@@ -78,5 +78,5 @@ const intlLocale = computed(() => getIntlLocale(locale.value));
 				/>
 			</div>
 		</div>
-	</UCard>
+	</LayoutCard>
 </template>

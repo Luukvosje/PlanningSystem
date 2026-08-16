@@ -1,31 +1,41 @@
-export default defineNuxtRouteMiddleware((to) => {
-  const auth = useAuthStore()
+import { useQueryClient } from '@tanstack/vue-query';
 
-  const publicRoutes = new Set(['/', '/login', '/register', '/join'])
+export default defineNuxtRouteMiddleware(async (to) => {
+  const auth = useAuthStore();
+  const queryClient = useQueryClient();
+
+  const publicRoutes = new Set(['/', '/login', '/register', '/join']);
   const bootstrapRoutes = new Set([
     '/organizations/new',
+    '/organizations/select',
     '/organizations',
     '/join',
     '/login',
     '/register',
-  ])
+  ]);
 
   if (!auth.isAuthenticated) {
     if (!publicRoutes.has(to.path)) {
-      return navigateTo('/login')
+      return navigateTo('/login');
     }
-    return
+    return;
   }
 
   if (to.path === '/login' || to.path === '/register') {
-    return navigateTo(auth.hasOrganization ? '/dashboard' : '/organizations/new')
+    return navigateTo(auth.hasOrganization ? '/dashboard' : await resolveOrganizationTarget('/dashboard', auth, queryClient));
   }
 
   if (to.path === '/') {
-    return navigateTo(auth.hasOrganization ? '/dashboard' : '/organizations/new')
+    return navigateTo(auth.hasOrganization ? '/dashboard' : await resolveOrganizationTarget('/dashboard', auth, queryClient));
   }
 
   if (!auth.hasOrganization && !bootstrapRoutes.has(to.path)) {
-    return navigateTo('/organizations/new')
+    // resolveOrganizationTarget may auto-select a lone membership and return
+    // to.fullPath itself — in that case the org context is now valid, so
+    // just let this same navigation proceed instead of redirecting to it.
+    const target = await resolveOrganizationTarget(to.fullPath, auth, queryClient);
+    if (target !== to.fullPath) {
+      return navigateTo(target);
+    }
   }
-})
+});

@@ -78,6 +78,7 @@ export function useCreate<TSchema extends z.ZodType>(
     validateOn: options.validateOn,
     genericErrorMessage: options.genericErrorMessage,
     submit: options.submit ?? { hidden: true },
+    trackNavigation: false,
     onSubmit: async (data) => {
       await optionsRef.value.onSubmit(data);
       if (optionsRef.value.closeOnSuccess !== false) {

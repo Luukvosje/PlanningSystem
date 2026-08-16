@@ -72,7 +72,7 @@ const registerForm = useForm({
 </script>
 
 <template>
-	<UCard class="w-full lg:max-w-2xl mx-auto">
+	<LayoutCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
 			<h1 class="text-xl font-semibold">
 				{{ t('auth.createAccount') }}
@@ -124,5 +124,5 @@ const registerForm = useForm({
 				</NuxtLink>
 			</p>
 		</template>
-	</UCard>
+	</LayoutCard>
 </template>

@@ -4,7 +4,6 @@ import { createOrganizationSchema } from '~/schemas/organization.schema';
 definePageMeta({ layout: 'default' });
 
 const { t } = useI18n();
-const FormView = resolveComponent('FormView');
 
 const auth = useAuthStore();
 const { updateOrganization } = useOrganizationSettingsApi();
@@ -42,7 +41,8 @@ const organizationForm = useForm({
       props: { autocomplete: 'email' },
     },
   ],
-  submit: { label: t('common.actions.save'), block: true },
+  submit: { hidden: true },
+  grid: true,
   onSubmit: async (data) => {
     await updateOrganization.mutateAsync(data);
   },
@@ -57,14 +57,15 @@ watch(
 
     organizationForm.state.name = org.name ?? '';
     organizationForm.state.email = org.email ?? '';
+    organizationForm.markClean();
   },
   { immediate: true },
 );
 </script>
 
 <template>
-	<PageContainer>
-		<PageHeader
+	<LayoutPageContainer>
+		<LayoutPageHeader
 			:title="t('nav.organization')"
 			:subtitle="t('organizations.manageDescription')"
 		/>
@@ -80,31 +81,52 @@ watch(
 			:title="message"
 		/>
 
-		<UCard
+		<div
 			v-else
-			class="max-w-lg"
+			class="grid grid-cols-1 gap-6 lg:grid-cols-2"
 		>
-			<template #header>
-				<h2 class="font-semibold">
-					{{ t('organizations.details') }}
-				</h2>
-			</template>
+			<LayoutCard :title="t('organizations.details')">
+				<component :is="organizationForm.render" />
 
-			<component
-				:is="FormView"
-				:form="organizationForm"
-			/>
-		</UCard>
+				<template #footer>
+					<div class="flex items-center justify-between gap-4">
+						<p
+							v-if="organizationForm.isDirty.value"
+							class="text-muted text-sm"
+						>
+							{{ t('common.unsavedChanges.text') }}
+						</p>
+						<span v-else />
 
-		<OrganizationsLogoCard
-			v-if="organization && !isLoading && !error"
-			:organization="organization"
-			class="mt-6"
-		/>
+						<div class="flex items-center gap-2">
+							<UButton
+								v-if="organizationForm.isDirty.value"
+								variant="outline"
+								:disabled="organizationForm.isSubmitting.value"
+								@click="organizationForm.discard()"
+							>
+								{{ t('common.actions.cancel') }}
+							</UButton>
+							<UButton
+								:disabled="!organizationForm.isDirty.value"
+								:loading="organizationForm.isSubmitting.value"
+								@click="() => { organizationForm.submit(); }"
+							>
+								{{ t('common.actions.save') }}
+							</UButton>
+						</div>
+					</div>
+				</template>
+			</LayoutCard>
 
-		<OrganizationsPlanningSettingsCard
-			v-if="!isLoading && !error"
-			class="max-w-2xl mt-6"
-		/>
-	</PageContainer>
+			<div class="flex flex-col gap-6">
+				<OrganizationsLogoCard
+					v-if="organization"
+					:organization="organization"
+				/>
+
+				<OrganizationsPlanningSettingsCard />
+			</div>
+		</div>
+	</LayoutPageContainer>
 </template>

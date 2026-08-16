@@ -116,20 +116,19 @@ async function removeRule(rule: AvailabilityRule) {
 					/>
 				</div>
 
-				<UCard v-if="weeklyRules.length === 0">
+				<LayoutCard v-if="weeklyRules.length === 0">
 					<p class="text-sm text-muted text-center py-2">
 						{{ t('availability.noWeeklyBlocks') }}
 					</p>
-				</UCard>
+				</LayoutCard>
 
 				<div
 					v-else
 					class="space-y-2"
 				>
-					<UCard
+					<LayoutCard
 						v-for="rule in weeklyRules"
 						:key="rule.id"
-						:ui="{ body: 'p-3 sm:p-4' }"
 					>
 						<div class="flex items-start justify-between gap-3">
 							<div class="min-w-0">
@@ -161,7 +160,7 @@ async function removeRule(rule: AvailabilityRule) {
 								/>
 							</div>
 						</div>
-					</UCard>
+					</LayoutCard>
 				</div>
 			</section>
 
@@ -182,20 +181,19 @@ async function removeRule(rule: AvailabilityRule) {
 					/>
 				</div>
 
-				<UCard v-if="oneTimeRules.length === 0">
+				<LayoutCard v-if="oneTimeRules.length === 0">
 					<p class="text-sm text-muted text-center py-2">
 						{{ t('availability.noOneTimeExceptions') }}
 					</p>
-				</UCard>
+				</LayoutCard>
 
 				<div
 					v-else
 					class="space-y-2"
 				>
-					<UCard
+					<LayoutCard
 						v-for="rule in oneTimeRules"
 						:key="rule.id"
-						:ui="{ body: 'p-3 sm:p-4' }"
 					>
 						<div class="flex items-start justify-between gap-3">
 							<div class="min-w-0">
@@ -221,7 +219,7 @@ async function removeRule(rule: AvailabilityRule) {
 								/>
 							</div>
 						</div>
-					</UCard>
+					</LayoutCard>
 				</div>
 			</section>
 		</template>

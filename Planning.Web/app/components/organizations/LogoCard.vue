@@ -44,13 +44,7 @@ async function onFileSelected(event: Event) {
 </script>
 
 <template>
-	<UCard class="max-w-lg">
-		<template #header>
-			<h2 class="font-semibold">
-				{{ t('organizations.logo.title') }}
-			</h2>
-		</template>
-
+	<LayoutCard :title="t('organizations.logo.title')">
 		<div class="flex items-center gap-4">
 			<div
 				class="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-default bg-elevated"
@@ -90,5 +84,5 @@ async function onFileSelected(event: Event) {
 				/>
 			</div>
 		</div>
-	</UCard>
+	</LayoutCard>
 </template>

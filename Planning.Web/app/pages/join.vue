@@ -55,7 +55,7 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 </script>
 
 <template>
-	<UCard class="w-full lg:max-w-2xl mx-auto">
+	<LayoutCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
 			<h1 class="text-xl font-semibold">
 				{{ t('invites.acceptTitle') }}
@@ -104,5 +104,5 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 				</NuxtLink>
 			</p>
 		</template>
-	</UCard>
+	</LayoutCard>
 </template>

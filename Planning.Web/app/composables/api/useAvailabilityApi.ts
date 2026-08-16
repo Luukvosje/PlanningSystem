@@ -9,16 +9,28 @@ import type { CreateAvailabilityRuleRequest, UpdateAvailabilityRuleRequest } fro
 export function useAvailabilityApi() {
   const queryClient = useQueryClient()
   const toast = useToast()
+  const { t } = useI18n()
 
   function invalidateAvailability() {
     return queryClient.invalidateQueries({ queryKey: ['availability'] })
   }
 
+  function warnIfConflicting(rule: { schedulingConflict?: boolean }) {
+    if (rule.schedulingConflict) {
+      toast.add({
+        title: t('availability.conflictWarningTitle'),
+        description: t('availability.conflictWarningDescription'),
+        color: 'warning',
+      })
+    }
+  }
+
   const create = useMutation({
     mutationFn: (request: CreateAvailabilityRuleRequest) => createAvailabilityRule(request),
-    onSuccess: async () => {
+    onSuccess: async (rule) => {
       await invalidateAvailability()
       toast.add({ title: 'Regel opgeslagen', color: 'success' })
+      warnIfConflicting(rule)
     },
     onError: () => {
       toast.add({ title: 'Regel opslaan mislukt', color: 'error' })
@@ -28,9 +40,10 @@ export function useAvailabilityApi() {
   const update = useMutation({
     mutationFn: ({ id, request }: { id: string, request: UpdateAvailabilityRuleRequest }) =>
       updateAvailabilityRule(id, request),
-    onSuccess: async () => {
+    onSuccess: async (rule) => {
       await invalidateAvailability()
       toast.add({ title: 'Regel bijgewerkt', color: 'success' })
+      warnIfConflicting(rule)
     },
     onError: () => {
       toast.add({ title: 'Regel bijwerken mislukt', color: 'error' })

@@ -11,7 +11,8 @@
       "create": "Create",
       "search": "Search",
       "confirm": "Confirm",
-      "close": "Close"
+      "close": "Close",
+      "discard": "Discard changes"
     },
     "loading": "Loading...",
     "colorMode": {
@@ -20,6 +21,14 @@
       "lightMode": "Light mode",
       "dark": "Dark",
       "darkMode": "Dark mode"
+    },
+    "unsavedChanges": {
+      "text": "You have unsaved changes",
+      "title": "Unsaved changes",
+      "description": "You have unsaved changes on this page. Do you want to save them before leaving?",
+      "save": "Save and leave",
+      "discard": "Discard and leave",
+      "cancel": "Stay on page"
     }
   },
   "nav": {
@@ -107,7 +116,7 @@
       "partial": "Every {day} {time}",
       "range": "Every {day} {time} unavailable"
     },
-    "pageDescription": "You are available by default. Only add blocks or exceptions when you can't work.",
+    "pageDescription": "Manage a team member's fixed blocks and exceptions here. Your own weekly pattern lives under Settings, your own exceptions under My planning.",
     "timePreset": {
       "wholeDay": "All day",
       "until": "Until a time",
@@ -133,7 +142,9 @@
     "noWeeklyBlocks": "No fixed blocks. You are available by default.",
     "oneTimeExceptions": "One-time exceptions",
     "oneTimeExceptionsDescription": "Vacation, appointments, or other exceptions on a date.",
-    "noOneTimeExceptions": "No one-time exceptions."
+    "noOneTimeExceptions": "No one-time exceptions.",
+    "conflictWarningTitle": "Note: shift already scheduled",
+    "conflictWarningDescription": "A shift is already scheduled on this date. You may want to check with the planner."
   },
   "customers": {
     "loading": "Loading customers...",
@@ -326,6 +337,10 @@
       "description": "Create a new organization.",
       "firstOrgDescription": "Create your first organization to start planning."
     },
+    "select": {
+      "title": "Choose an organization",
+      "description": "You belong to multiple organizations. Choose which one to continue with."
+    },
     "logo": {
       "title": "Logo",
       "alt": "Organization logo",
@@ -381,6 +396,9 @@
     "toggleSidebarShow": "Show navigation",
     "toggleSidebarHide": "Hide navigation",
     "toggleSidebarMobile": "Toggle sidebar",
+    "headerActions": {
+      "open": "Actions"
+    },
     "organizationSwitched": "Organization switched",
     "userMenu": {
       "language": "Language",

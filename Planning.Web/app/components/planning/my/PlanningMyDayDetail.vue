@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { MyPlanningDay } from '~/composables/planning/useMyPlanningView';
+import type { AvailabilityRule } from '~/types/availability';
 import { formatAgendaDayHeader, getIntlLocale } from '~/utils/planning/dateUtils';
+import { formatOneTimeRuleLabel } from '~/utils/planning/availabilityMath';
 
 const { t, locale } = useI18n();
 const intlLocale = computed(() => getIntlLocale(locale.value));
+const auth = useAuthStore();
+const api = useAvailabilityApi();
 
 const props = withDefaults(defineProps<{
   day?: MyPlanningDay | null
@@ -30,6 +34,24 @@ const shiftCountLabel = computed(() => {
     t('planning.shiftCountSingular', { count: props.day.shifts.length }) :
     t('planning.shiftCountPlural', { count: props.day.shifts.length });
 });
+
+const employeeId = computed(() => auth.currentUser?.userId ?? '');
+const sheetOpen = ref(false);
+const editingRule = ref<AvailabilityRule | null>(null);
+
+function openCreateException() {
+  editingRule.value = null;
+  sheetOpen.value = true;
+}
+
+function openEditException(rule: AvailabilityRule) {
+  editingRule.value = rule;
+  sheetOpen.value = true;
+}
+
+async function removeException(rule: AvailabilityRule) {
+  await api.remove.mutateAsync(rule.id);
+}
 </script>
 
 <template>
@@ -152,7 +174,73 @@ const shiftCountLabel = computed(() => {
 						{{ t('planning.noShiftPlanned') }}
 					</p>
 				</div>
+
+				<div
+					v-if="!compact"
+					class="space-y-2 border-t border-default px-4 py-3.5"
+				>
+					<div class="flex items-center justify-between gap-3">
+						<p class="text-xs font-semibold uppercase tracking-wide text-muted">
+							{{ t('availability.oneTimeExceptions') }}
+						</p>
+						<UButton
+							icon="i-lucide-plus"
+							:label="t('common.actions.add')"
+							variant="ghost"
+							size="xs"
+							@click="openCreateException"
+						/>
+					</div>
+
+					<p
+						v-if="!day.exceptions.length"
+						class="text-sm text-muted"
+					>
+						{{ t('availability.noOneTimeExceptions') }}
+					</p>
+
+					<div
+						v-else
+						class="space-y-1.5"
+					>
+						<div
+							v-for="rule in day.exceptions"
+							:key="rule.id"
+							class="flex items-start justify-between gap-2 rounded-md border border-default px-2.5 py-1.5"
+						>
+							<p class="min-w-0 truncate text-sm">
+								{{ formatOneTimeRuleLabel(rule.date!, rule.startTime, rule.endTime, t, intlLocale, rule.reason) }}
+							</p>
+							<div class="flex shrink-0 gap-0.5">
+								<UButton
+									icon="i-lucide-pencil"
+									variant="ghost"
+									color="neutral"
+									size="xs"
+									@click="openEditException(rule)"
+								/>
+								<UButton
+									icon="i-lucide-trash-2"
+									variant="ghost"
+									color="error"
+									size="xs"
+									:loading="api.remove.isPending.value"
+									@click="removeException(rule)"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</template>
+
+		<AvailabilityRuleSheet
+			v-if="day"
+			v-model:open="sheetOpen"
+			:employee-id="employeeId"
+			type="OneTime"
+			:rule="editingRule"
+			:default-date="day.dateKey"
+		/>
 	</div>
 </template>

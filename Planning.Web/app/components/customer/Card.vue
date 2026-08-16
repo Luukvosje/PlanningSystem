@@ -9,7 +9,7 @@ const { t } = useI18n();
 </script>
 
 <template>
-	<UCard>
+	<LayoutCard>
 		<template #header>
 			<h2 class="text-xl font-semibold">
 				{{ customer.name }}
@@ -37,5 +37,5 @@ const { t } = useI18n();
 				</dd>
 			</div>
 		</dl>
-	</UCard>
+	</LayoutCard>
 </template>

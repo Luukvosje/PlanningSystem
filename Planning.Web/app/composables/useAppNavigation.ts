@@ -29,11 +29,14 @@ export function useAppNavigation() {
         icon: 'i-lucide-gantt-chart',
         to: '/timeline',
       });
-      main.push({
-        label: t('nav.availability'),
-        icon: 'i-lucide-calendar-clock',
-        to: '/beschikbaarheid',
-      });
+
+      if (canManagePlanning(auth.currentUser?.role)) {
+        main.push({
+          label: t('nav.availability'),
+          icon: 'i-lucide-calendar-clock',
+          to: '/beschikbaarheid',
+        });
+      }
     }
 
     const groups: NavigationMenuItem[][] = [main];

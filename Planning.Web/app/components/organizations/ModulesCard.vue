@@ -30,18 +30,10 @@ function save() {
 </script>
 
 <template>
-	<UCard>
-		<template #header>
-			<div>
-				<h3 class="font-semibold">
-					{{ t('users.modules.title') }}
-				</h3>
-				<p class="text-sm text-muted">
-					{{ t('organizations.modules.description') }}
-				</p>
-			</div>
-		</template>
-
+	<LayoutCard
+		:title="t('users.modules.title')"
+		:description="t('organizations.modules.description')"
+	>
 		<UiLoadingIndicator
 			v-if="isLoading"
 			:label="t('organizations.modules.loading')"
@@ -54,5 +46,5 @@ function save() {
 			:saving="updateOrganizationModules.isPending.value"
 			@save="save"
 		/>
-	</UCard>
+	</LayoutCard>
 </template>

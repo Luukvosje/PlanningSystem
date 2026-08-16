@@ -52,23 +52,15 @@ function save() {
 </script>
 
 <template>
-	<UCard>
-		<template #header>
-			<div>
-				<h3 class="font-semibold">
-					{{ t('users.modules.title') }}
-				</h3>
-				<p class="text-sm text-muted">
-					{{ t('users.modules.description') }}
-				</p>
-			</div>
-		</template>
-
+	<LayoutCard
+		:title="t('users.modules.title')"
+		:description="t('users.modules.description')"
+	>
 		<ModulesToggles
 			v-model="moduleState"
 			:toggle-states="toggleStates"
 			:saving="updateUserModules.isPending.value"
 			@save="save"
 		/>
-	</UCard>
+	</LayoutCard>
 </template>

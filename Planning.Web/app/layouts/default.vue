@@ -263,7 +263,7 @@ const userMenuContent = computed(() => ({
 							highlight
 							highlight-color="secondary"
 							class="w-full"
-							:ui="{ link: 'p-1.5 overflow-hidden' }"
+							:ui="{ link: 'p-1.5 overflow-hidden', separator: 'hidden' }"
 						/>
 					</div>
 
@@ -290,6 +290,11 @@ const userMenuContent = computed(() => ({
 			v-model:open="sidebarOpen"
 			variant="inset"
 			collapsible="offcanvas"
+			:menu="{
+				ui: {
+					content: 'inset-y-2 left-2 w-[calc(100%-1rem)]',
+				},
+			}"
 			:ui="{
 				header: 'sticky top-0 z-10 shrink-0',
 				body: 'p-2',
@@ -317,7 +322,7 @@ const userMenuContent = computed(() => ({
 					highlight
 					highlight-color="secondary"
 					class="w-full"
-					:ui="{ link: 'p-1.5 overflow-hidden' }"
+					:ui="{ link: 'p-1.5 overflow-hidden', separator: 'hidden' }"
 				/>
 			</template>
 

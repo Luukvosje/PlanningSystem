@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { createUpdateProfileSchema } from '~/schemas/auth.schema';
+import { AppModule } from '~/generated/models';
+import { canAccessModule } from '~/utils/modules';
 
 definePageMeta({ layout: 'default' });
 
 const { t } = useI18n();
 const updateProfileSchema = createUpdateProfileSchema(t);
 
-const FormView = resolveComponent('FormView');
-
 const auth = useAuthStore();
 const { updateProfile } = useProfileApi();
 const { isLoading: profileLoading } = useCurrentUser();
+
+const showAvailabilityPattern = computed(() =>
+  canAccessModule(AppModule.Planning, auth.currentUser?.modules),
+);
 
 onMounted(() => auth.fetchMe());
 
@@ -45,7 +49,8 @@ const profileForm = useForm({
       props: { autocomplete: 'email' },
     },
   ],
-  submit: { label: t('common.actions.save'), block: true },
+  submit: { hidden: true },
+  grid: true,
   onSubmit: async (data) => {
     await updateProfile.mutateAsync(data);
   },
@@ -61,6 +66,7 @@ watch(
     profileForm.state.firstName = user.firstName ?? '';
     profileForm.state.lastName = user.lastName ?? '';
     profileForm.state.email = user.email ?? '';
+    profileForm.markClean();
   },
   { immediate: true },
 );
@@ -78,20 +84,11 @@ watch(
 			:label="t('settings.loadingProfile')"
 		/>
 
-		<UCard
+		<LayoutCard
 			v-else
-			class="max-w-lg"
+			:title="t('settings.profile')"
 		>
-			<template #header>
-				<h2 class="font-semibold">
-					{{ t('settings.profile') }}
-				</h2>
-			</template>
-
-			<component
-				:is="FormView"
-				:form="profileForm"
-			>
+			<component :is="profileForm.render">
 				<template #control-firstName="{ form }">
 					<div class="grid grid-cols-2 gap-4">
 						<UFormField
@@ -121,6 +118,38 @@ watch(
 					</div>
 				</template>
 			</component>
-		</UCard>
+
+			<template #footer>
+				<div class="flex items-center justify-between gap-4">
+					<p
+						v-if="profileForm.isDirty.value"
+						class="text-muted text-sm"
+					>
+						{{ t('common.unsavedChanges.text') }}
+					</p>
+					<span v-else />
+
+					<div class="flex items-center gap-2">
+						<UButton
+							v-if="profileForm.isDirty.value"
+							variant="outline"
+							:disabled="profileForm.isSubmitting.value"
+							@click="profileForm.discard()"
+						>
+							{{ t('common.actions.cancel') }}
+						</UButton>
+						<UButton
+							:disabled="!profileForm.isDirty.value"
+							:loading="profileForm.isSubmitting.value"
+							@click="() => { profileForm.submit(); }"
+						>
+							{{ t('common.actions.save') }}
+						</UButton>
+					</div>
+				</div>
+			</template>
+		</LayoutCard>
+
+		<AvailabilityWeeklyPatternCard v-if="showAvailabilityPattern" />
 	</LayoutPageContainer>
 </template>

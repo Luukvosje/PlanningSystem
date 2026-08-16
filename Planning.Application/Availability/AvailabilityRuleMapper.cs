@@ -4,7 +4,7 @@ namespace Planning.Application.Availability;
 
 public static class AvailabilityRuleMapper
 {
-    public static AvailabilityRuleResponse ToResponse(AvailabilityRule rule) =>
+    public static AvailabilityRuleResponse ToResponse(AvailabilityRule rule, bool schedulingConflict = false) =>
         new(
             rule.Id,
             rule.EmployeeId,
@@ -16,5 +16,6 @@ public static class AvailabilityRuleMapper
             rule.Status,
             rule.Reason,
             rule.CreatedAtUtc,
-            rule.UpdatedAtUtc);
+            rule.UpdatedAtUtc,
+            schedulingConflict);
 }

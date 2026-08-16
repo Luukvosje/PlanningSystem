@@ -10,7 +10,7 @@ if (auth.isAuthenticated) {
 </script>
 
 <template>
-	<UCard class="w-full lg:max-w-2xl mx-auto">
+	<LayoutCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
 			<h1 class="text-2xl font-semibold">
 				Planning
@@ -44,5 +44,5 @@ if (auth.isAuthenticated) {
 				{{ t('invites.enterCode') }}
 			</UButton>
 		</div>
-	</UCard>
+	</LayoutCard>
 </template>

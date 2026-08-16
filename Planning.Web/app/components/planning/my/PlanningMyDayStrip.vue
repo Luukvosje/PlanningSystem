@@ -28,7 +28,7 @@ const dayItems = computed(() =>
 
 function dayButtonClass(day: MyPlanningDay, selected: boolean) {
   const textClass = day.hasShifts ? 'text-default' : 'text-muted/30';
-  const selectedClass = selected ? 'bg-default border-b border-transparent' : 'hover:bg-muted/30 border-b border-default';
+  const selectedClass = selected ? 'bg-default border-b border-b-transparent' : 'hover:bg-muted/30 border-b border-default';
 
   return `${textClass} ${selectedClass} ${selected ? 'text-secondary' : ''}`;
 }
