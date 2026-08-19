@@ -123,6 +123,11 @@ roept die composable aan en beslist alleen nog *wanneer* het formulier zichtbaar
 const form = useCustomerForm(customer, { onSaved: () => { isEditing.value = false } })
 ```
 
+Wat er in die composable hoort: het schema, de controls, `onSubmit` inclusief cache-invalidatie,
+toasts en navigatie, en het spiegelen van server-data naar `form.state`. Wat de pagina houdt:
+laadstatus, rechten, en de vraag wanneer het formulier zichtbaar is. Alle formulieren staan er —
+zie `app/composables/forms/`.
+
 Zo blijft een pagina leesbaar als een pagina: data laden, staat kiezen, renderen. `grid: true`
 levert de label-links/veld-rechts opmaak en de route-leave-guard.
 
