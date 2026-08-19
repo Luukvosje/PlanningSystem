@@ -19,7 +19,7 @@ const options = computed<{ value: PlanningRowLayout, label: string, icon: string
 			:icon="option.icon"
 			:label="option.label"
 			:variant="model === option.value ? 'solid' : 'outline'"
-			:color="model === option.value ? 'secondary' : 'neutral'"
+			:color="model === option.value ? 'brand' : 'neutral'"
 			@click="model = option.value"
 		/>
 	</UFieldGroup>

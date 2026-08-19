@@ -7,6 +7,5 @@
  */
 
 export interface OrganizationLogoUploadResponse {
-  /** @nullable */
-  logoUrl?: string | null;
+  logoUrl: string;
 }

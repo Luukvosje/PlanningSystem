@@ -127,7 +127,7 @@ async function save() {
     await api.update.mutateAsync({
       id: props.rule.id,
       request: {
-        weekday: props.type === 'Weekly' ? weekday.value : null,
+        weekday: props.type === 'Weekly' ? weekday.value : undefined,
         date: props.type === 'OneTime' ? date.value : null,
         startTime,
         endTime,
@@ -139,7 +139,7 @@ async function save() {
     await api.create.mutateAsync({
       employeeId: props.employeeId,
       type: props.type,
-      weekday: props.type === 'Weekly' ? weekday.value : null,
+      weekday: props.type === 'Weekly' ? weekday.value : undefined,
       date: props.type === 'OneTime' ? date.value : null,
       startTime,
       endTime,

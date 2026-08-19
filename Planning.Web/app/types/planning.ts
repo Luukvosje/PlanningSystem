@@ -1,70 +1,22 @@
-export type PlanningStatus = 'Planned' | 'Confirmed' | 'Completed' | 'Cancelled'
+/**
+ * The wire shapes below are generated from the OpenAPI spec (`npm run generate:api`) and
+ * re-exported here under the names the app already uses, so there is exactly one definition of
+ * the contract. Everything after them is UI-only state that never crosses the wire.
+ */
+import type { PlanningResponse as PlanningRecord, PlanningStatus } from '~/generated/models';
+
+export type {
+  PlanningResponse as PlanningRecord,
+  PlanningListResponse,
+  CreatePlanningRequest,
+  UpdatePlanningRequest,
+  MovePlanningRequest,
+  DuplicatePlanningRequest,
+  PlanningStatus,
+} from '~/generated/models';
+
 export type PlanningRowMode = 'resource' | 'customer'
 export type TimelineZoom = '15m' | '30m' | '1h' | '2h' | '4h' | 'day' | 'week' | 'month'
-
-export interface PlanningRecord {
-  id: string
-  organizationId: string
-  assignedUserId: string
-  assignedUserName: string
-  customerId?: string | null
-  customerName?: string | null
-  title: string
-  description?: string | null
-  notes?: string | null
-  startUtc: string
-  endUtc: string
-  status: PlanningStatus
-  color: string
-  hasOverlap: boolean
-  createdAtUtc?: string
-  updatedAtUtc?: string
-}
-
-export interface PlanningListResponse {
-  items: PlanningRecord[]
-  totalCount: number
-  page: number
-  pageSize: number
-  rangeStartUtc: string
-  rangeEndUtc: string
-}
-
-export interface CreatePlanningRequest {
-  assignedUserId: string
-  customerId?: string | null
-  title: string
-  description?: string | null
-  notes?: string | null
-  startUtc: string
-  endUtc: string
-  color?: string | null
-  status?: PlanningStatus
-}
-
-export interface UpdatePlanningRequest {
-  assignedUserId: string
-  customerId?: string | null
-  title: string
-  description?: string | null
-  notes?: string | null
-  startUtc: string
-  endUtc: string
-  status: PlanningStatus
-  color?: string | null
-}
-
-export interface MovePlanningRequest {
-  assignedUserId: string
-  customerId?: string | null
-  startUtc: string
-  endUtc: string
-}
-
-export interface DuplicatePlanningRequest {
-  startUtc?: string | null
-  assignedUserId?: string | null
-}
 
 export interface PlanningFilters {
   userIds: string[]
@@ -115,6 +67,9 @@ export interface PlanningFormData {
   endUtc: string
 }
 
+/** Mirrors PlanningRecord.DefaultColor on the server. */
+export const DEFAULT_PLANNING_COLOR = '#6366F1';
+
 export const PLANNING_COLORS = [
   '#6366F1', // Indigo
   '#8B5CF6', // Violet
@@ -126,6 +81,6 @@ export const PLANNING_COLORS = [
   '#14B8A6', // Teal
   '#3B82F6', // Blue
   '#64748B', // Slate
-] as const
+] as const;
 
 export type PlanningColor = typeof PLANNING_COLORS[number]

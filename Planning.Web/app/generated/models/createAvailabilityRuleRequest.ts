@@ -10,14 +10,14 @@ import type { Weekday } from './weekday';
 import type { AvailabilityRuleStatus } from './availabilityRuleStatus';
 
 export interface CreateAvailabilityRuleRequest {
-  employeeId?: string;
-  type?: AvailabilityRuleType;
+  employeeId: string;
+  type: AvailabilityRuleType;
   weekday?: Weekday;
   /** @nullable */
   date?: string | null;
-  startTime?: string;
-  endTime?: string;
-  status?: AvailabilityRuleStatus;
+  startTime: string;
+  endTime: string;
+  status: AvailabilityRuleStatus;
   /** @nullable */
   reason?: string | null;
 }

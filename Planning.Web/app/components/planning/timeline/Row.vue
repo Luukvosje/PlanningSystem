@@ -22,7 +22,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { toPx, toIso, timelineWidth, rowLabelWidth, dateRange, dayWidth, isCompactMode } = useTimeline();
+const { toPx, toIso, timelineWidth, rowLabelWidth, dateRange, dayWidth } = useTimeline();
 const { importantWorkTimes } = usePlanningSettings();
 const store = usePlanningStore();
 const { canManage } = usePlanningPermissions();
@@ -32,13 +32,7 @@ const { data: users } = useUsers();
 const isDropTarget = computed(() => dragHoverRowId.value === props.rowId);
 
 const DRAG_THRESHOLD_PX = 4;
-const minDurationPx = computed(() => {
-  if (!isCompactMode.value) {
-    return (SNAP_MINUTES / (24 * 60)) * dayWidth.value;
-  }
-
-  return (SNAP_MINUTES / (24 * 60)) * dayWidth.value;
-});
+const minDurationPx = computed(() => (SNAP_MINUTES / (24 * 60)) * dayWidth.value);
 const minDurationMs = SNAP_MINUTES * 60 * 1000;
 
 const selection = ref<{ startPx: number, endPx: number } | null>(null);
@@ -243,14 +237,14 @@ return;
 			:data-row-customer-id="rowCustomerId ?? ''"
 			:class="[
 				isSelecting ? 'select-none cursor-crosshair' : canManage ? 'cursor-cell' : '',
-				isDropTarget ? 'bg-primary/10 ring-1 ring-inset ring-primary/40' : '',
+				isDropTarget ? 'bg-brand/10 ring-1 ring-inset ring-brand/40' : '',
 			]"
 			:style="{ minWidth: `${timelineWidth}px` }"
 			@pointerdown="onRowPointerDown"
 		>
 			<div
 				v-if="selectionPreview"
-				class="absolute top-1 bottom-1 z-20 rounded-md border border-primary/50 bg-primary/20 pointer-events-none"
+				class="absolute top-1 bottom-1 z-20 rounded-md border border-brand/50 bg-brand/20 pointer-events-none"
 				:style="{
 					left: `${selectionPreview.left}px`,
 					width: `${selectionPreview.width}px`,

@@ -1,5 +1,6 @@
+import type { InjectionKey, Ref } from 'vue';
 import type { PlanningRecord } from '~/types/planning';
-import type { CompactCurrentTimeIndicator, DayTimeWindow } from '~/utils/planning/timelineMath';
+import type { CompactCurrentTimeIndicator, DayTimeWindow, TimelineGridLine } from '~/utils/planning/timelineMath';
 import {
   countVisibleDaysInRange,
   computeWeekWindows,
@@ -14,9 +15,9 @@ import {
   getHeaderPeriodMode,
   getImportantGridLines,
   getPrimaryBorderMode,
+  recordsForDay,
   getTimelineGridLines,
   getTimelineWidth,
-  getTimeSlotMarkers,
   getZoomMinutes,
   isZoomedOutView,
   pxToUtcIso as pxToUtcIsoMath,
@@ -24,9 +25,9 @@ import {
   ROW_LABEL_WIDTH,
   showsTimeSlots,
   SNAP_MINUTES,
+  suppressCollidingLabels,
   timeToPx,
   timeToPxCompact,
-  toDateKey,
 } from '~/utils/planning/timelineMath';
 import {
   addDays,
@@ -34,7 +35,9 @@ import {
   formatDayHeader,
   getIntlLocale,
   getMonday,
+  isWeekend as isWeekendDate,
   startOfMonth,
+  toDateKey,
 } from '~/utils/planning/dateUtils';
 import {
   formatWeekDateRange,
@@ -136,18 +139,6 @@ function buildMonthPeriodHeaders(
   });
 }
 
-function recordsForDay(records: PlanningRecord[], date: Date): PlanningRecord[] {
-  const dayStart = new Date(date);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = addDays(dayStart, 1);
-
-  return records.filter((record) => {
-    const start = new Date(record.startUtc);
-    const end = new Date(record.endUtc);
-    return start < dayEnd && end > dayStart;
-  });
-}
-
 function getDayIndexForIso(utcIso: string, rangeStart: Date): number {
   const date = new Date(utcIso);
   const dayStart = new Date(date);
@@ -155,21 +146,37 @@ function getDayIndexForIso(utcIso: string, rangeStart: Date): number {
   return Math.floor((dayStart.getTime() - rangeStart.getTime()) / (24 * 60 * 60 * 1000));
 }
 
-export function useTimeline() {
+export interface TimelineSources {
+  containerWidth?: Ref<number>
+  rowRecords?: Ref<Map<string, PlanningRecord[]>>
+}
+
+/**
+ * Builds the timeline geometry. Prefer {@link provideTimeline} / {@link useTimeline} over calling
+ * this directly - every call produces its own set of computeds, and computeWeekWindows walks all
+ * visible records per day.
+ *
+ * `sources` exists because a component cannot inject what it provides itself: the board root has
+ * to hand in its own containerWidth ref, otherwise it would silently compute a different dayWidth
+ * than its children.
+ */
+function createTimeline(sources: TimelineSources = {}) {
   const store = usePlanningStore();
   const { locale } = useI18n();
   const intlLocale = computed(() => getIntlLocale(locale.value));
   const { importantWorkTimes, openingHours } = usePlanningSettings();
-  const containerWidth = inject<Ref<number>>('timelineContainerWidth', ref(0));
-  const rowRecords = inject<Ref<Map<string, PlanningRecord[]>>>('timelineRowRecords', ref(new Map()));
+  const containerWidth = sources.containerWidth ??
+    inject<Ref<number>>('timelineContainerWidth', ref(0));
+  const rowRecords = sources.rowRecords ??
+    inject<Ref<Map<string, PlanningRecord[]>>>('timelineRowRecords', ref(new Map()));
 
   const dateRange = computed(() => ({
     start: store.loadedRangeStart,
     end: store.loadedRangeEnd,
   }));
 
-  /** Compact mode: tighter row layout based on user preference. */
-  const isCompactMode = computed(() => store.rowLayout === 'compact');
+  /** Row height preference. Purely vertical - says nothing about the time axis. */
+  const isCompactRowLayout = computed(() => store.rowLayout === 'compact');
 
   const allVisibleRecords = computed(() =>
     [...rowRecords.value.values()].flat(),
@@ -200,7 +207,7 @@ export function useTimeline() {
     for (const date of visibleDays.value) {
       const key = toDateKey(date);
       map.set(key, left);
-      const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+      const isWeekend = isWeekendDate(date);
       if (!isWeekend || store.showWeekends) {
         left += dayWidth.value;
       }
@@ -210,7 +217,8 @@ export function useTimeline() {
 
   /**
    * dayWindows: per-dag tijdvenster ingekrompen naar openingstijden + records.
-   * Actief wanneer showFullDay = false (gebruik openingstijden) OF isCompactMode.
+   * Actief wanneer showFullDay = false. Dit comprimeert de tijd-as horizontaal en staat los
+   * van rowLayout (rijhoogte) - zie isCompactRowLayout.
    */
   const dayWindows = computed(() =>
     (!store.showFullDay) ?
@@ -224,6 +232,12 @@ export function useTimeline() {
       null,
   );
 
+  /**
+   * True wanneer de tijd-as per dag is ingekrompen. Alles dat tijd naar pixels vertaalt moet
+   * hierop kijken - niet op de rijhoogte - anders lopen blokken en achtergrond uiteen.
+   */
+  const usesDayWindow = computed(() => dayWindows.value !== null);
+
   const dayHeaders = computed<TimelineDayHeader[]>(() => {
     const primaryBorder = getPrimaryBorderMode(store.zoom);
     const days = visibleDays.value;
@@ -236,7 +250,7 @@ export function useTimeline() {
         const nextWeekKey = nextDate ? getMonday(nextDate).toISOString() : null;
         const nextMonthKey = nextDate ? monthKeyForDate(nextDate) : null;
         const weekKey = monday.toISOString();
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const isWeekend = isWeekendDate(date);
         const width = (!store.showWeekends && isWeekend) ? 0 : dayWidth.value;
         const left = dayLeftMap.value.get(toDateKey(date)) ?? 0;
 
@@ -319,7 +333,6 @@ export function useTimeline() {
   });
 
   /** @deprecated Use showPeriodHeaders */
-  const showWeekHeaders = showPeriodHeaders;
   const slotWidth = computed(() => {
     const slotMinutes = getZoomMinutes(store.zoom);
     if (slotMinutes >= 24 * 60) {
@@ -330,13 +343,29 @@ export function useTimeline() {
 
   const isZoomedOut = computed(() => isZoomedOutView(store.zoom, slotWidth.value));
 
-  const timeSlotMarkers = computed(() => getTimeSlotMarkers(store.zoom, dayWidth.value, intlLocale.value));
 
   const timelineGridLines = computed(() => getTimelineGridLines(store.zoom, dayWidth.value, importantWorkTimes.value, intlLocale.value));
 
   const importantGridLines = computed(() =>
     getImportantGridLines(dayWidth.value, importantWorkTimes.value, intlLocale.value),
   );
+
+  /**
+   * Important-time labels flattened into one shared coordinate space across all visible day
+   * columns, with colliding labels suppressed. Rendering from this list (instead of nesting
+   * label markup inside each day column) means a label positioned near the edge of a day can
+   * never be visually clipped by the next day column painting over it.
+   */
+  const flatImportantGridLines = computed<TimelineGridLine[]>(() => {
+    const lines: TimelineGridLine[] = [];
+    for (const day of dayHeaders.value) {
+      const dayLines = day.importantGridLines ?? importantGridLines.value;
+      for (const line of dayLines) {
+        lines.push({ ...line, leftPx: day.left + line.leftPx });
+      }
+    }
+    return suppressCollidingLabels(lines);
+  });
 
   /** Coarse vertical lines for calendar zoom levels (day / week / month). */
   const coarseGridLines = computed(() => getCoarseGridLines(store.zoom, dayWidth.value, intlLocale.value));
@@ -351,7 +380,7 @@ export function useTimeline() {
     if (!store.showWeekends) {
       // Use precomputed left offset; weekend days snap to their left edge
       const dayLeft = dayLeftMap.value.get(dayKey) ?? 0;
-      const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+      const isWeekend = isWeekendDate(day);
       if (isWeekend) {
 return dayLeft;
 }
@@ -379,7 +408,7 @@ return dayLeft;
       let bestKey = entries[0]?.[0] ?? toDateKey(dateRange.value.start);
       for (const [key, left] of entries) {
         const date = new Date(key);
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const isWeekend = isWeekendDate(date);
         if (isWeekend) {
 continue;
 }
@@ -420,7 +449,7 @@ bestKey = key;
 
     if (dayWindows.value) {
       for (const date of visibleDays.value) {
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        const isWeekend = isWeekendDate(date);
         if (!store.showWeekends && isWeekend) {
           continue;
         }
@@ -479,17 +508,17 @@ bestKey = key;
     periodHeaders,
     columnHeaders,
     showPeriodHeaders,
-    showWeekHeaders,
     columnMode,
     periodMode,
     primaryBorder,
-    timeSlotMarkers,
     timelineGridLines,
     importantGridLines,
+    flatImportantGridLines,
     coarseGridLines,
     showTimeSlots,
     isZoomedOut,
-    isCompactMode,
+    isCompactRowLayout,
+    usesDayWindow,
     dayWindows,
     rowLabelWidth: ROW_LABEL_WIDTH,
     currentTimePx,
@@ -500,4 +529,26 @@ bestKey = key;
     getBlockLayout,
     pxToUtcIso,
   };
+}
+
+export type TimelineApi = ReturnType<typeof createTimeline>;
+
+const TIMELINE_KEY: InjectionKey<TimelineApi> = Symbol('planning-timeline');
+
+/**
+ * Creates the single timeline instance for a board and shares it with the whole subtree.
+ * Call once, from the board root.
+ */
+export function provideTimeline(sources: TimelineSources = {}): TimelineApi {
+  const timeline = createTimeline(sources);
+  provide(TIMELINE_KEY, timeline);
+  return timeline;
+}
+
+/**
+ * The board's timeline. Returns the shared instance when called inside a board; falls back to a
+ * private one so the composable still works in isolation (tests, storybook, a stray component).
+ */
+export function useTimeline(): TimelineApi {
+  return inject(TIMELINE_KEY, null) ?? createTimeline();
 }

@@ -7,7 +7,6 @@
  */
 
 export interface RegisterResponse {
-  accountId?: string;
-  /** @nullable */
-  email?: string | null;
+  accountId: string;
+  email: string;
 }

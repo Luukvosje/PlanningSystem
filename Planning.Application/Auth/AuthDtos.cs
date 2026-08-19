@@ -55,6 +55,5 @@ public sealed record UpdateProfileResponse(
     string FirstName,
     string LastName);
 
-public sealed record SwitchOrganizationRequest(Guid OrganizationId);
 
 public sealed record TokenResponse(string AccessToken, string RefreshToken);

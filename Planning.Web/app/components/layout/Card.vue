@@ -2,7 +2,7 @@
 const props = withDefaults(defineProps<{
   title?: string
   description?: string
-  /** Fill remaining height; the body scrolls internally. */
+  /** Fill remaining height; body becomes a flex column so nested content (e.g. a form) can pin a footer to the bottom. */
   fill?: boolean
   variant?: 'solid' | 'outline' | 'soft' | 'subtle'
   ui?: {
@@ -21,31 +21,25 @@ const props = withDefaults(defineProps<{
   ui: undefined,
 });
 
+function mergeSlotClasses(...classes: Array<string | undefined>): string[] | undefined {
+  const filtered = classes.filter((value): value is string => Boolean(value));
+  return filtered.length ? filtered : undefined;
+}
+
 const cardUi = computed(() => {
-  const header = [
-    props.fill ? 'shrink-0' : undefined,
-    props.ui?.header,
-  ].filter((value): value is string => Boolean(value));
+  const header = mergeSlotClasses(props.fill ? 'shrink-0' : undefined, props.ui?.header);
+  const body = mergeSlotClasses(props.fill ? 'flex min-h-0 flex-1 flex-col overflow-visible' : undefined, props.ui?.body);
+  const footer = mergeSlotClasses(props.fill ? 'shrink-0' : undefined, props.ui?.footer);
 
-  const body = [
-    props.fill ? 'min-h-0 flex-1 overflow-auto' : undefined,
-    props.ui?.body,
-  ].filter((value): value is string => Boolean(value));
-
-  const footer = [
-    props.fill ? 'shrink-0' : undefined,
-    props.ui?.footer,
-  ].filter((value): value is string => Boolean(value));
-
-  if (!props.ui && header.length === 0 && body.length === 0 && footer.length === 0) {
+  if (!props.ui && !header && !body && !footer) {
     return undefined;
   }
 
   return {
     ...props.ui,
-    ...(header.length ? { header } : {}),
-    ...(body.length ? { body } : {}),
-    ...(footer.length ? { footer } : {}),
+    ...(header ? { header } : {}),
+    ...(body ? { body } : {}),
+    ...(footer ? { footer } : {}),
   };
 });
 </script>
@@ -53,7 +47,7 @@ const cardUi = computed(() => {
 <template>
 	<UCard
 		:variant="variant"
-		:class="fill ? 'flex h-full min-h-0 flex-1 flex-col' : undefined"
+		:class="fill ? 'flex h-full min-h-0 flex-1 flex-col overflow-visible' : undefined"
 		:ui="cardUi"
 	>
 		<template

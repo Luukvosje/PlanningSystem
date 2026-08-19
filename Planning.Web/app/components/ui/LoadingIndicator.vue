@@ -33,7 +33,7 @@ const wrapperClass = computed(() => ({
 	>
 		<UIcon
 			name="i-lucide-loader-circle"
-			:class="[iconClass, 'text-primary animate-spin']"
+			:class="[iconClass, 'text-brand animate-spin']"
 		/>
 		<p
 			v-if="resolvedLabel"

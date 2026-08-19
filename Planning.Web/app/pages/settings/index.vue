@@ -10,7 +10,7 @@ const updateProfileSchema = createUpdateProfileSchema(t);
 
 const auth = useAuthStore();
 const { updateProfile } = useProfileApi();
-const { isLoading: profileLoading } = useCurrentUser();
+const { isLoading: profileLoading, error: profileError } = useCurrentUser();
 
 const showAvailabilityPattern = computed(() =>
   canAccessModule(AppModule.Planning, auth.currentUser?.modules),
@@ -49,7 +49,6 @@ const profileForm = useForm({
       props: { autocomplete: 'email' },
     },
   ],
-  submit: { hidden: true },
   grid: true,
   onSubmit: async (data) => {
     await updateProfile.mutateAsync(data);
@@ -75,80 +74,54 @@ watch(
 <template>
 	<LayoutPageContainer>
 		<LayoutPageHeader
-			:title="t('nav.settings')"
 			:subtitle="t('settings.description')"
 		/>
 
-		<UiLoadingIndicator
-			v-if="profileLoading && !auth.currentUser"
-			:label="t('settings.loadingProfile')"
-		/>
-
-		<LayoutCard
-			v-else
-			:title="t('settings.profile')"
+		<UiQueryState
+			:error="profileError"
+			:loading="profileLoading && !auth.currentUser"
+			:loading-label="t('settings.loadingProfile')"
 		>
-			<component :is="profileForm.render">
-				<template #control-firstName="{ form }">
-					<div class="grid grid-cols-2 gap-4">
-						<UFormField
-							:label="t('auth.firstName')"
-							name="firstName"
-							required
-						>
-							<UInput
-								v-model="form.state.firstName"
-								autocomplete="given-name"
-								class="w-full"
-								:disabled="form.isSubmitting.value"
-							/>
-						</UFormField>
-						<UFormField
-							:label="t('auth.lastName')"
-							name="lastName"
-							required
-						>
-							<UInput
-								v-model="form.state.lastName"
-								autocomplete="family-name"
-								class="w-full"
-								:disabled="form.isSubmitting.value"
-							/>
-						</UFormField>
-					</div>
+			<LayoutCard
+				class="overflow-visible"
+				:title="t('settings.profile')"
+			>
+				<component :is="profileForm.render">
+					<template #control-firstName="{ form }">
+						<div class="grid grid-cols-2 gap-4">
+							<UFormField
+								:label="t('auth.firstName')"
+								name="firstName"
+								required
+							>
+								<UInput
+									v-model="form.state.firstName"
+									autocomplete="given-name"
+									class="w-full"
+									:disabled="form.isSubmitting.value"
+								/>
+							</UFormField>
+							<UFormField
+								:label="t('auth.lastName')"
+								name="lastName"
+								required
+							>
+								<UInput
+									v-model="form.state.lastName"
+									autocomplete="family-name"
+									class="w-full"
+									:disabled="form.isSubmitting.value"
+								/>
+							</UFormField>
+						</div>
+					</template>
+				</component>
+
+				<template #footer>
+					<component :is="profileForm.renderFooter" />
 				</template>
-			</component>
-
-			<template #footer>
-				<div class="flex items-center justify-between gap-4">
-					<p
-						v-if="profileForm.isDirty.value"
-						class="text-muted text-sm"
-					>
-						{{ t('common.unsavedChanges.text') }}
-					</p>
-					<span v-else />
-
-					<div class="flex items-center gap-2">
-						<UButton
-							v-if="profileForm.isDirty.value"
-							variant="outline"
-							:disabled="profileForm.isSubmitting.value"
-							@click="profileForm.discard()"
-						>
-							{{ t('common.actions.cancel') }}
-						</UButton>
-						<UButton
-							:disabled="!profileForm.isDirty.value"
-							:loading="profileForm.isSubmitting.value"
-							@click="() => { profileForm.submit(); }"
-						>
-							{{ t('common.actions.save') }}
-						</UButton>
-					</div>
-				</div>
-			</template>
-		</LayoutCard>
+			</LayoutCard>
+		</UiQueryState>
 
 		<AvailabilityWeeklyPatternCard v-if="showAvailabilityPattern" />
 	</LayoutPageContainer>

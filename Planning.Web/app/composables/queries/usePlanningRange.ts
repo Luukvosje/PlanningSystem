@@ -1,8 +1,9 @@
 import { useQueries, useQuery } from '@tanstack/vue-query';
 import type { PlanningRecord } from '~/types/planning';
-import { getPlanningList } from '~/utils/planningClient';
+import { getApiPlanning } from '~/generated/api/planning/planning';
 import { queryKeys } from '~/utils/queryKeys';
 import { eachMonthInRange, toUtcDateTimeIso } from '~/utils/planning/dateUtils';
+import { PLANNING_PAGE_SIZE } from '~/utils/planning/constants';
 
 export function usePlanningRange() {
   const auth = useAuthStore();
@@ -29,18 +30,18 @@ export function usePlanningRange() {
         return {
           queryKey: queryKeys.planning.range(startUtc, endUtc, filterKey.value),
           queryFn: () =>
-            getPlanningList({
-              startUtc,
-              endUtc,
-              userIds: store.filters.userIds.length ? store.filters.userIds.join(',') : undefined,
-              customerIds: store.filters.customerIds.length ?
+            getApiPlanning({
+              StartUtc: startUtc,
+              EndUtc: endUtc,
+              UserIds: store.filters.userIds.length ? store.filters.userIds.join(',') : undefined,
+              CustomerIds: store.filters.customerIds.length ?
                 store.filters.customerIds.join(',') :
                 undefined,
-              statuses: store.filters.statuses.length ?
+              Statuses: store.filters.statuses.length ?
                 store.filters.statuses.join(',') :
                 undefined,
-              search: store.filters.search || undefined,
-              pageSize: 2000,
+              Search: store.filters.search || undefined,
+              PageSize: PLANNING_PAGE_SIZE,
             }),
           enabled: enabled.value,
         };

@@ -12,5 +12,4 @@ public interface IPlanningService
     Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result<PlanningResponse>> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<Result<PlanningListResponse>> GetListAsync(PlanningListRequest request, CancellationToken cancellationToken = default);
-    Task<Result<IReadOnlyList<PlanningResponse>>> GetWeekPlanningAsync(WeekPlanningRequest request, CancellationToken cancellationToken = default);
 }

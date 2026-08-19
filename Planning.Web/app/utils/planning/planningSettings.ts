@@ -1,52 +1,59 @@
-import type { Weekday } from '~/types/availability';
 import type { DayTimeWindow } from '~/utils/planning/timelineMath';
+import type { OpeningHoursEntry } from '~/utils/planning/timeOfDay';
 import { timeToPxCompact } from '~/utils/planning/timelineMath';
+import {
+  getOpeningHoursForDate,
+  minutesToDayPx,
+  parseTimeToMinutes,
+  sortImportantTimes,
+} from '~/utils/planning/timeOfDay';
 
-export interface OpeningHoursEntry {
-  day: Weekday
-  openTime: string
-  closeTime: string
-}
+// Re-exported so the many existing importers of this module keep working; the definitions live
+// in timeOfDay because timelineMath needs them too and these two modules import each other.
+export type { OpeningHoursEntry } from '~/utils/planning/timeOfDay';
+export {
+  getOpeningHoursForDate,
+  minutesToDayPx,
+  normalizeTimeValue,
+  parseTimeToMinutes,
+  sortImportantTimes,
+  weekdayFromDate,
+} from '~/utils/planning/timeOfDay';
 
 export const SMART_SNAP_TOLERANCE_MINUTES = 5;
 
+/** Plain time-of-day fallback, used by consumers that only care about grid/snap positions. */
 export const DEFAULT_IMPORTANT_WORK_TIMES = ['06:00', '09:00', '13:00', '17:00', '21:00'];
 
-const JS_DAY_TO_WEEKDAY: Record<number, Weekday> = {
-  0: 'Sunday',
-  1: 'Monday',
-  2: 'Tuesday',
-  3: 'Wednesday',
-  4: 'Thursday',
-  5: 'Friday',
-  6: 'Saturday',
-};
-
-export function normalizeTimeValue(value: string): string {
-  const [hours, minutes] = value.split(':');
-  return `${hours!.padStart(2, '0')}:${minutes!.padStart(2, '0')}`;
+export interface ImportantWorkTimeRow {
+  label: string
+  startTime: string
 }
 
-export function parseTimeToMinutes(time: string): number {
-  const normalized = normalizeTimeValue(time);
-  const [hours, minutes] = normalized.split(':').map(Number);
-  return hours! * 60 + minutes!;
+/** Starting content for a new organization's important-times editor, before it has saved any. */
+export function getDefaultImportantWorkTimes(): ImportantWorkTimeRow[] {
+  return DEFAULT_IMPORTANT_WORK_TIMES.map((time) => ({ label: '', startTime: time }));
 }
 
-export function minutesToDayPx(minutes: number, dayWidth: number): number {
-  return (minutes / (24 * 60)) * dayWidth;
+/** Projects important-time rows down to the plain time-of-day strings the grid/snap math uses. */
+export function toTimeStrings(entries: Pick<ImportantWorkTimeRow, 'startTime'>[]): string[] {
+  return entries.map((entry) => entry.startTime);
 }
 
-export function weekdayFromDate(date: Date): Weekday {
-  return JS_DAY_TO_WEEKDAY[date.getDay()]!;
-}
-
-export function getOpeningHoursForDate(
-  date: Date,
-  openingHours: OpeningHoursEntry[],
-): OpeningHoursEntry | null {
-  const weekday = weekdayFromDate(date);
-  return openingHours.find((entry) => entry.day === weekday) ?? null;
+/**
+ * Resolves the new start for a planning record when an important work time is applied as a
+ * quick pick. Only the start moves (matching the entry's existing role as a snap-point on the
+ * grid); the end is left untouched for the planner to adjust.
+ */
+export function applyImportantWorkTime(
+  entry: Pick<ImportantWorkTimeRow, 'startTime'>,
+  anchorStart: Date,
+  anchorEnd: Date,
+): { start: Date, end: Date } {
+  const totalMinutes = parseTimeToMinutes(entry.startTime);
+  const start = new Date(anchorStart);
+  start.setHours(Math.floor(totalMinutes / 60), totalMinutes % 60, 0, 0);
+  return { start, end: anchorEnd };
 }
 
 export function getOutsideOpeningOverlays(
@@ -183,12 +190,6 @@ export function formatWeekDateRange(start: Date, end: Date, locale: string): str
 
   const formatter = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
   return `${formatter.format(start)} – ${formatter.format(end)}`;
-}
-
-export function sortImportantTimes(times: string[]): string[] {
-  return [...times]
-    .map(normalizeTimeValue)
-    .sort((left, right) => parseTimeToMinutes(left) - parseTimeToMinutes(right));
 }
 
 export function uniqueImportantTimes(times: string[]): string[] {

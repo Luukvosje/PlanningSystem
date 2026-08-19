@@ -8,6 +8,6 @@
 import type { AppModule } from './appModule';
 
 export interface ModuleSettingResponse {
-  key?: AppModule;
-  isEnabled?: boolean;
+  key: AppModule;
+  isEnabled: boolean;
 }

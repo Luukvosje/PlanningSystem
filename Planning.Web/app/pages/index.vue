@@ -12,7 +12,7 @@ if (auth.isAuthenticated) {
 <template>
 	<LayoutCard class="w-full lg:max-w-2xl mx-auto">
 		<template #header>
-			<h1 class="text-2xl font-semibold">
+			<h1 class="text-xl font-semibold">
 				Planning
 			</h1>
 			<p class="text-muted text-sm mt-1">

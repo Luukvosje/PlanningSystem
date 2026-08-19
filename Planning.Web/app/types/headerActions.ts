@@ -1,10 +1,10 @@
+/** Mirrors the alias list in nuxt.config.ts (`ui.theme.colors`) plus the always-present neutral. */
 export type HeaderActionColor =
-  | 'error'
-  | 'primary'
-  | 'secondary'
+  | 'brand'
   | 'success'
   | 'info'
   | 'warning'
+  | 'error'
   | 'neutral'
 
 export interface HeaderActionSelectOption {

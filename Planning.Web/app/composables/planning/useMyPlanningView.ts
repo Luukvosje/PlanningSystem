@@ -1,13 +1,15 @@
 import { useQuery } from '@tanstack/vue-query';
 import type { PlanningRecord } from '~/types/planning';
 import type { AvailabilityRule } from '~/types/availability';
-import { getPlanningList } from '~/utils/planningClient';
+import { getApiPlanning } from '~/generated/api/planning/planning';
+import { PLANNING_PAGE_SIZE } from '~/utils/planning/constants';
 import { queryKeys } from '~/utils/queryKeys';
 import {
   addDays,
   getIntlLocale,
   getMonday,
   isToday,
+  isWeekend,
   toDateKey,
   toUtcDateTimeIso,
 } from '~/utils/planning/dateUtils';
@@ -57,11 +59,11 @@ export function useMyPlanningView() {
       queryKeys.planning.range(startUtc.value, endUtc.value, `my:${userId.value}`),
     ),
     queryFn: () =>
-      getPlanningList({
-        startUtc: startUtc.value,
-        endUtc: endUtc.value,
-        userIds: userId.value,
-        pageSize: 500,
+      getApiPlanning({
+        StartUtc: startUtc.value,
+        EndUtc: endUtc.value,
+        UserIds: userId.value,
+        PageSize: PLANNING_PAGE_SIZE,
       }),
     enabled: computed(() => auth.isAuthenticated && auth.hasOrganization && !!userId.value),
   });
@@ -93,7 +95,7 @@ export function useMyPlanningView() {
         hasShifts: shifts.length > 0,
         exceptions,
         isToday: isToday(date),
-        isWeekend: date.getDay() === 0 || date.getDay() === 6,
+        isWeekend: isWeekend(date),
       };
     }),
   );

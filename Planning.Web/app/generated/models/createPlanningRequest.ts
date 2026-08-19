@@ -5,20 +5,20 @@
  * Multi-tenant Planning SaaS foundation
  * OpenAPI spec version: v1
  */
+import type { PlanningStatus } from './planningStatus';
 
 export interface CreatePlanningRequest {
-  assignedUserId?: string;
+  assignedUserId: string;
   /** @nullable */
   customerId?: string | null;
-  /** @nullable */
-  title?: string | null;
+  title: string;
   /** @nullable */
   description?: string | null;
   /** @nullable */
   notes?: string | null;
-  startUtc?: string;
-  endUtc?: string;
+  startUtc: string;
+  endUtc: string;
   /** @nullable */
   color?: string | null;
-  status?: 'Planned' | 'Confirmed' | 'Completed' | 'Cancelled';
+  status?: PlanningStatus;
 }

@@ -8,9 +8,8 @@
 import type { UserRole } from './userRole';
 
 export interface OrganizationMembershipResponse {
-  organizationId?: string;
-  /** @nullable */
-  organizationName?: string | null;
-  userId?: string;
-  role?: UserRole;
+  organizationId: string;
+  organizationName: string;
+  userId: string;
+  role: UserRole;
 }

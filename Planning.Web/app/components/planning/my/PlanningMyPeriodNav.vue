@@ -88,7 +88,7 @@ function goToTodayAndClose() {
 					<UCalendar
 						v-if="calendarOpen"
 						:default-value="calendarDefaultDate"
-						color="secondary"
+						color="brand"
 						@update:model-value="onCalendarDateSelect"
 					/>
 					<UButton

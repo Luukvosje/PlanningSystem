@@ -25,8 +25,6 @@ onMounted(async () => {
 });
 
 const { data: customer, isLoading, error } = useCustomer(id);
-const { message } = useApiError(error);
-
 const showDeleteModal = ref(false);
 const isDeleting = ref(false);
 
@@ -51,34 +49,23 @@ async function onDelete() {
 
 <template>
 	<LayoutPageContainer>
-		<UButton
-			to="/customers"
-			variant="ghost"
-			icon="i-lucide-arrow-left"
-			size="sm"
-		>
-			{{ t('customers.backToList') }}
-		</UButton>
+		<LayoutPageHeader>
+			<UButton
+				to="/customers"
+				variant="ghost"
+				color="neutral"
+				icon="i-lucide-arrow-left"
+			>
+				{{ t('customers.backToList') }}
+			</UButton>
 
-		<UiLoadingIndicator
-			v-if="isLoading"
-			:label="t('customers.loadingOne')"
-		/>
-
-		<UAlert
-			v-else-if="error"
-			color="error"
-			:title="message"
-		/>
-
-		<template v-else-if="customer">
-			<div
-				v-if="canManage"
-				class="flex justify-end gap-2"
+			<template
+				v-if="canManage && customer"
+				#actions
 			>
 				<UButton
 					variant="outline"
-					size="sm"
+					color="neutral"
 					icon="i-lucide-pencil"
 					@click="customerEdit.open(customer)"
 				>
@@ -87,24 +74,31 @@ async function onDelete() {
 				<UButton
 					variant="outline"
 					color="error"
-					size="sm"
 					icon="i-lucide-trash-2"
 					@click="() => { showDeleteModal = true }"
 				>
 					{{ t('common.actions.delete') }}
 				</UButton>
-			</div>
+			</template>
+		</LayoutPageHeader>
 
-			<CustomerCard :customer="customer" />
+		<UiQueryState
+			:error="error"
+			:loading="isLoading"
+			:loading-label="t('customers.loadingOne')"
+		>
+			<template v-if="customer">
+				<CustomerCard :customer="customer" />
 
-			<UiConfirmModal
-				v-model:open="showDeleteModal"
-				:title="t('customers.deleteTitle')"
-				:description="t('customers.deleteDescription')"
-				:confirm-label="t('common.actions.delete')"
-				:loading="isDeleting"
-				@confirm="onDelete"
-			/>
-		</template>
+				<UiConfirmModal
+					v-model:open="showDeleteModal"
+					:title="t('customers.deleteTitle')"
+					:description="t('customers.deleteDescription')"
+					:confirm-label="t('common.actions.delete')"
+					:loading="isDeleting"
+					@confirm="onDelete"
+				/>
+			</template>
+		</UiQueryState>
 	</LayoutPageContainer>
 </template>

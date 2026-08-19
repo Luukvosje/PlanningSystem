@@ -18,7 +18,6 @@ export const queryKeys = {
     preview: (code: string) => ['invites', 'preview', code] as const,
   },
   planning: {
-    week: (start?: string) => ['planning', 'week', start] as const,
     range: (start?: string, end?: string, filterKey?: string) =>
       ['planning', 'range', start, end, filterKey] as const,
     detail: (id: string) => ['planning', 'detail', id] as const,

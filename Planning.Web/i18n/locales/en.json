@@ -92,6 +92,9 @@
     },
     "address": {
       "tooLong": "Address is too long"
+    },
+    "time": {
+      "invalid": "Invalid time"
     }
   },
   "availability": {
@@ -144,7 +147,15 @@
     "oneTimeExceptionsDescription": "Vacation, appointments, or other exceptions on a date.",
     "noOneTimeExceptions": "No one-time exceptions.",
     "conflictWarningTitle": "Note: shift already scheduled",
-    "conflictWarningDescription": "A shift is already scheduled on this date. You may want to check with the planner."
+    "conflictWarningDescription": "A shift is already scheduled on this date. You may want to check with the planner.",
+    "toast": {
+      "created": "Rule saved",
+      "createFailed": "Could not save rule",
+      "updated": "Rule updated",
+      "updateFailed": "Could not update rule",
+      "deleted": "Rule deleted",
+      "deleteFailed": "Could not delete rule"
+    }
   },
   "customers": {
     "loading": "Loading customers...",
@@ -224,7 +235,8 @@
     "roleUpdated": "Role updated",
     "loading": "Loading team...",
     "searchPlaceholder": "Search by name, email, role or status...",
-    "empty": "No team members yet. Invite someone using a code.",
+    "empty": "No team members yet.",
+    "emptyManage": "No team members yet. Invite someone using a code.",
     "noResults": "No team members found.",
     "active": "Active",
     "inactive": "Inactive",
@@ -357,19 +369,30 @@
       "description": "Important working times and opening hours for the planning view.",
       "loading": "Loading planning settings...",
       "importantTimes": "Important working times",
-      "importantTimesDescription": "These times are highlighted on the planning and used for smart snap on new shifts.",
+      "importantTimesDescription": "These times are highlighted on the planning, used for smart snap on new shifts, and can be applied with one click when scheduling.",
       "addTime": "Add time",
+      "importantTimeLabel": "Name (optional)",
       "openingHours": "Opening hours",
       "openingHoursDescription": "Hours outside opening times are shown subtly darker. Planning remains possible everywhere.",
       "save": "Save planning settings",
       "preview": "Preview in the planning",
       "previewDescription": "Important times are shown as thicker lines. When planning shifts, snapping to these times happens automatically."
+    },
+    "toast": {
+      "modulesUpdated": "Organization modules updated",
+      "userModulesUpdated": "User modules updated",
+      "updated": "Organization updated",
+      "planningSettingsSaved": "Planning settings saved",
+      "logoSaved": "Logo saved"
     }
   },
   "settings": {
     "description": "Manage your personal details.",
     "loadingProfile": "Loading profile...",
-    "profile": "Profile"
+    "profile": "Profile",
+    "toast": {
+      "profileUpdated": "Profile updated"
+    }
   },
   "dateTimeRange": {
     "day": "{count} day",
@@ -390,7 +413,11 @@
   "errors": {
     "validationFailed": "One or more validation errors occurred.",
     "unknown": "Unknown error",
-    "genericFormError": "Something went wrong. Please try again later."
+    "genericFormError": "Something went wrong. Please try again later.",
+    "moduleDisabled": {
+      "title": "No access",
+      "description": "This module is disabled for your account."
+    }
   },
   "layout": {
     "toggleSidebarShow": "Show navigation",

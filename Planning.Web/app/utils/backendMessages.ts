@@ -34,7 +34,6 @@ const NL_TRANSLATIONS: Record<string, string> = {
 
   // Cross-cutting / auth
   'Organization context is required.': 'Organisatiecontext is vereist.',
-  'No organization context.': 'Geen organisatiecontext.',
   'No organization context. Set the X-Organization-Id header or create an organization first.':
     'Geen organisatiecontext. Stel de X-Organization-Id header in of maak eerst een organisatie aan.',
   'Not authenticated.': 'Niet ingelogd.',
@@ -88,7 +87,9 @@ const NL_TRANSLATIONS: Record<string, string> = {
   'Password hash is required.': 'Wachtwoord-hash is verplicht.',
   'Name is required.': 'Naam is verplicht.',
   'Open time must be before close time.': 'Openingstijd moet vóór sluitingstijd liggen.',
-  'Only planned bookings can be confirmed.': 'Alleen geplande boekingen kunnen worden bevestigd.',
+  'A completed or cancelled booking can no longer change status.':
+    'Een afgeronde of geannuleerde boeking kan niet meer van status wijzigen.',
+  'This status change is not allowed.': 'Deze statuswijziging is niet toegestaan.',
   'Title is required.': 'Titel is verplicht.',
   'End date must be after start date.': 'Einddatum moet na de startdatum liggen.',
   'Duration must be at least 15 minutes.': 'Duur moet minimaal 15 minuten zijn.',

@@ -1,63 +1,24 @@
 import type { Composer } from 'vue-i18n';
+import type { Weekday } from '~/generated/models';
 
 type Translate = Composer['t']
 
-export type AvailabilityRuleType = 'Weekly' | 'OneTime'
-export type AvailabilityRuleStatus = 'Unavailable' | 'Preferred' | 'Available'
-export type Weekday = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday'
-
-export interface AvailabilityRule {
-  id: string
-  employeeId: string
-  type: AvailabilityRuleType
-  weekday?: Weekday | null
-  date?: string | null
-  startTime: string
-  endTime: string
-  status: AvailabilityRuleStatus
-  reason?: string | null
-  createdAtUtc?: string
-  updatedAtUtc?: string
-  schedulingConflict?: boolean
-}
-
-export interface AvailabilityRulesListResponse {
-  items: AvailabilityRule[]
-}
-
-export interface UnavailablePeriod {
-  employeeId: string
-  date: string
-  startTime: string
-  endTime: string
-  status: AvailabilityRuleStatus
-  reason?: string | null
-  ruleId: string
-}
-
-export interface PlanningAvailabilityResponse {
-  periods: UnavailablePeriod[]
-}
-
-export interface CreateAvailabilityRuleRequest {
-  employeeId: string
-  type: AvailabilityRuleType
-  weekday?: Weekday | null
-  date?: string | null
-  startTime: string
-  endTime: string
-  status: AvailabilityRuleStatus
-  reason?: string | null
-}
-
-export interface UpdateAvailabilityRuleRequest {
-  weekday?: Weekday | null
-  date?: string | null
-  startTime: string
-  endTime: string
-  status: AvailabilityRuleStatus
-  reason?: string | null
-}
+/**
+ * The wire shapes below are generated from the OpenAPI spec (`npm run generate:api`) and
+ * re-exported here under the names the app already uses, so there is exactly one definition of
+ * the contract. Everything after them is UI-only.
+ */
+export type {
+  AvailabilityRuleResponse as AvailabilityRule,
+  AvailabilityRulesListResponse,
+  UnavailablePeriodResponse as UnavailablePeriod,
+  PlanningAvailabilityResponse,
+  CreateAvailabilityRuleRequest,
+  UpdateAvailabilityRuleRequest,
+  AvailabilityRuleType,
+  AvailabilityRuleStatus,
+  Weekday,
+} from '~/generated/models';
 
 const WEEKDAY_KEYS: Record<Weekday, string> = {
   Monday: 'availability.weekday.monday',

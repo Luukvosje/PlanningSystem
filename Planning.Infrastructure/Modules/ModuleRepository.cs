@@ -18,6 +18,7 @@ public class ModuleRepository : IModuleRepository
         Guid organizationId,
         CancellationToken cancellationToken = default) =>
         await _context.OrganizationModules
+            .AsNoTracking()
             .Where(x => x.OrganizationId == organizationId)
             .OrderBy(x => x.Module)
             .ToListAsync(cancellationToken);
@@ -26,9 +27,32 @@ public class ModuleRepository : IModuleRepository
         Guid userId,
         CancellationToken cancellationToken = default) =>
         await _context.UserModules
+            .AsNoTracking()
             .Where(x => x.UserId == userId)
             .OrderBy(x => x.Module)
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<UserModule>>> GetUserModulesByUsersAsync(
+        IReadOnlyList<Guid> userIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (userIds.Count == 0)
+        {
+            return new Dictionary<Guid, IReadOnlyList<UserModule>>();
+        }
+
+        var modules = await _context.UserModules
+            .AsNoTracking()
+            .Where(x => userIds.Contains(x.UserId))
+            .OrderBy(x => x.Module)
+            .ToListAsync(cancellationToken);
+
+        return modules
+            .GroupBy(x => x.UserId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<UserModule>)group.ToList());
+    }
 
     public async Task AddOrganizationModulesAsync(
         IEnumerable<OrganizationModule> modules,
@@ -51,6 +75,7 @@ public class ModuleRepository : IModuleRepository
         IReadOnlyDictionary<AppModule, bool> modules,
         CancellationToken cancellationToken = default)
     {
+        // Deliberately tracked: these entries are mutated and persisted via SaveChangesAsync.
         var existing = await _context.OrganizationModules
             .Where(x => x.OrganizationId == organizationId)
             .ToListAsync(cancellationToken);
@@ -71,6 +96,7 @@ public class ModuleRepository : IModuleRepository
         IReadOnlyDictionary<AppModule, bool> modules,
         CancellationToken cancellationToken = default)
     {
+        // Deliberately tracked: these entries are mutated and persisted via SaveChangesAsync.
         var existing = await _context.UserModules
             .Where(x => x.UserId == userId)
             .ToListAsync(cancellationToken);
@@ -84,27 +110,5 @@ public class ModuleRepository : IModuleRepository
         }
 
         await _context.SaveChangesAsync(cancellationToken);
-    }
-
-    public async Task<bool> HasEffectiveModuleAsync(
-        Guid userId,
-        Guid organizationId,
-        AppModule module,
-        CancellationToken cancellationToken = default)
-    {
-        var orgModule = await _context.OrganizationModules
-            .FirstOrDefaultAsync(
-                x => x.OrganizationId == organizationId && x.Module == module,
-                cancellationToken);
-
-        if (orgModule is null || !orgModule.IsEnabled)
-        {
-            return false;
-        }
-
-        var userModule = await _context.UserModules
-            .FirstOrDefaultAsync(x => x.UserId == userId && x.Module == module, cancellationToken);
-
-        return userModule is not null && userModule.IsEnabled;
     }
 }

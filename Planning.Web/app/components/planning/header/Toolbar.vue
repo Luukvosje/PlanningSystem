@@ -19,7 +19,7 @@ const rowModes = computed<{ label: string, value: PlanningRowMode, icon: string 
 					:icon="mode.icon"
 					:label="mode.label"
 					:variant="store.rowMode === mode.value ? 'solid' : 'outline'"
-					:color="store.rowMode === mode.value ? 'secondary' : 'neutral'"
+					:color="store.rowMode === mode.value ? 'brand' : 'neutral'"
 					@click="() => { store.rowMode = mode.value }"
 				/>
 			</UFieldGroup>

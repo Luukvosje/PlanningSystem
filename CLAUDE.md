@@ -126,3 +126,10 @@ skips the ownership check, treat it as a bug, not a style nit.
 - Don't add new top-level abstractions (mediator, CQRS, generic repository base beyond
   what exists) without discussing it first — this codebase deliberately keeps that layer
   simple.
+
+## Bedrijfscontext
+
+De kern van het bedrijf, het doel voor dit kwartaal en de focus van deze week staan in
+`my-company.md`. Lees het mee voordat je scope-keuzes maakt.
+
+@my-company.md

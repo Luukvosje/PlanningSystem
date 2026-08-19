@@ -4,8 +4,9 @@ import type {
   UnavailablePeriod,
   Weekday,
 } from '~/types/availability';
-import { MIXED_END_HOUR, MIXED_START_HOUR } from '~/utils/planning/mixedTimelineMath';
 import { timeToPx } from '~/utils/planning/timelineMath';
+import { atTimeOnDateKey, weekdayFromDate } from '~/utils/planning/timeOfDay';
+import { toDateKey } from '~/utils/planning/dateUtils';
 
 type Translate = Composer['t'] | ((key: string, named?: Record<string, unknown>) => string)
 
@@ -21,38 +22,6 @@ export interface UnavailableOverlay {
   leftPx: number
   widthPx: number
   tooltip: string
-}
-
-const JS_DAY_TO_WEEKDAY: Record<number, Weekday> = {
-  0: 'Sunday',
-  1: 'Monday',
-  2: 'Tuesday',
-  3: 'Wednesday',
-  4: 'Thursday',
-  5: 'Friday',
-  6: 'Saturday',
-};
-
-function parseTimeParts(time: string): { hours: number, minutes: number } {
-  const [hours, minutes] = time.split(':').map(Number);
-  return { hours: hours ?? 0, minutes: minutes ?? 0 };
-}
-
-function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-export function createLocalDateTime(dateKey: string, time: string): Date {
-  const { hours, minutes } = parseTimeParts(time);
-  const [year, month, day] = dateKey.split('-').map(Number);
-  return new Date(year!, month! - 1, day, hours, minutes, 0, 0);
-}
-
-function weekdayFromDate(date: Date): Weekday {
-  return JS_DAY_TO_WEEKDAY[date.getDay()]!;
 }
 
 function expandRuleForDate(rule: AvailabilityRule, date: Date): UnavailablePeriod | null {
@@ -115,8 +84,8 @@ function buildTooltip(period: UnavailablePeriod, periodLabel: string, t: Transla
 
 function periodToView(period: UnavailablePeriod, day: Date, t: Translate): UnavailablePeriodView {
   const dateKey = toDateKey(day);
-  const start = createLocalDateTime(dateKey, period.startTime);
-  const end = createLocalDateTime(dateKey, period.endTime);
+  const start = atTimeOnDateKey(dateKey, period.startTime);
+  const end = atTimeOnDateKey(dateKey, period.endTime);
   const timeLabel = `${period.startTime.slice(0, 5)}–${period.endTime.slice(0, 5)}`;
   return {
     employeeId: period.employeeId,
@@ -176,32 +145,6 @@ export function getUnavailableOverlaysForMatrix(
   return overlays;
 }
 
-export function getUnavailableOverlaysForMixed(
-  rules: AvailabilityRule[],
-  employeeId: string,
-  day: Date,
-  timeToMixedPx: (utcIso: string) => number,
-  planningPeriods: UnavailablePeriod[] | undefined,
-  t: Translate,
-): UnavailableOverlay[] {
-  const periods = planningPeriods ?
-    getUnavailablePeriodsForDayFromPlanning(planningPeriods, employeeId, day, t) :
-    getUnavailablePeriodsForDayFromRules(rules, employeeId, day, t);
-
-  return periods.map((period) => {
-    const leftPx = Math.max(timeToMixedPx(period.start.toISOString()), 0);
-    const rightPx = Math.min(
-      timeToMixedPx(period.end.toISOString()),
-      (MIXED_END_HOUR - MIXED_START_HOUR) * 80,
-    );
-    return {
-      leftPx,
-      widthPx: Math.max(rightPx - leftPx, 4),
-      tooltip: period.tooltip,
-    };
-  });
-}
-
 export function hasAvailabilityConflict(
   employeeId: string,
   startUtc: string,
@@ -221,8 +164,8 @@ export function hasAvailabilityConflict(
     expandRulesForDate(rules, employeeId, day);
 
   const conflict = periods.find((period) => {
-    const periodStart = createLocalDateTime(period.date, period.startTime);
-    const periodEnd = createLocalDateTime(period.date, period.endTime);
+    const periodStart = atTimeOnDateKey(period.date, period.startTime);
+    const periodEnd = atTimeOnDateKey(period.date, period.endTime);
     return shiftStart < periodEnd && shiftEnd > periodStart;
   });
 

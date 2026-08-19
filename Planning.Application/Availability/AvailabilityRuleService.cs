@@ -6,39 +6,36 @@ using Planning.Domain.Users;
 
 namespace Planning.Application.Availability;
 
-public class AvailabilityRuleService : IAvailabilityRuleService
+public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleService
 {
     private readonly IAvailabilityRuleRepository _ruleRepository;
     private readonly IUserRepository _userRepository;
     private readonly IPlanningRecordRepository _planningRecordRepository;
-    private readonly ICurrentUserContext _currentUserContext;
 
     public AvailabilityRuleService(
         IAvailabilityRuleRepository ruleRepository,
         IUserRepository userRepository,
         IPlanningRecordRepository planningRecordRepository,
         ICurrentUserContext currentUserContext)
+        : base(currentUserContext)
     {
         _ruleRepository = ruleRepository;
         _userRepository = userRepository;
         _planningRecordRepository = planningRecordRepository;
-        _currentUserContext = currentUserContext;
     }
 
     public async Task<Result<AvailabilityRulesListResponse>> ListByEmployeeAsync(
         Guid employeeId,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<AvailabilityRulesListResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<AvailabilityRulesListResponse>();
         }
-
-        var organizationId = _currentUserContext.OrganizationId!.Value;
 
         if (!await CanManageForEmployeeAsync(employeeId, organizationId, cancellationToken))
         {
-            return Result<AvailabilityRulesListResponse>.Failure("You are not allowed to view these rules.", "FORBIDDEN");
+            return Failures.ForbiddenFor<AvailabilityRulesListResponse>("You are not allowed to view these rules.");
         }
 
         var rules = await _ruleRepository.GetByEmployeeIdAsync(organizationId, employeeId, cancellationToken);
@@ -50,16 +47,14 @@ public class AvailabilityRuleService : IAvailabilityRuleService
         PlanningAvailabilityRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<PlanningAvailabilityResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<PlanningAvailabilityResponse>();
         }
-
-        var organizationId = _currentUserContext.OrganizationId!.Value;
         var employeeIds = await ResolveEmployeeIdsForPlanningAsync(request.EmployeeIds, organizationId, cancellationToken);
         if (employeeIds is null)
         {
-            return Result<PlanningAvailabilityResponse>.Failure("You are not allowed to view this availability.", "FORBIDDEN");
+            return Failures.ForbiddenFor<PlanningAvailabilityResponse>("You are not allowed to view this availability.");
         }
 
         var rules = await _ruleRepository.GetForPlanningAsync(
@@ -69,7 +64,7 @@ public class AvailabilityRuleService : IAvailabilityRuleService
             request.EndDate,
             cancellationToken);
 
-        var periods = AvailabilityOverlapChecker.ExpandForRange(rules, request.StartDate, request.EndDate);
+        var periods = AvailabilityPeriodExpander.ExpandForRange(rules, request.StartDate, request.EndDate);
         return Result<PlanningAvailabilityResponse>.Success(new PlanningAvailabilityResponse(periods));
     }
 
@@ -77,24 +72,22 @@ public class AvailabilityRuleService : IAvailabilityRuleService
         CreateAvailabilityRuleRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<AvailabilityRuleResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<AvailabilityRuleResponse>();
         }
-
-        var organizationId = _currentUserContext.OrganizationId!.Value;
 
         if (!await CanManageForEmployeeAsync(request.EmployeeId, organizationId, cancellationToken))
         {
-            return Result<AvailabilityRuleResponse>.Failure("You are not allowed to create this rule.", "FORBIDDEN");
+            return Failures.ForbiddenFor<AvailabilityRuleResponse>("You are not allowed to create this rule.");
         }
 
         if (!await EmployeeExistsInOrganizationAsync(request.EmployeeId, organizationId, cancellationToken))
         {
-            return Result<AvailabilityRuleResponse>.Failure("Employee not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<AvailabilityRuleResponse>("Employee");
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             var utcNow = DateTime.UtcNow;
             var rule = request.Type switch
@@ -128,11 +121,7 @@ public class AvailabilityRuleService : IAvailabilityRuleService
                 && await HasSchedulingConflictAsync(organizationId, rule.EmployeeId, createdDate, rule.StartTime, rule.EndTime, cancellationToken);
 
             return Result<AvailabilityRuleResponse>.Success(AvailabilityRuleMapper.ToResponse(rule, schedulingConflict));
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<AvailabilityRuleResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result<AvailabilityRuleResponse>> UpdateAsync(
@@ -140,25 +129,23 @@ public class AvailabilityRuleService : IAvailabilityRuleService
         UpdateAvailabilityRuleRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<AvailabilityRuleResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<AvailabilityRuleResponse>();
         }
-
-        var organizationId = _currentUserContext.OrganizationId!.Value;
         var existing = await _ruleRepository.GetByIdAsync(id, cancellationToken);
 
-        if (existing is null || existing.OrganizationId != organizationId)
+        if (existing is null || !Owns(existing))
         {
-            return Result<AvailabilityRuleResponse>.Failure("Availability rule not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<AvailabilityRuleResponse>("Availability rule");
         }
 
-        if (!await CanManageForEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
+        if (!await CanManageAnyEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
         {
-            return Result<AvailabilityRuleResponse>.Failure("You are not allowed to update this rule.", "FORBIDDEN");
+            return Failures.ForbiddenFor<AvailabilityRuleResponse>("You are not allowed to update this rule.");
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             var utcNow = DateTime.UtcNow;
 
@@ -166,7 +153,7 @@ public class AvailabilityRuleService : IAvailabilityRuleService
             {
                 if (request.Weekday is not { } weekday)
                 {
-                    return Result<AvailabilityRuleResponse>.Failure("Weekday is required for weekly rules.", "VALIDATION_ERROR");
+                    return Result<AvailabilityRuleResponse>.Failure("Weekday is required for weekly rules.", Failures.Validation);
                 }
 
                 existing.UpdateWeekly(
@@ -181,7 +168,7 @@ public class AvailabilityRuleService : IAvailabilityRuleService
             {
                 if (request.Date is not { } date)
                 {
-                    return Result<AvailabilityRuleResponse>.Failure("Date is required for one-time rules.", "VALIDATION_ERROR");
+                    return Result<AvailabilityRuleResponse>.Failure("Date is required for one-time rules.", Failures.Validation);
                 }
 
                 existing.UpdateOneTime(
@@ -199,31 +186,25 @@ public class AvailabilityRuleService : IAvailabilityRuleService
                 && await HasSchedulingConflictAsync(organizationId, existing.EmployeeId, updatedDate, existing.StartTime, existing.EndTime, cancellationToken);
 
             return Result<AvailabilityRuleResponse>.Success(AvailabilityRuleMapper.ToResponse(existing, schedulingConflict));
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<AvailabilityRuleResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext();
         }
-
-        var organizationId = _currentUserContext.OrganizationId!.Value;
         var existing = await _ruleRepository.GetByIdAsync(id, cancellationToken);
 
-        if (existing is null || existing.OrganizationId != organizationId)
+        if (existing is null || !Owns(existing))
         {
-            return Result.Failure("Availability rule not found.", "NOT_FOUND");
+            return Failures.NotFoundFor("Availability rule");
         }
 
-        if (!await CanManageForEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
+        if (!await CanManageAnyEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
         {
-            return Result.Failure("You are not allowed to delete this rule.", "FORBIDDEN");
+            return Failures.ForbiddenFor("You are not allowed to delete this rule.");
         }
 
         await _ruleRepository.DeleteAsync(existing, cancellationToken);
@@ -237,36 +218,62 @@ public class AvailabilityRuleService : IAvailabilityRuleService
     {
         if (!string.IsNullOrWhiteSpace(employeeIds))
         {
-            var parsed = employeeIds
-                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Select(Guid.Parse)
-                .ToList();
-
-            foreach (var employeeId in parsed)
+            if (!CsvList.TryParseGuids(employeeIds, out var parsed) || parsed is null)
             {
-                if (!await EmployeeExistsInOrganizationAsync(employeeId, organizationId, cancellationToken))
-                {
-                    return null;
-                }
+                return null;
             }
 
-            return parsed;
+            // Not just "does this employee exist" - rules carry a free-text reason, so the caller
+            // must actually be allowed to see them. Resolved against one team query instead of a
+            // round-trip per requested id.
+            if (!CanManageAnyEmployee())
+            {
+                return parsed.All(id => id == CurrentUser.UserId) ? parsed : null;
+            }
+
+            var teamIds = (await _userRepository.GetByOrganizationIdAsync(organizationId, cancellationToken))
+                .Select(x => x.Id)
+                .ToHashSet();
+
+            return parsed.All(teamIds.Contains) ? parsed : null;
+        }
+
+        // No filter given: a planner sees the whole team, anyone else only themselves.
+        if (!CanManageAnyEmployee())
+        {
+            return CurrentUser.UserId is { } ownId ? new List<Guid> { ownId } : [];
         }
 
         var users = await _userRepository.GetByOrganizationIdAsync(organizationId, cancellationToken);
         return users.Where(x => x.IsActive).Select(x => x.Id).ToList();
     }
 
+    /// <summary>
+    /// Reading and recording an absence is self-service: you may always do it for yourself.
+    /// A planner may do it for anyone in the organization.
+    /// </summary>
     private async Task<bool> CanManageForEmployeeAsync(
         Guid employeeId,
         Guid organizationId,
         CancellationToken cancellationToken)
     {
-        if (_currentUserContext.UserId == employeeId)
+        if (CurrentUser.UserId == employeeId)
         {
             return true;
         }
 
+        return await CanManageAnyEmployeeAsync(employeeId, organizationId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Changing or removing an existing rule is planner-only, including your own: shrinking a rule
+    /// to nothing would otherwise be an end run around not being allowed to delete it.
+    /// </summary>
+    private async Task<bool> CanManageAnyEmployeeAsync(
+        Guid employeeId,
+        Guid organizationId,
+        CancellationToken cancellationToken)
+    {
         if (!CanManageAnyEmployee())
         {
             return false;
@@ -276,7 +283,7 @@ public class AvailabilityRuleService : IAvailabilityRuleService
     }
 
     private bool CanManageAnyEmployee() =>
-        _currentUserContext.Role is UserRole.Owner or UserRole.Admin or UserRole.Planner;
+        CurrentUser.Role is UserRole.Owner or UserRole.Admin or UserRole.Planner;
 
     private async Task<bool> HasSchedulingConflictAsync(
         Guid organizationId,

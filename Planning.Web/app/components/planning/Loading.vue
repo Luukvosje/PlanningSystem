@@ -101,7 +101,7 @@ const rows = [
 					<div
 						v-for="(block, blockIndex) in row.blocks"
 						:key="blockIndex"
-						class="absolute top-2.5 bottom-2.5 rounded-md bg-primary/25 animate-pulse"
+						class="absolute top-2.5 bottom-2.5 rounded-md bg-elevated animate-pulse"
 						:style="{
 							left: block.left,
 							width: block.width,
@@ -115,7 +115,7 @@ const rows = [
 				<div class="flex flex-col items-center gap-3 rounded-xl border border-default bg-default/90 px-6 py-5 shadow-sm">
 					<UIcon
 						name="i-lucide-loader-circle"
-						class="size-8 text-primary animate-spin"
+						class="size-8 text-brand animate-spin"
 					/>
 					<p class="text-sm text-muted">
 						{{ resolvedLabel }}

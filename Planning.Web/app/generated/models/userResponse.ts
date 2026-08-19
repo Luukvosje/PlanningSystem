@@ -9,18 +9,14 @@ import type { UserRole } from './userRole';
 import type { ModuleSettingResponse } from './moduleSettingResponse';
 
 export interface UserResponse {
-  id?: string;
-  organizationId?: string;
-  /** @nullable */
-  firstName?: string | null;
-  /** @nullable */
-  lastName?: string | null;
-  /** @nullable */
-  email?: string | null;
-  role?: UserRole;
-  isActive?: boolean;
-  createdAtUtc?: string;
-  updatedAtUtc?: string;
-  /** @nullable */
-  modules?: ModuleSettingResponse[] | null;
+  id: string;
+  organizationId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  modules: ModuleSettingResponse[];
 }

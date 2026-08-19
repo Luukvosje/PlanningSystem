@@ -7,12 +7,8 @@
  */
 
 export interface RegisterRequest {
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  password?: string | null;
-  /** @nullable */
-  firstName?: string | null;
-  /** @nullable */
-  lastName?: string | null;
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
 }

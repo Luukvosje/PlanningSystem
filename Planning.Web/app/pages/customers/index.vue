@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TableColumn, TableRow } from '@nuxt/ui';
+import type { TableColumn } from '@nuxt/ui';
 import type { CustomerResponse } from '~/generated/models';
 
 definePageMeta({ layout: 'default' });
@@ -18,7 +18,6 @@ onMounted(async () => {
 });
 
 const { data: customers, isLoading, error } = useCustomers();
-const { message } = useApiError(error);
 
 const globalFilter = ref('');
 
@@ -51,10 +50,9 @@ function matchesCustomerFilter(customer: CustomerResponse, filter: string) {
   return haystack.includes(query);
 }
 
-function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
-  const id = row.original.id;
-  if (id) {
-    navigateTo(`/customers/${id}`);
+function openCustomer(customer: CustomerResponse) {
+  if (customer.id) {
+    navigateTo(`/customers/${customer.id}`);
   }
 }
 </script>
@@ -63,7 +61,6 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
 	<LayoutPageContainer fill>
 		<LayoutPageHeader
 			class="shrink-0"
-			:title="t('nav.customers')"
 			:subtitle="auth.currentUser?.organizationName"
 		>
 			<template
@@ -79,65 +76,38 @@ function onRowSelect(_event: Event, row: TableRow<CustomerResponse>) {
 			</template>
 		</LayoutPageHeader>
 
-		<UAlert
-			v-if="error"
-			class="shrink-0"
-			color="error"
-			:title="message"
-		/>
-
-		<UiLoadingIndicator
-			v-else-if="isLoading"
-			class="shrink-0"
-			:label="t('customers.loading')"
-		/>
-
-		<div
-			v-else
-			class="flex min-h-0 flex-1 flex-col gap-4"
+		<UiQueryState
+			:error="error"
+			:loading="isLoading"
+			:loading-label="t('customers.loading')"
 		>
-			<UInput
-				v-model="globalFilter"
-				icon="i-lucide-search"
-				:placeholder="t('customers.searchPlaceholder')"
-				class="max-w-md shrink-0"
-			/>
+			<div class="flex min-h-0 flex-1 flex-col gap-4">
+				<UInput
+					v-model="globalFilter"
+					icon="i-lucide-search"
+					:placeholder="t('customers.searchPlaceholder')"
+					class="max-w-md shrink-0"
+				/>
 
-			<div class="min-h-0 flex-1 overflow-hidden rounded-xl border border-default">
-				<UTable
-					v-model:global-filter="globalFilter"
-					:data="customers ?? []"
+				<UiDataTable
+					v-model:search="globalFilter"
+					:rows="customers"
 					:columns="columns"
-					:global-filter-options="{
-						globalFilterFn: (row, _columnId, filterValue) => matchesCustomerFilter(row.original, filterValue),
-					}"
-					sticky
-					class="h-full"
-					@select="onRowSelect"
+					:filter-fn="matchesCustomerFilter"
+					:empty-title="canManage ? t('customers.emptyManage') : t('customers.empty')"
+					:no-results-title="t('customers.noResults')"
+					@select="openCustomer"
 				>
-					<template #empty>
-						<div class="flex h-full min-h-48 flex-col items-center justify-center gap-3 py-6">
-							<template v-if="!(customers?.length) && !globalFilter">
-								<p class="text-muted text-sm">
-									{{ canManage ? t('customers.emptyManage') : t('customers.empty') }}
-								</p>
-								<UButton
-									v-if="canManage"
-									@click="customerCreate.open()"
-								>
-									{{ t('customers.add') }}
-								</UButton>
-							</template>
-							<p
-								v-else
-								class="text-muted text-sm"
-							>
-								{{ t('customers.noResults') }}
-							</p>
-						</div>
+					<template #empty-action>
+						<UButton
+							v-if="canManage"
+							@click="customerCreate.open()"
+						>
+							{{ t('customers.add') }}
+						</UButton>
 					</template>
-				</UTable>
+				</UiDataTable>
 			</div>
-		</div>
+		</UiQueryState>
 	</LayoutPageContainer>
 </template>

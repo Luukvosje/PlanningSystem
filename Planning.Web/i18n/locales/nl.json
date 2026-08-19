@@ -92,6 +92,9 @@
     },
     "address": {
       "tooLong": "Adres is te lang"
+    },
+    "time": {
+      "invalid": "Ongeldige tijd"
     }
   },
   "availability": {
@@ -144,7 +147,15 @@
     "oneTimeExceptionsDescription": "Vakantie, afspraken of andere uitzonderingen op een datum.",
     "noOneTimeExceptions": "Geen eenmalige uitzonderingen.",
     "conflictWarningTitle": "Let op: dienst al ingepland",
-    "conflictWarningDescription": "Er staat al een dienst gepland op deze datum. Overleg eventueel met de planner."
+    "conflictWarningDescription": "Er staat al een dienst gepland op deze datum. Overleg eventueel met de planner.",
+    "toast": {
+      "created": "Regel opgeslagen",
+      "createFailed": "Regel opslaan mislukt",
+      "updated": "Regel bijgewerkt",
+      "updateFailed": "Regel bijwerken mislukt",
+      "deleted": "Regel verwijderd",
+      "deleteFailed": "Regel verwijderen mislukt"
+    }
   },
   "customers": {
     "loading": "Klanten laden...",
@@ -224,7 +235,8 @@
     "roleUpdated": "Rol bijgewerkt",
     "loading": "Team laden...",
     "searchPlaceholder": "Zoeken op naam, e-mail, rol of status...",
-    "empty": "Nog geen teamleden. Nodig iemand uit via een code.",
+    "empty": "Nog geen teamleden.",
+    "emptyManage": "Nog geen teamleden. Nodig iemand uit via een code.",
     "noResults": "Geen teamleden gevonden.",
     "active": "Actief",
     "inactive": "Inactief",
@@ -357,19 +369,30 @@
       "description": "Belangrijke werktijden en openingstijden voor de planningweergave.",
       "loading": "Planninginstellingen laden...",
       "importantTimes": "Belangrijke werktijden",
-      "importantTimesDescription": "Deze tijden worden benadrukt op de planning en gebruikt voor smart snap bij nieuwe diensten.",
+      "importantTimesDescription": "Deze tijden worden benadrukt op de planning, gebruikt voor smart snap bij nieuwe diensten, en zijn met één klik toepasbaar bij het inplannen.",
       "addTime": "Tijd toevoegen",
+      "importantTimeLabel": "Naam (optioneel)",
       "openingHours": "Openingstijden",
       "openingHoursDescription": "Uren buiten openingstijden worden subtiel donkerder weergegeven. Plannen blijft overal mogelijk.",
       "save": "Planninginstellingen opslaan",
       "preview": "Voorbeeld in de planning",
       "previewDescription": "Belangrijke tijden worden als dikkere lijnen getoond. Bij het plannen van diensten wordt automatisch naar deze tijden gesnapt."
+    },
+    "toast": {
+      "modulesUpdated": "Organisatiemodules bijgewerkt",
+      "userModulesUpdated": "Gebruikersmodules bijgewerkt",
+      "updated": "Organisatie bijgewerkt",
+      "planningSettingsSaved": "Planninginstellingen opgeslagen",
+      "logoSaved": "Logo opgeslagen"
     }
   },
   "settings": {
     "description": "Beheer je persoonlijke gegevens.",
     "loadingProfile": "Profiel laden...",
-    "profile": "Profiel"
+    "profile": "Profiel",
+    "toast": {
+      "profileUpdated": "Profiel bijgewerkt"
+    }
   },
   "dateTimeRange": {
     "day": "{count} dag",
@@ -390,7 +413,11 @@
   "errors": {
     "validationFailed": "Er zijn een of meer validatiefouten opgetreden.",
     "unknown": "Onbekende fout",
-    "genericFormError": "Er is iets misgegaan. Probeer het later opnieuw."
+    "genericFormError": "Er is iets misgegaan. Probeer het later opnieuw.",
+    "moduleDisabled": {
+      "title": "Geen toegang",
+      "description": "Deze module is uitgeschakeld voor jouw account."
+    }
   },
   "layout": {
     "toggleSidebarShow": "Navigatie tonen",

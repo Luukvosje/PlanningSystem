@@ -8,6 +8,7 @@ import { toFormErrors, type ServerErrorPayload } from './types';
 import { translateBackendMessage } from '~/utils/backendMessages';
 import { registerDirtyForm, unregisterDirtyForm } from './dirty-registry';
 import FormView from '~/components/form/View.vue';
+import FormFooterContent from '~/components/form/FooterContent.vue';
 
 export interface FormClassOptions<TSchema extends z.ZodType> {
   schema: TSchema
@@ -20,13 +21,13 @@ export interface FormClassOptions<TSchema extends z.ZodType> {
   genericErrorMessage?: string
   /**
    * Opts into the "settings-style" form: label-left/value-right grid layout, a
-   * dirty-aware sticky save/cancel bar, and route-leave-guard registration.
-   * Default: false (current vertical-stack behavior, unchanged).
+   * dirty-aware save/cancel footer (`FormFooter`), and route-leave-guard
+   * registration. Default: false (vertical stack + simple submit button).
    */
   grid?: boolean
   /** Rendered by `form.render` above the controls loop. */
   header?: Component
-  /** Rendered by `form.render` below the submit area. */
+  /** Extra content rendered by `form.render` below the default footer. */
   footer?: Component
   /**
    * Internal escape hatch: `useCreate`/`useEdit` set this to `false` so their
@@ -60,13 +61,17 @@ export class Form<TSchema extends z.ZodType> {
   private lastSavedSnapshot: Ref<string>;
   private lastSubmitSucceeded: boolean | null = null;
   private renderComponent: Component | undefined;
+  private renderFooterComponent: Component | undefined;
 
   constructor(options: FormClassOptions<TSchema>) {
     this.schema = options.schema;
     this.initialState = options.initialState;
     this.state = reactive(structuredClone(options.initialState)) as z.infer<TSchema>;
     this.onSubmitFn = options.onSubmit;
-    this.validateOn = options.validateOn ?? ['blur'];
+    // One default for every form: blur covers text fields, change covers selects and checkboxes.
+    // Validating on every keystroke ('input') was set on the customer forms only, so the same
+    // kind of field behaved differently depending on which screen you were on.
+    this.validateOn = options.validateOn ?? ['blur', 'change'];
     const i18n = useI18n();
     this.t = i18n.t;
     this.locale = i18n.locale;
@@ -172,6 +177,22 @@ export class Form<TSchema extends z.ZodType> {
     }
 
     return this.renderComponent;
+  }
+
+  /**
+   * A component rendering just the save/cancel footer (`FormFooter`) plus any
+   * custom `footer` component, for placing into a parent `<template #footer>`
+   * (e.g. `LayoutCard`'s footer slot) instead of inline below the fields.
+   */
+  get renderFooter(): Component {
+    if (!this.renderFooterComponent) {
+      this.renderFooterComponent = defineComponent({
+        name: 'FormFooterRender',
+        setup: () => () => h(FormFooterContent, { form: this }),
+      });
+    }
+
+    return this.renderFooterComponent;
   }
 }
 

@@ -55,15 +55,11 @@ const organizationForm = useForm({
 		/>
 
 		<template #footer>
-			<p class="text-sm text-muted text-center">
-				{{ t('organizations.invited') }}
-				<NuxtLink
-					to="/join"
-					class="text-primary font-medium"
-				>
-					{{ t('invites.enterCode') }}
-				</NuxtLink>
-			</p>
+			<AuthFooterLink
+				:question="t('organizations.invited')"
+				:link-label="t('invites.enterCode')"
+				to="/join"
+			/>
 		</template>
 	</LayoutCard>
 </template>

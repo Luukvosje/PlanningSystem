@@ -7,6 +7,7 @@ export function useModulesApi() {
   const queryClient = useQueryClient()
   const auth = useAuthStore()
   const toast = useToast()
+  const { t } = useI18n()
 
   const updateOrganizationModules = useMutation({
     mutationFn: putApiOrganizationsCurrentModules,
@@ -17,7 +18,7 @@ export function useModulesApi() {
         invalidateOrgScopedQueries(queryClient),
       ])
       await auth.fetchMe()
-      toast.add({ title: 'Organisatiemodules bijgewerkt', color: 'success' })
+      toast.add({ title: t('organizations.toast.modulesUpdated'), color: 'success' })
     },
     onError: (error) => {
       const { message } = useApiError(error)
@@ -35,7 +36,7 @@ export function useModulesApi() {
         queryClient.invalidateQueries({ queryKey: queryKeys.auth.me }),
       ])
       await auth.fetchMe()
-      toast.add({ title: 'Gebruikersmodules bijgewerkt', color: 'success' })
+      toast.add({ title: t('organizations.toast.userModulesUpdated'), color: 'success' })
     },
     onError: (error) => {
       const { message } = useApiError(error)

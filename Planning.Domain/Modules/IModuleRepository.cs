@@ -10,6 +10,14 @@ public interface IModuleRepository
         Guid userId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Modules for several users in one query, grouped by user id. Used to render a user list
+    /// without a round-trip per user.
+    /// </summary>
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<UserModule>>> GetUserModulesByUsersAsync(
+        IReadOnlyList<Guid> userIds,
+        CancellationToken cancellationToken = default);
+
     Task AddOrganizationModulesAsync(
         IEnumerable<OrganizationModule> modules,
         CancellationToken cancellationToken = default);
@@ -26,11 +34,5 @@ public interface IModuleRepository
     Task UpdateUserModulesAsync(
         Guid userId,
         IReadOnlyDictionary<AppModule, bool> modules,
-        CancellationToken cancellationToken = default);
-
-    Task<bool> HasEffectiveModuleAsync(
-        Guid userId,
-        Guid organizationId,
-        AppModule module,
         CancellationToken cancellationToken = default);
 }

@@ -19,7 +19,6 @@ public class PlanningController : ApiControllerBase
     private readonly IValidator<MovePlanningRequest> _moveValidator;
     private readonly IValidator<DuplicatePlanningRequest> _duplicateValidator;
     private readonly IValidator<PlanningListRequest> _listValidator;
-    private readonly IValidator<WeekPlanningRequest> _weekValidator;
 
     public PlanningController(
         IPlanningService planningService,
@@ -27,8 +26,7 @@ public class PlanningController : ApiControllerBase
         IValidator<UpdatePlanningRequest> updateValidator,
         IValidator<MovePlanningRequest> moveValidator,
         IValidator<DuplicatePlanningRequest> duplicateValidator,
-        IValidator<PlanningListRequest> listValidator,
-        IValidator<WeekPlanningRequest> weekValidator)
+        IValidator<PlanningListRequest> listValidator)
     {
         _planningService = planningService;
         _createValidator = createValidator;
@@ -36,7 +34,6 @@ public class PlanningController : ApiControllerBase
         _moveValidator = moveValidator;
         _duplicateValidator = duplicateValidator;
         _listValidator = listValidator;
-        _weekValidator = weekValidator;
     }
 
     [HttpGet]
@@ -131,14 +128,4 @@ public class PlanningController : ApiControllerBase
         var result = await _planningService.GetByIdAsync(id, HttpContext.RequestAborted);
         return result.ToActionResult(this);
     }
-
-    [HttpGet("week")]
-    [ProducesResponseType(typeof(IReadOnlyList<PlanningResponse>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
-    public Task<IActionResult> GetWeekPlanning([FromQuery] WeekPlanningRequest request) =>
-        ValidateAndExecuteAsync(request, _weekValidator, async () =>
-        {
-            var result = await _planningService.GetWeekPlanningAsync(request, HttpContext.RequestAborted);
-            return result.ToActionResult(this);
-        });
 }

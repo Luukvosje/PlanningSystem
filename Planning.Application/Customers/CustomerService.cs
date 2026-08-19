@@ -1,35 +1,31 @@
 using Planning.Application.Common;
 using Planning.Domain.Customers;
-using Planning.Domain.Organizations;
 
 namespace Planning.Application.Customers;
 
-public class CustomerService : ICustomerService
+public class CustomerService : TenantServiceBase, ICustomerService
 {
     private readonly ICustomerRepository _customerRepository;
-    private readonly ICurrentUserContext _currentUserContext;
 
     public CustomerService(
         ICustomerRepository customerRepository,
         ICurrentUserContext currentUserContext)
-    {
+        : base(currentUserContext) =>
         _customerRepository = customerRepository;
-        _currentUserContext = currentUserContext;
-    }
 
     public async Task<Result<CustomerResponse>> CreateAsync(
         CreateCustomerRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<CustomerResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<CustomerResponse>();
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             var customer = Customer.Create(
-                _currentUserContext.OrganizationId!.Value,
+                organizationId,
                 request.Name,
                 request.Email,
                 request.Address,
@@ -37,11 +33,7 @@ public class CustomerService : ICustomerService
 
             await _customerRepository.AddAsync(customer, cancellationToken);
             return Result<CustomerResponse>.Success(CustomerMapper.ToResponse(customer));
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<CustomerResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result<CustomerResponse>> UpdateAsync(
@@ -51,30 +43,26 @@ public class CustomerService : ICustomerService
     {
         var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
 
-        if (customer is null || !BelongsToCurrentOrganization(customer))
+        if (customer is null || !Owns(customer))
         {
-            return Result<CustomerResponse>.Failure("Customer not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<CustomerResponse>("Customer");
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             customer.Update(request.Name, request.Email, request.Address, DateTime.UtcNow);
             await _customerRepository.UpdateAsync(customer, cancellationToken);
             return Result<CustomerResponse>.Success(CustomerMapper.ToResponse(customer));
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<CustomerResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
 
-        if (customer is null || !BelongsToCurrentOrganization(customer))
+        if (customer is null || !Owns(customer))
         {
-            return Result.Failure("Customer not found.", "NOT_FOUND");
+            return Failures.NotFoundFor("Customer");
         }
 
         await _customerRepository.DeleteAsync(customer, cancellationToken);
@@ -87,9 +75,9 @@ public class CustomerService : ICustomerService
     {
         var customer = await _customerRepository.GetByIdAsync(id, cancellationToken);
 
-        if (customer is null || !BelongsToCurrentOrganization(customer))
+        if (customer is null || !Owns(customer))
         {
-            return Result<CustomerResponse>.Failure("Customer not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<CustomerResponse>("Customer");
         }
 
         return Result<CustomerResponse>.Success(CustomerMapper.ToResponse(customer));
@@ -98,22 +86,14 @@ public class CustomerService : ICustomerService
     public async Task<Result<IReadOnlyList<CustomerResponse>>> GetByOrganizationAsync(
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<IReadOnlyList<CustomerResponse>>.Failure(
-                "Organization context is required.",
-                "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<IReadOnlyList<CustomerResponse>>();
         }
 
-        var customers = await _customerRepository.GetByOrganizationIdAsync(
-            _currentUserContext.OrganizationId!.Value,
-            cancellationToken);
-
+        var customers = await _customerRepository.GetByOrganizationIdAsync(organizationId, cancellationToken);
         var response = customers.Select(CustomerMapper.ToResponse).ToList();
+
         return Result<IReadOnlyList<CustomerResponse>>.Success(response);
     }
-
-    private bool BelongsToCurrentOrganization(Customer customer) =>
-        _currentUserContext.HasOrganization &&
-        customer.OrganizationId == _currentUserContext.OrganizationId;
 }

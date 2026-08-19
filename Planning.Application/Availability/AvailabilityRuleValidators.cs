@@ -1,4 +1,5 @@
 using FluentValidation;
+using Planning.Application.Common;
 using Planning.Domain.Enums;
 
 namespace Planning.Application.Availability;
@@ -55,5 +56,6 @@ public class PlanningAvailabilityRequestValidator : AbstractValidator<PlanningAv
     {
         RuleFor(x => x.StartDate).NotEmpty();
         RuleFor(x => x.EndDate).GreaterThanOrEqualTo(x => x.StartDate);
+        RuleFor(x => x.EmployeeIds).MustBeGuidList();
     }
 }

@@ -7,8 +7,6 @@
  */
 
 export interface UpdateOrganizationRequest {
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  email?: string | null;
+  name: string;
+  email: string;
 }

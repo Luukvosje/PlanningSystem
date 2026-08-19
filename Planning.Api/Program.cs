@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Planning.Api.Authorization;
+using Planning.Api.Swagger;
 using Planning.Api.Middleware;
 using Planning.Api.Services;
 using Planning.Application;
@@ -50,6 +51,13 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    // Without this, Swashbuckle ignores the C# nullable annotations: every property comes out
+    // optional and nullable, even a non-nullable `string Title`. The generated TypeScript client
+    // then types everything as `string | null | undefined`, which is what the hand-written
+    // normalizers in the frontend existed to paper over.
+    options.SupportNonNullableReferenceTypes();
+    options.SchemaFilter<NonNullableAsRequiredSchemaFilter>();
+
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Planning API",

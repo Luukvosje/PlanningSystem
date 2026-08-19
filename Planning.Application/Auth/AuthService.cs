@@ -1,4 +1,5 @@
 using Planning.Application.Common;
+using Planning.Application.Organizations;
 using Planning.Application.Modules;
 using Planning.Domain.Auth;
 using Planning.Domain.Organizations;
@@ -62,7 +63,7 @@ public class AuthService : IAuthService
         }
         catch (ArgumentException ex)
         {
-            return Result<RegisterResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+            return Result<RegisterResponse>.Failure(ex.Message, Failures.Validation);
         }
     }
 
@@ -156,21 +157,21 @@ public class AuthService : IAuthService
         {
             return Result<CurrentUserResponse>.Failure(
                 "No organization context. Set the X-Organization-Id header or create an organization first.",
-                "NO_ORGANIZATION");
+                Failures.NoOrganization);
         }
 
         var user = await _userRepository.GetByIdAsync(_currentUserContext.UserId.Value, cancellationToken);
 
         if (user is null || !user.IsActive)
         {
-            return Result<CurrentUserResponse>.Failure("User not found.", "NOT_FOUND");
+            return Result<CurrentUserResponse>.Failure("User not found.", Failures.NotFound);
         }
 
         var organization = await _organizationRepository.GetByIdAsync(user.OrganizationId, cancellationToken);
 
         if (organization is null)
         {
-            return Result<CurrentUserResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Result<CurrentUserResponse>.Failure("Organization not found.", Failures.NotFound);
         }
 
         var modules = await _moduleService.GetEffectiveModulesAsync(
@@ -203,7 +204,7 @@ public class AuthService : IAuthService
 
         if (account is null)
         {
-            return Result<UpdateProfileResponse>.Failure("Account not found.", "NOT_FOUND");
+            return Result<UpdateProfileResponse>.Failure("Account not found.", Failures.NotFound);
         }
 
         var normalizedEmail = request.Email.Trim().ToLowerInvariant();
@@ -245,7 +246,7 @@ public class AuthService : IAuthService
         }
         catch (ArgumentException ex)
         {
-            return Result<UpdateProfileResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+            return Result<UpdateProfileResponse>.Failure(ex.Message, Failures.Validation);
         }
     }
 
@@ -267,21 +268,10 @@ public class AuthService : IAuthService
         IReadOnlyList<User> memberships,
         CancellationToken cancellationToken)
     {
-        var responses = new List<OrganizationMembershipResponse>();
+        var names = await _organizationRepository.GetNamesByIdsAsync(
+            memberships.Select(x => x.OrganizationId).Distinct().ToList(),
+            cancellationToken);
 
-        foreach (var membership in memberships)
-        {
-            var organization = await _organizationRepository.GetByIdAsync(
-                membership.OrganizationId,
-                cancellationToken);
-
-            responses.Add(new OrganizationMembershipResponse(
-                membership.OrganizationId,
-                organization?.Name ?? "Unknown",
-                membership.Id,
-                membership.Role));
-        }
-
-        return responses;
+        return OrganizationMapper.ToMembershipResponses(memberships, names);
     }
 }

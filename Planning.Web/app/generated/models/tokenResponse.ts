@@ -7,8 +7,6 @@
  */
 
 export interface TokenResponse {
-  /** @nullable */
-  accessToken?: string | null;
-  /** @nullable */
-  refreshToken?: string | null;
+  accessToken: string;
+  refreshToken: string;
 }

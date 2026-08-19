@@ -7,12 +7,6 @@ public interface IPlanningRecordRepository
 {
     Task<PlanningRecord?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<PlanningRecord>> GetByOrganizationAndWeekAsync(
-        Guid organizationId,
-        DateTime weekStartUtc,
-        DateTime weekEndUtc,
-        CancellationToken cancellationToken = default);
-
     Task<(IReadOnlyList<PlanningRecord> Items, int TotalCount)> GetByOrganizationAndRangeAsync(
         Guid organizationId,
         DateTime rangeStartUtc,
@@ -28,5 +22,4 @@ public interface IPlanningRecordRepository
     Task AddAsync(PlanningRecord planningRecord, CancellationToken cancellationToken = default);
     Task UpdateAsync(PlanningRecord planningRecord, CancellationToken cancellationToken = default);
     Task DeleteAsync(PlanningRecord planningRecord, CancellationToken cancellationToken = default);
-    Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default);
 }

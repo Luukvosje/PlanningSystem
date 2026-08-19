@@ -16,7 +16,7 @@ const model = defineModel<boolean>()
 		<USwitch
 			v-model="model"
 			size="sm"
-			color="secondary"
+			color="brand"
 			@click.stop
 		/>
 	</div>

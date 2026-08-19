@@ -7,6 +7,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuthStore();
   const toast = useToast();
   const queryClient = useQueryClient();
+  // Route middleware is not a setup context, so useI18n() would throw here.
+  const { t } = useNuxtApp().$i18n;
 
   const excludedPaths = new Set(['/organizations/new', '/organizations/select', '/join']);
 
@@ -60,8 +62,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
 
     toast.add({
-      title: 'Geen toegang',
-      description: 'Deze module is uitgeschakeld voor jouw account.',
+      title: t('errors.moduleDisabled.title'),
+      description: t('errors.moduleDisabled.description'),
       color: 'warning',
     });
     return navigateTo('/dashboard');

@@ -18,7 +18,6 @@ export interface ValidationProblemDetails {
   detail?: string | null;
   /** @nullable */
   instance?: string | null;
-  /** @nullable */
-  errors?: ValidationProblemDetailsErrors;
+  errors: ValidationProblemDetailsErrors;
   [key: string]: unknown;
 }

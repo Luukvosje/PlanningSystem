@@ -189,7 +189,7 @@ const userMenuContent = computed(() => ({
 </script>
 
 <template>
-	<div class="flex h-svh flex-1 gap-4 overflow-hidden bg-neutral-50 p-4 dark:bg-neutral-950 max-lg:gap-2 max-lg:p-2">
+	<div class="flex h-svh flex-1 gap-4 overflow-hidden bg-muted p-4 max-lg:gap-2 max-lg:p-2">
 		<div class="hidden h-full max-h-full shrink-0 overflow-hidden rounded-xl bg-default shadow-sm ring ring-default lg:flex">
 			<aside class="flex w-14 shrink-0 flex-col items-center">
 				<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
@@ -200,7 +200,7 @@ const userMenuContent = computed(() => ({
 					>
 						<UIcon
 							name="i-lucide-calendar-days"
-							class="size-5 text-secondary"
+							class="size-5 text-brand"
 						/>
 					</NuxtLink>
 				</div>
@@ -261,7 +261,7 @@ const userMenuContent = computed(() => ({
 							:items="navigationItems"
 							orientation="vertical"
 							highlight
-							highlight-color="secondary"
+							highlight-color="brand"
 							class="w-full"
 							:ui="{ link: 'p-1.5 overflow-hidden', separator: 'hidden' }"
 						/>
@@ -309,7 +309,7 @@ const userMenuContent = computed(() => ({
 				>
 					<UIcon
 						name="i-lucide-calendar-days"
-						class="size-5 shrink-0 text-secondary"
+						class="size-5 shrink-0 text-brand"
 					/>
 					<span class="truncate">Planning</span>
 				</NuxtLink>
@@ -320,7 +320,7 @@ const userMenuContent = computed(() => ({
 					:items="mobileNavigationItems"
 					orientation="vertical"
 					highlight
-					highlight-color="secondary"
+					highlight-color="brand"
 					class="w-full"
 					:ui="{ link: 'p-1.5 overflow-hidden', separator: 'hidden' }"
 				/>
@@ -372,7 +372,7 @@ const userMenuContent = computed(() => ({
 				/>
 				<UIcon
 					:name="pageIcon"
-					class="size-5 text-secondary max-lg:size-4"
+					class="size-5 text-brand max-lg:size-4"
 				/>
 				<h1 class="min-w-0 truncate font-semibold text-highlighted max-lg:text-sm">
 					{{ pageTitle }}
@@ -400,7 +400,7 @@ const userMenuContent = computed(() => ({
 					class="mb-4 shrink-0 max-lg:mb-3"
 				/>
 
-				<div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+				<div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-auto">
 					<slot />
 				</div>
 			</div>

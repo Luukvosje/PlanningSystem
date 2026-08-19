@@ -7,6 +7,6 @@
  */
 
 export interface AcceptInviteResponse {
-  userId?: string;
-  organizationId?: string;
+  userId: string;
+  organizationId: string;
 }

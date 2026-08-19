@@ -9,8 +9,10 @@ import type {
   CreateOrganizationRequest,
   CreateOrganizationResponse,
   ModuleSettingResponse,
+  OrganizationLogoUploadResponse,
   OrganizationMembershipResponse,
   OrganizationResponse,
+  PostApiOrganizationsCurrentLogoBody,
   UpdateModulesRequest,
   UpdateOrganizationPlanningSettingsRequest,
   UpdateOrganizationRequest
@@ -158,6 +160,51 @@ export const putApiOrganizationsCurrentModules = async (updateModulesRequest: Up
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       updateModulesRequest,)
+  }
+);}
+
+
+export const getGetApiOrganizationsCurrentLogoUrl = () => {
+
+
+  
+
+  return `/api/organizations/current/logo`
+}
+
+export const getApiOrganizationsCurrentLogo = async ( options?: RequestInit): Promise<Blob> => {
+  
+  return customFetch<Blob>(getGetApiOrganizationsCurrentLogoUrl(),
+  {      
+    ...options,
+    method: 'GET'
+    
+    
+  }
+);}
+
+
+export const getPostApiOrganizationsCurrentLogoUrl = () => {
+
+
+  
+
+  return `/api/organizations/current/logo`
+}
+
+export const postApiOrganizationsCurrentLogo = async (postApiOrganizationsCurrentLogoBody: PostApiOrganizationsCurrentLogoBody, options?: RequestInit): Promise<OrganizationLogoUploadResponse> => {
+    const formData = new FormData();
+if(postApiOrganizationsCurrentLogoBody.file !== undefined) {
+ formData.append(`file`, postApiOrganizationsCurrentLogoBody.file)
+ }
+
+  return customFetch<OrganizationLogoUploadResponse>(getPostApiOrganizationsCurrentLogoUrl(),
+  {      
+    ...options,
+    method: 'POST'
+    ,
+    body: 
+      formData,
   }
 );}
 

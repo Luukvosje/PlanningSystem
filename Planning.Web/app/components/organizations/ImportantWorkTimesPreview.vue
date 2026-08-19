@@ -53,7 +53,7 @@ const _hourLines = computed(() =>
 					</div>
 				</div>
 
-				<div class="relative h-12 bg-secondary/5">
+				<div class="relative h-12 bg-brand/5">
 					<div
 						v-for="line in importantLines"
 						:key="`row-important-${line.leftPx}`"

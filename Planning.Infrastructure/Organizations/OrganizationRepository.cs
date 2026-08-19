@@ -16,6 +16,22 @@ public class OrganizationRepository : IOrganizationRepository
     public async Task<Organization?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.Organizations.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
+    public async Task<IReadOnlyDictionary<Guid, string>> GetNamesByIdsAsync(
+        IReadOnlyList<Guid> ids,
+        CancellationToken cancellationToken = default)
+    {
+        if (ids.Count == 0)
+        {
+            return new Dictionary<Guid, string>();
+        }
+
+        return await _context.Organizations
+            .AsNoTracking()
+            .Where(x => ids.Contains(x.Id))
+            .Select(x => new { x.Id, x.Name })
+            .ToDictionaryAsync(x => x.Id, x => x.Name, cancellationToken);
+    }
+
     public async Task AddAsync(Organization organization, CancellationToken cancellationToken = default)
     {
         await _context.Organizations.AddAsync(organization, cancellationToken);
@@ -27,9 +43,6 @@ public class OrganizationRepository : IOrganizationRepository
         _context.Organizations.Update(organization);
         await _context.SaveChangesAsync(cancellationToken);
     }
-
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) =>
-        await _context.Organizations.AnyAsync(x => x.Id == id, cancellationToken);
 
     public async Task<bool> ExistsByEmailAsync(
         string email,

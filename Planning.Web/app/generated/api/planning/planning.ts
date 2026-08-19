@@ -9,7 +9,6 @@ import type {
   CreatePlanningRequest,
   DuplicatePlanningRequest,
   GetApiPlanningParams,
-  GetApiPlanningWeekParams,
   MovePlanningRequest,
   PlanningListResponse,
   PlanningResponse,
@@ -150,6 +149,26 @@ export const patchApiPlanningIdMove = async (id: string,
 );}
 
 
+export const getPatchApiPlanningIdConfirmUrl = (id: string,) => {
+
+
+  
+
+  return `/api/planning/${id}/confirm`
+}
+
+export const patchApiPlanningIdConfirm = async (id: string, options?: RequestInit): Promise<PlanningResponse> => {
+  
+  return customFetch<PlanningResponse>(getPatchApiPlanningIdConfirmUrl(id),
+  {      
+    ...options,
+    method: 'PATCH'
+    
+    
+  }
+);}
+
+
 export const getPostApiPlanningIdDuplicateUrl = (id: string,) => {
 
 
@@ -168,33 +187,6 @@ export const postApiPlanningIdDuplicate = async (id: string,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       duplicatePlanningRequest,)
-  }
-);}
-
-
-export const getGetApiPlanningWeekUrl = (params?: GetApiPlanningWeekParams,) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-    
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/api/planning/week?${stringifiedParams}` : `/api/planning/week`
-}
-
-export const getApiPlanningWeek = async (params?: GetApiPlanningWeekParams, options?: RequestInit): Promise<PlanningResponse[]> => {
-  
-  return customFetch<PlanningResponse[]>(getGetApiPlanningWeekUrl(params),
-  {      
-    ...options,
-    method: 'GET'
-    
-    
   }
 );}
 

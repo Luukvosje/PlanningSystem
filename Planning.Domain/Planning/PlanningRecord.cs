@@ -64,7 +64,6 @@ public class PlanningRecord : TenantEntity
     {
         ValidateTitle(title);
         ValidateDateRange(startUtc, endUtc);
-        ValidateColor(color);
 
         return new PlanningRecord(
             Guid.NewGuid(),
@@ -94,7 +93,6 @@ public class PlanningRecord : TenantEntity
     {
         ValidateTitle(title);
         ValidateDateRange(startUtc, endUtc);
-        ValidateColor(color);
 
         CustomerId = customerId;
         AssignedUserId = assignedUserId;
@@ -123,15 +121,6 @@ public class PlanningRecord : TenantEntity
         Touch(utcNow);
     }
 
-    public void Resize(DateTime startUtc, DateTime endUtc, DateTime utcNow)
-    {
-        ValidateDateRange(startUtc, endUtc);
-
-        StartUtc = startUtc;
-        EndUtc = endUtc;
-        Touch(utcNow);
-    }
-
     public PlanningRecord Duplicate(
         Guid? assignedUserId,
         DateTime startUtc,
@@ -155,28 +144,43 @@ public class PlanningRecord : TenantEntity
             utcNow);
     }
 
+    /// <summary>
+    /// Allowed status transitions. Completed and Cancelled are terminal: a booking that already
+    /// ended cannot be revived. Every path that changes a status goes through
+    /// <see cref="ChangeStatus"/>, so the rule cannot be bypassed by updating a record directly.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<PlanningStatus, PlanningStatus[]> AllowedTransitions =
+        new Dictionary<PlanningStatus, PlanningStatus[]>
+        {
+            [PlanningStatus.Planned] = [PlanningStatus.Confirmed, PlanningStatus.Cancelled],
+            [PlanningStatus.Confirmed] = [PlanningStatus.Completed, PlanningStatus.Cancelled],
+            [PlanningStatus.Completed] = [],
+            [PlanningStatus.Cancelled] = [],
+        };
+
     public void ChangeStatus(PlanningStatus status, DateTime utcNow)
     {
+        if (status == Status)
+        {
+            return;
+        }
+
+        if (!AllowedTransitions.GetValueOrDefault(Status, []).Contains(status))
+        {
+            // Fixed strings rather than interpolated: the frontend translates backend messages by
+            // exact match (Planning.Web/app/utils/backendMessages.ts), so an interpolated message
+            // would always reach a Dutch user in English.
+            throw new ArgumentException(
+                Status is PlanningStatus.Completed or PlanningStatus.Cancelled
+                    ? "A completed or cancelled booking can no longer change status."
+                    : "This status change is not allowed.");
+        }
+
         Status = status;
         Touch(utcNow);
     }
 
-    public void Confirm(DateTime utcNow)
-    {
-        if (Status != PlanningStatus.Planned)
-        {
-            throw new ArgumentException("Only planned bookings can be confirmed.");
-        }
-
-        Status = PlanningStatus.Confirmed;
-        Touch(utcNow);
-    }
-
-    public void UpdateNotes(string? notes, DateTime utcNow)
-    {
-        Notes = notes?.Trim();
-        Touch(utcNow);
-    }
+    public void Confirm(DateTime utcNow) => ChangeStatus(PlanningStatus.Confirmed, utcNow);
 
     private static void ValidateTitle(string title)
     {
@@ -199,21 +203,26 @@ public class PlanningRecord : TenantEntity
         }
     }
 
-    private static void ValidateColor(string? color)
+    /// <summary>
+    /// Trims and upper-cases the colour, falling back to <see cref="DefaultColor"/> when none is
+    /// given. Validation happens on the normalized value, so surrounding whitespace is tolerated.
+    /// </summary>
+    private static string NormalizeColor(string? color)
     {
-        if (color is null)
+        if (string.IsNullOrWhiteSpace(color))
         {
-            return;
+            return DefaultColor;
         }
 
-        if (!IsValidHexColor(color))
+        var normalized = color.Trim().ToUpperInvariant();
+
+        if (!IsValidHexColor(normalized))
         {
             throw new ArgumentException("Color must be a valid hex color (e.g. #6366F1).", nameof(color));
         }
-    }
 
-    private static string NormalizeColor(string? color) =>
-        string.IsNullOrWhiteSpace(color) ? DefaultColor : color.Trim().ToUpperInvariant();
+        return normalized;
+    }
 
     private static bool IsValidHexColor(string color) =>
         color.Length == 7 && color[0] == '#' && color[1..].All(Uri.IsHexDigit);

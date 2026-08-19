@@ -1,77 +1,78 @@
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import {
-  confirmPlanning,
-  createPlanning,
-  deletePlanning,
-  duplicatePlanning,
-  getPlanningById,
-  getPlanningList,
-  movePlanning,
-  updatePlanning,
-} from '~/utils/planningClient'
+  deleteApiPlanningId,
+  getApiPlanning,
+  getApiPlanningId,
+  patchApiPlanningIdConfirm,
+  patchApiPlanningIdMove,
+  postApiPlanning,
+  postApiPlanningIdDuplicate,
+  putApiPlanningId,
+} from '~/generated/api/planning/planning';
+import type { GetApiPlanningParams } from '~/generated/models';
 import type {
   CreatePlanningRequest,
   DuplicatePlanningRequest,
   MovePlanningRequest,
   UpdatePlanningRequest,
-} from '~/types/planning'
-import { queryKeys } from '~/utils/queryKeys'
+} from '~/types/planning';
 
 export function usePlanningApi() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   function invalidatePlanning() {
-    return queryClient.invalidateQueries({ queryKey: ['planning'] })
+    return queryClient.invalidateQueries({ queryKey: ['planning'] });
   }
 
   return {
-    getList: getPlanningList,
-    getById: getPlanningById,
-    create: (request: CreatePlanningRequest) => createPlanning(request),
-    update: (id: string, request: UpdatePlanningRequest) => updatePlanning(id, request),
-    move: (id: string, request: MovePlanningRequest) => movePlanning(id, request),
-    confirm: (id: string) => confirmPlanning(id),
-    duplicate: (id: string, request?: DuplicatePlanningRequest) => duplicatePlanning(id, request),
-    delete: (id: string) => deletePlanning(id),
+    getList: (params: GetApiPlanningParams) => getApiPlanning(params),
+    getById: (id: string) => getApiPlanningId(id),
+    create: (request: CreatePlanningRequest) => postApiPlanning(request),
+    update: (id: string, request: UpdatePlanningRequest) => putApiPlanningId(id, request),
+    move: (id: string, request: MovePlanningRequest) => patchApiPlanningIdMove(id, request),
+    confirm: (id: string) => patchApiPlanningIdConfirm(id),
+    duplicate: (id: string, request?: DuplicatePlanningRequest) =>
+      postApiPlanningIdDuplicate(id, request ?? {}),
+    delete: (id: string) => deleteApiPlanningId(id),
     invalidatePlanning,
 
     useCreateMutation: () =>
       useMutation({
-        mutationFn: createPlanning,
+        mutationFn: (request: CreatePlanningRequest) => postApiPlanning(request),
         onSuccess: invalidatePlanning,
       }),
 
     useUpdateMutation: () =>
       useMutation({
         mutationFn: ({ id, request }: { id: string, request: UpdatePlanningRequest }) =>
-          updatePlanning(id, request),
+          putApiPlanningId(id, request),
         onSuccess: invalidatePlanning,
       }),
 
     useMoveMutation: () =>
       useMutation({
         mutationFn: ({ id, request }: { id: string, request: MovePlanningRequest }) =>
-          movePlanning(id, request),
+          patchApiPlanningIdMove(id, request),
         onSuccess: invalidatePlanning,
       }),
 
     useDeleteMutation: () =>
       useMutation({
-        mutationFn: deletePlanning,
+        mutationFn: (id: string) => deleteApiPlanningId(id),
         onSuccess: invalidatePlanning,
       }),
 
     useConfirmMutation: () =>
       useMutation({
-        mutationFn: confirmPlanning,
+        mutationFn: (id: string) => patchApiPlanningIdConfirm(id),
         onSuccess: invalidatePlanning,
       }),
 
     useDuplicateMutation: () =>
       useMutation({
         mutationFn: ({ id, request }: { id: string, request?: DuplicatePlanningRequest }) =>
-          duplicatePlanning(id, request),
+          postApiPlanningIdDuplicate(id, request ?? {}),
         onSuccess: invalidatePlanning,
       }),
-  }
+  };
 }

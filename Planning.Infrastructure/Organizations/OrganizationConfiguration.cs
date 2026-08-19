@@ -29,11 +29,13 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
 
         builder.Property(x => x.ImportantWorkTimes)
             .HasColumnType("nvarchar(max)")
-            .HasConversion(new JsonColumnConverter<List<TimeOnly>>(OrganizationPlanningDefaults.ImportantWorkTimes.ToList()));
+            .HasConversion(new JsonColumnConverter<List<ImportantWorkTime>>(OrganizationPlanningDefaults.ImportantWorkTimes.ToList()))
+            .Metadata.SetValueComparer(new JsonListValueComparer<ImportantWorkTime>());
 
         builder.Property(x => x.OpeningHours)
             .HasColumnType("nvarchar(max)")
-            .HasConversion(new JsonColumnConverter<List<DayOpeningHours>>([]));
+            .HasConversion(new JsonColumnConverter<List<DayOpeningHours>>([]))
+            .Metadata.SetValueComparer(new JsonListValueComparer<DayOpeningHours>());
 
         builder.HasIndex(x => x.Email)
             .IsUnique();

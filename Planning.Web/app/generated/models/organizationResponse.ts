@@ -6,22 +6,18 @@
  * OpenAPI spec version: v1
  */
 import type { ModuleSettingResponse } from './moduleSettingResponse';
+import type { ImportantWorkTimeResponse } from './importantWorkTimeResponse';
 import type { OpeningHoursEntryResponse } from './openingHoursEntryResponse';
 
 export interface OrganizationResponse {
-  id?: string;
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  email?: string | null;
-  createdAtUtc?: string;
-  updatedAtUtc?: string;
-  /** @nullable */
-  modules?: ModuleSettingResponse[] | null;
-  /** @nullable */
-  importantWorkTimes?: string[] | null;
-  /** @nullable */
-  openingHours?: OpeningHoursEntryResponse[] | null;
+  id: string;
+  name: string;
+  email: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
+  modules: ModuleSettingResponse[];
+  importantWorkTimes: ImportantWorkTimeResponse[];
+  openingHours: OpeningHoursEntryResponse[];
   /** @nullable */
   logoUrl?: string | null;
 }

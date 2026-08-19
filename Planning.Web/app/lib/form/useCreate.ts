@@ -1,10 +1,12 @@
 import { computed, markRaw, type Component, type ComputedRef, type Ref } from 'vue';
 import type { z } from 'zod';
 import { LazyFormCreateModal } from '#components';
-import { registerCreate, syncCreateOptions, useCreateRegistry } from './create-registry';
+import { createInstanceRegistry } from './instance-registry';
 import type { FormSubmitConfig, MaybeRefOrGetter } from './control-types';
 import { resolveMaybeRefOrGetter } from './control-types';
 import { useForm, type FormClassOptions } from './Form';
+
+const registry = createInstanceRegistry<CreateInstance>();
 
 
 export const CREATE_INJECTION_KEY = Symbol('form-create');
@@ -47,9 +49,9 @@ export function useCreate<TSchema extends z.ZodType>(
   id: symbol,
   options: UseCreateOptions<TSchema>,
 ): CreateInstance<TSchema> {
-  const optionsRef = syncCreateOptions(id, options);
+  const optionsRef = registry.syncOptions(id, options);
 
-  const existing = useCreateRegistry().value.find((item) => item.id === id);
+  const existing = registry.find(id);
 
   if (existing) {
     return existing as CreateInstance<TSchema>;
@@ -117,5 +119,5 @@ export function useCreate<TSchema extends z.ZodType>(
     close,
   };
 
-  return registerCreate(instance) as CreateInstance<TSchema>;
+  return registry.register(instance) as CreateInstance<TSchema>;
 }

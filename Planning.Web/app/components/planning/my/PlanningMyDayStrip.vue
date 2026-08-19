@@ -30,7 +30,7 @@ function dayButtonClass(day: MyPlanningDay, selected: boolean) {
   const textClass = day.hasShifts ? 'text-default' : 'text-muted/30';
   const selectedClass = selected ? 'bg-default border-b border-b-transparent' : 'hover:bg-muted/30 border-b border-default';
 
-  return `${textClass} ${selectedClass} ${selected ? 'text-secondary' : ''}`;
+  return `${textClass} ${selectedClass} ${selected ? 'text-brand' : ''}`;
 }
 </script>
 
@@ -45,7 +45,7 @@ function dayButtonClass(day: MyPlanningDay, selected: boolean) {
 			:key="day.dateKey"
 			type="button"
 			role="tab"
-			class="relative bg-accented/40 flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-2.5 text-center transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-secondary sm:min-h-16"
+			class="relative bg-accented/40 flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 py-2.5 text-center transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand sm:min-h-16"
 			:class="dayButtonClass(day, selected)"
 			:aria-selected="selected"
 			:aria-label="`${weekday} ${dayNumber}`"
@@ -60,7 +60,7 @@ function dayButtonClass(day: MyPlanningDay, selected: boolean) {
 
 			<!-- <span
 				class="mt-0.5 size-1 rounded-full"
-				:class="day.hasShifts ? 'bg-secondary' : 'bg-transparent'"
+				:class="day.hasShifts ? 'bg-brand' : 'bg-transparent'"
 				aria-hidden="true"
 			/> -->
 

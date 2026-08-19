@@ -8,12 +8,12 @@
 import type { AvailabilityRuleStatus } from './availabilityRuleStatus';
 
 export interface UnavailablePeriodResponse {
-  employeeId?: string;
-  date?: string;
-  startTime?: string;
-  endTime?: string;
-  status?: AvailabilityRuleStatus;
+  employeeId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: AvailabilityRuleStatus;
   /** @nullable */
   reason?: string | null;
-  ruleId?: string;
+  ruleId: string;
 }

@@ -48,6 +48,8 @@ public class AvailabilityController : ApiControllerBase
             return result.ToActionResult(this);
         });
 
+    // Deliberately no action policy: recording your own absence is self-service, so authorization
+    // depends on the EmployeeId in the body and is enforced in AvailabilityRuleService.
     [HttpPost("rules")]
     [ProducesResponseType(typeof(AvailabilityRuleResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
@@ -59,6 +61,7 @@ public class AvailabilityController : ApiControllerBase
         });
 
     [HttpPut("rules/{id:guid}")]
+    [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(typeof(AvailabilityRuleResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
@@ -70,6 +73,7 @@ public class AvailabilityController : ApiControllerBase
         });
 
     [HttpDelete("rules/{id:guid}")]
+    [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRule(Guid id)

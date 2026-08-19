@@ -5,11 +5,10 @@
  * Multi-tenant Planning SaaS foundation
  * OpenAPI spec version: v1
  */
+import type { ImportantWorkTimeRequest } from './importantWorkTimeRequest';
 import type { OpeningHoursEntryRequest } from './openingHoursEntryRequest';
 
 export interface UpdateOrganizationPlanningSettingsRequest {
-  /** @nullable */
-  importantWorkTimes?: string[] | null;
-  /** @nullable */
-  openingHours?: OpeningHoursEntryRequest[] | null;
+  importantWorkTimes: ImportantWorkTimeRequest[];
+  openingHours: OpeningHoursEntryRequest[];
 }

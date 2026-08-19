@@ -10,7 +10,7 @@ const {
   rowLabelWidth,
   timelineGridLines,
   importantGridLines,
-  coarseGridLines,
+  flatImportantGridLines,
   showTimeSlots,
   isZoomedOut,
 } = useTimeline();
@@ -135,7 +135,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 				:style="{ width: `${rowLabelWidth}px` }"
 			/>
 
-			<div class="flex">
+			<div class="relative flex">
 				<div
 					v-for="day in dayHeaders"
 					:key="`time-${day.label}`"
@@ -146,24 +146,8 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 					]"
 					:style="{ width: `${day.width}px`, minHeight: isZoomedOut ? '2rem' : undefined }"
 				>
-					<template v-if="isZoomedOut">
-						<div
-							v-for="line in (day.importantGridLines ?? importantGridLines)"
-							:key="`${day.label}-important-${line.leftPx}`"
-							class="absolute top-0 bottom-0 border-l-2 border-default/70 pointer-events-none"
-							:style="{ left: `${line.leftPx}px` }"
-						>
-							<span
-								v-if="line.label"
-								class="absolute top-2 left-1 text-[10px] font-semibold text-default leading-none whitespace-nowrap"
-							>
-								{{ line.label }}
-							</span>
-						</div>
-					</template>
-
 					<div
-						v-else
+						v-if="!isZoomedOut"
 						class="flex h-full"
 					>
 						<div
@@ -195,17 +179,31 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 						:key="`${day.label}-important-${line.leftPx}`"
 						class="absolute top-0 bottom-0 border-l-2 border-default/70 pointer-events-none"
 						:style="{ left: `${line.leftPx}px` }"
+						:title="line.label"
 					/>
+				</div>
 
-					<!-- Coarse grid lines for day / week / month zoom -->
-					<template v-if="!showTimeSlots && coarseGridLines.length > 0">
-						<div
-							v-for="line in coarseGridLines"
-							:key="`${day.label}-coarse-${line.leftPx}`"
-							class="absolute top-0 bottom-0 border-l border-default/20 pointer-events-none"
-							:style="{ left: `${line.leftPx}px` }"
-						/>
-					</template>
+				<!--
+					Flat overlay for important-time labels at zoomed-out levels (e.g. "dagdeel"): rendered
+					once across the full ruler width instead of nested per day column, so a label near a
+					day boundary can never be visually clipped by the next day column painting over it.
+					Colliding labels (too close together) are hidden here too; their vertical line above
+					still shows the exact time via the native title-tooltip on hover.
+				-->
+				<div
+					v-if="isZoomedOut"
+					class="absolute inset-0 pointer-events-none"
+				>
+					<span
+						v-for="(line, index) in flatImportantGridLines"
+						v-show="line.showLabel && line.label"
+						:key="`flat-important-${index}-${line.leftPx}`"
+						class="absolute top-1.5 rounded-full bg-default/90 ring ring-default px-1.5 py-0.5 text-[10px] font-semibold text-default leading-none whitespace-nowrap"
+						:style="{ left: `${line.leftPx + 4}px` }"
+						:title="line.label"
+					>
+						{{ line.label }}
+					</span>
 				</div>
 			</div>
 		</div>

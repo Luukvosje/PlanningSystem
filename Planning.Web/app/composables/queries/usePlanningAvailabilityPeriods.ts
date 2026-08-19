@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/vue-query';
-import { getPlanningAvailability } from '~/utils/availabilityClient';
+import { getApiAvailabilityRulesForPlanning } from '~/generated/api/availability/availability';
 import { queryKeys } from '~/utils/queryKeys';
 import { toDateKey, addDays } from '~/utils/planning/dateUtils';
 
@@ -37,10 +37,10 @@ export function usePlanningAvailabilityPeriods(options: {
       ),
     ),
     queryFn: () =>
-      getPlanningAvailability({
-        startDate: range.value.startDate,
-        endDate: range.value.endDate,
-        employeeIds: employeeIdsParam.value,
+      getApiAvailabilityRulesForPlanning({
+        StartDate: range.value.startDate,
+        EndDate: range.value.endDate,
+        EmployeeIds: employeeIdsParam.value,
       }),
     enabled: computed(() =>
       (options.enabled?.value ?? true) &&

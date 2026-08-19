@@ -7,10 +7,8 @@
  */
 
 export interface LoginRequest {
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  password?: string | null;
+  email: string;
+  password: string;
   /** @nullable */
   organizationId?: string | null;
 }

@@ -7,37 +7,34 @@ using Planning.Domain.Users;
 
 namespace Planning.Application.Planning;
 
-public class PlanningService : IPlanningService
+public class PlanningService : TenantServiceBase, IPlanningService
 {
     private const int MaxPageSize = 2000;
 
     private readonly IPlanningRecordRepository _planningRecordRepository;
     private readonly ICustomerRepository _customerRepository;
     private readonly IUserRepository _userRepository;
-    private readonly ICurrentUserContext _currentUserContext;
 
     public PlanningService(
         IPlanningRecordRepository planningRecordRepository,
         ICustomerRepository customerRepository,
         IUserRepository userRepository,
         ICurrentUserContext currentUserContext)
+        : base(currentUserContext)
     {
         _planningRecordRepository = planningRecordRepository;
         _customerRepository = customerRepository;
         _userRepository = userRepository;
-        _currentUserContext = currentUserContext;
     }
 
     public async Task<Result<PlanningResponse>> CreateAsync(
         CreatePlanningRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<PlanningResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<PlanningResponse>();
         }
-
-        var organizationId = _currentUserContext.OrganizationId!.Value;
 
         var validationResult = await ValidateReferencesAsync(
             organizationId,
@@ -50,7 +47,7 @@ public class PlanningService : IPlanningService
             return validationResult;
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             var planningRecord = PlanningRecord.Create(
                 organizationId,
@@ -67,11 +64,7 @@ public class PlanningService : IPlanningService
 
             await _planningRecordRepository.AddAsync(planningRecord, cancellationToken);
             return await BuildSingleResponseAsync(planningRecord, cancellationToken);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<PlanningResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result<PlanningResponse>> UpdateAsync(
@@ -81,9 +74,9 @@ public class PlanningService : IPlanningService
     {
         var planningRecord = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
 
-        if (planningRecord is null || !BelongsToCurrentOrganization(planningRecord))
+        if (planningRecord is null || !Owns(planningRecord))
         {
-            return Result<PlanningResponse>.Failure("Planning record not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<PlanningResponse>("Planning record");
         }
 
         var validationResult = await ValidateReferencesAsync(
@@ -97,8 +90,10 @@ public class PlanningService : IPlanningService
             return validationResult;
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
+            var utcNow = DateTime.UtcNow;
+
             planningRecord.Update(
                 request.CustomerId,
                 request.AssignedUserId,
@@ -108,16 +103,12 @@ public class PlanningService : IPlanningService
                 request.StartUtc,
                 request.EndUtc,
                 request.Color,
-                DateTime.UtcNow);
+                utcNow);
 
-            planningRecord.ChangeStatus(request.Status, DateTime.UtcNow);
+            planningRecord.ChangeStatus(request.Status, utcNow);
             await _planningRecordRepository.UpdateAsync(planningRecord, cancellationToken);
             return await BuildSingleResponseAsync(planningRecord, cancellationToken);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<PlanningResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result<PlanningResponse>> MoveAsync(
@@ -127,9 +118,9 @@ public class PlanningService : IPlanningService
     {
         var planningRecord = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
 
-        if (planningRecord is null || !BelongsToCurrentOrganization(planningRecord))
+        if (planningRecord is null || !Owns(planningRecord))
         {
-            return Result<PlanningResponse>.Failure("Planning record not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<PlanningResponse>("Planning record");
         }
 
         var validationResult = await ValidateReferencesAsync(
@@ -143,7 +134,7 @@ public class PlanningService : IPlanningService
             return validationResult;
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             planningRecord.Move(
                 request.AssignedUserId,
@@ -154,11 +145,7 @@ public class PlanningService : IPlanningService
 
             await _planningRecordRepository.UpdateAsync(planningRecord, cancellationToken);
             return await BuildSingleResponseAsync(planningRecord, cancellationToken);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<PlanningResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result<PlanningResponse>> ConfirmAsync(
@@ -167,21 +154,17 @@ public class PlanningService : IPlanningService
     {
         var planningRecord = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
 
-        if (planningRecord is null || !BelongsToCurrentOrganization(planningRecord))
+        if (planningRecord is null || !Owns(planningRecord))
         {
-            return Result<PlanningResponse>.Failure("Planning record not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<PlanningResponse>("Planning record");
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             planningRecord.Confirm(DateTime.UtcNow);
             await _planningRecordRepository.UpdateAsync(planningRecord, cancellationToken);
             return await BuildSingleResponseAsync(planningRecord, cancellationToken);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<PlanningResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result<PlanningResponse>> DuplicateAsync(
@@ -191,9 +174,9 @@ public class PlanningService : IPlanningService
     {
         var planningRecord = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
 
-        if (planningRecord is null || !BelongsToCurrentOrganization(planningRecord))
+        if (planningRecord is null || !Owns(planningRecord))
         {
-            return Result<PlanningResponse>.Failure("Planning record not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<PlanningResponse>("Planning record");
         }
 
         var assignedUserId = request.AssignedUserId ?? planningRecord.AssignedUserId;
@@ -208,7 +191,7 @@ public class PlanningService : IPlanningService
             return validationResult;
         }
 
-        try
+        return await TranslateDomainErrorsAsync(async () =>
         {
             var duration = planningRecord.EndUtc - planningRecord.StartUtc;
             var startUtc = request.StartUtc ?? planningRecord.StartUtc;
@@ -217,20 +200,16 @@ public class PlanningService : IPlanningService
             var duplicate = planningRecord.Duplicate(assignedUserId, startUtc, endUtc, DateTime.UtcNow);
             await _planningRecordRepository.AddAsync(duplicate, cancellationToken);
             return await BuildSingleResponseAsync(duplicate, cancellationToken);
-        }
-        catch (ArgumentException ex)
-        {
-            return Result<PlanningResponse>.Failure(ex.Message, "VALIDATION_ERROR");
-        }
+        });
     }
 
     public async Task<Result> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var planningRecord = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
 
-        if (planningRecord is null || !BelongsToCurrentOrganization(planningRecord))
+        if (planningRecord is null || !Owns(planningRecord))
         {
-            return Result.Failure("Planning record not found.", "NOT_FOUND");
+            return Failures.NotFoundFor("Planning record");
         }
 
         await _planningRecordRepository.DeleteAsync(planningRecord, cancellationToken);
@@ -243,9 +222,9 @@ public class PlanningService : IPlanningService
     {
         var planningRecord = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
 
-        if (planningRecord is null || !BelongsToCurrentOrganization(planningRecord))
+        if (planningRecord is null || !Owns(planningRecord))
         {
-            return Result<PlanningResponse>.Failure("Planning record not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<PlanningResponse>("Planning record");
         }
 
         return await BuildSingleResponseAsync(planningRecord, cancellationToken);
@@ -255,11 +234,9 @@ public class PlanningService : IPlanningService
         PlanningListRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<PlanningListResponse>.Failure(
-                "Organization context is required.",
-                "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<PlanningListResponse>();
         }
 
         var pageSize = Math.Clamp(request.PageSize, 1, MaxPageSize);
@@ -270,16 +247,16 @@ public class PlanningService : IPlanningService
         {
             return Result<PlanningListResponse>.Failure(
                 "End date must be after start date.",
-                "VALIDATION_ERROR");
+                Failures.Validation);
         }
 
         var (items, totalCount) = await _planningRecordRepository.GetByOrganizationAndRangeAsync(
-            _currentUserContext.OrganizationId!.Value,
+            organizationId,
             rangeStartUtc,
             rangeEndUtc,
-            ParseGuidList(request.UserIds),
-            ParseGuidList(request.CustomerIds),
-            ParseStatusList(request.Statuses),
+            CsvList.ParseGuidsOrNull(request.UserIds),
+            CsvList.ParseGuidsOrNull(request.CustomerIds),
+            CsvList.ParseEnumsOrNull<PlanningStatus>(request.Statuses),
             request.Search,
             request.Page,
             pageSize,
@@ -294,30 +271,6 @@ public class PlanningService : IPlanningService
             pageSize,
             rangeStartUtc,
             rangeEndUtc));
-    }
-
-    public async Task<Result<IReadOnlyList<PlanningResponse>>> GetWeekPlanningAsync(
-        WeekPlanningRequest request,
-        CancellationToken cancellationToken = default)
-    {
-        if (!_currentUserContext.HasOrganization)
-        {
-            return Result<IReadOnlyList<PlanningResponse>>.Failure(
-                "Organization context is required.",
-                "NO_ORGANIZATION");
-        }
-
-        var weekStartUtc = request.WeekStartUtc.Date;
-        var weekEndUtc = weekStartUtc.AddDays(7);
-
-        var records = await _planningRecordRepository.GetByOrganizationAndWeekAsync(
-            _currentUserContext.OrganizationId!.Value,
-            weekStartUtc,
-            weekEndUtc,
-            cancellationToken);
-
-        var responses = await BuildResponsesAsync(records, cancellationToken);
-        return Result<IReadOnlyList<PlanningResponse>>.Success(responses);
     }
 
     private async Task<Result<PlanningResponse>> BuildSingleResponseAsync(
@@ -361,7 +314,11 @@ public class PlanningService : IPlanningService
     {
         var lookup = records.ToDictionary(x => x.Id, _ => false);
 
-        var byUser = records.GroupBy(x => x.AssignedUserId);
+        // A cancelled booking no longer occupies the employee, so it neither overlaps nor causes
+        // one. Same rule as AvailabilityRuleService.HasSchedulingConflictAsync.
+        var byUser = records
+            .Where(x => x.Status != PlanningStatus.Cancelled)
+            .GroupBy(x => x.AssignedUserId);
 
         foreach (var group in byUser)
         {
@@ -385,10 +342,6 @@ public class PlanningService : IPlanningService
         return lookup;
     }
 
-    private bool BelongsToCurrentOrganization(PlanningRecord planningRecord) =>
-        _currentUserContext.HasOrganization &&
-        planningRecord.OrganizationId == _currentUserContext.OrganizationId;
-
     private async Task<Result<PlanningResponse>?> ValidateReferencesAsync(
         Guid organizationId,
         Guid? customerId,
@@ -400,7 +353,7 @@ public class PlanningService : IPlanningService
             var customer = await _customerRepository.GetByIdAsync(customerId.Value, cancellationToken);
             if (customer is null || customer.OrganizationId != organizationId)
             {
-                return Result<PlanningResponse>.Failure("Customer not found for organization.", "NOT_FOUND");
+                return Result<PlanningResponse>.Failure("Customer not found for organization.", Failures.NotFound);
             }
         }
 
@@ -415,35 +368,10 @@ public class PlanningService : IPlanningService
         var user = await _userRepository.GetByIdAsync(assignedUserId, cancellationToken);
         if (user is null || user.OrganizationId != organizationId)
         {
-            return Result<PlanningResponse>.Failure("Assigned user not found for organization.", "NOT_FOUND");
+            return Result<PlanningResponse>.Failure("Assigned user not found for organization.", Failures.NotFound);
         }
 
         return null;
     }
 
-    private static IReadOnlyList<Guid>? ParseGuidList(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return value
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(Guid.Parse)
-            .ToList();
-    }
-
-    private static IReadOnlyList<PlanningStatus>? ParseStatusList(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return value
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(Enum.Parse<PlanningStatus>)
-            .ToList();
-    }
 }

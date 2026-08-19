@@ -108,7 +108,13 @@ provide('timelineRowRecords', rowRecordsMap);
 const availabilityPeriodsRef = computed(() => props.availabilityPeriods ?? []);
 provide('timelineAvailabilityPeriods', availabilityPeriodsRef);
 
-const { dayWidth, toPx } = useTimeline();
+// The board root owns the timeline instance and shares it with every child, so the geometry is
+// computed once per render instead of once per consumer. Its own refs are passed in because a
+// component cannot inject what it provides itself.
+const { dayWidth, toPx } = provideTimeline({
+  containerWidth,
+  rowRecords: rowRecordsMap,
+});
 
 function syncViewport() {
   const el = containerRef.value;

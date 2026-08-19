@@ -141,7 +141,7 @@ function onContextMenu(event: MouseEvent) {
 		data-timeline-block
 		class="absolute rounded-md shadow-sm cursor-grab active:cursor-grabbing overflow-visible hover:shadow-md group"
 		:class="[
-			selected ? 'ring-2 ring-secondary ring-offset-1 z-30' : '',
+			selected ? 'ring-2 ring-brand ring-offset-1 z-30' : '',
 			isDragging || isResizing ? 'opacity-90 shadow-lg z-50 cursor-grabbing' : 'transition-shadow',
 			record.hasOverlap ? 'border-l-2 border-red-400' : '',
 			availabilityWarning.hasConflict ? 'border-r-2 border-amber-400' : '',
@@ -190,7 +190,7 @@ function onContextMenu(event: MouseEvent) {
 			<div
 				v-if="selected"
 				class="absolute inset-0 pointer-events-none rounded-md"
-				:class="store.showBlockColor ? 'bg-white/25' : 'bg-primary/10'"
+				:class="store.showBlockColor ? 'bg-white/25' : 'bg-brand/10'"
 			/>
 
 			<div

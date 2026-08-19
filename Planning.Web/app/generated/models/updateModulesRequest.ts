@@ -7,7 +7,7 @@
  */
 
 export interface UpdateModulesRequest {
-  planning?: boolean;
-  klant?: boolean;
-  beheer?: boolean;
+  planning: boolean;
+  klant: boolean;
+  beheer: boolean;
 }

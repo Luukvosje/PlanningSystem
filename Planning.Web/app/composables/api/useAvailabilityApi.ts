@@ -1,18 +1,18 @@
-import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import {
-  createAvailabilityRule,
-  deleteAvailabilityRule,
-  updateAvailabilityRule,
-} from '~/utils/availabilityClient'
-import type { CreateAvailabilityRuleRequest, UpdateAvailabilityRuleRequest } from '~/types/availability'
+  deleteApiAvailabilityRulesId,
+  postApiAvailabilityRules,
+  putApiAvailabilityRulesId,
+} from '~/generated/api/availability/availability';
+import type { CreateAvailabilityRuleRequest, UpdateAvailabilityRuleRequest } from '~/types/availability';
 
 export function useAvailabilityApi() {
-  const queryClient = useQueryClient()
-  const toast = useToast()
-  const { t } = useI18n()
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useI18n();
 
   function invalidateAvailability() {
-    return queryClient.invalidateQueries({ queryKey: ['availability'] })
+    return queryClient.invalidateQueries({ queryKey: ['availability'] });
   }
 
   function warnIfConflicting(rule: { schedulingConflict?: boolean }) {
@@ -21,50 +21,50 @@ export function useAvailabilityApi() {
         title: t('availability.conflictWarningTitle'),
         description: t('availability.conflictWarningDescription'),
         color: 'warning',
-      })
+      });
     }
   }
 
   const create = useMutation({
-    mutationFn: (request: CreateAvailabilityRuleRequest) => createAvailabilityRule(request),
+    mutationFn: (request: CreateAvailabilityRuleRequest) => postApiAvailabilityRules(request),
     onSuccess: async (rule) => {
-      await invalidateAvailability()
-      toast.add({ title: 'Regel opgeslagen', color: 'success' })
-      warnIfConflicting(rule)
+      await invalidateAvailability();
+      toast.add({ title: t('availability.toast.created'), color: 'success' });
+      warnIfConflicting(rule);
     },
     onError: () => {
-      toast.add({ title: 'Regel opslaan mislukt', color: 'error' })
+      toast.add({ title: t('availability.toast.createFailed'), color: 'error' });
     },
-  })
+  });
 
   const update = useMutation({
     mutationFn: ({ id, request }: { id: string, request: UpdateAvailabilityRuleRequest }) =>
-      updateAvailabilityRule(id, request),
+      putApiAvailabilityRulesId(id, request),
     onSuccess: async (rule) => {
-      await invalidateAvailability()
-      toast.add({ title: 'Regel bijgewerkt', color: 'success' })
-      warnIfConflicting(rule)
+      await invalidateAvailability();
+      toast.add({ title: t('availability.toast.updated'), color: 'success' });
+      warnIfConflicting(rule);
     },
     onError: () => {
-      toast.add({ title: 'Regel bijwerken mislukt', color: 'error' })
+      toast.add({ title: t('availability.toast.updateFailed'), color: 'error' });
     },
-  })
+  });
 
   const remove = useMutation({
-    mutationFn: (id: string) => deleteAvailabilityRule(id),
+    mutationFn: (id: string) => deleteApiAvailabilityRulesId(id),
     onSuccess: async () => {
-      await invalidateAvailability()
-      toast.add({ title: 'Regel verwijderd', color: 'success' })
+      await invalidateAvailability();
+      toast.add({ title: t('availability.toast.deleted'), color: 'success' });
     },
     onError: () => {
-      toast.add({ title: 'Regel verwijderen mislukt', color: 'error' })
+      toast.add({ title: t('availability.toast.deleteFailed'), color: 'error' });
     },
-  })
+  });
 
   return {
     create,
     update,
     remove,
     invalidateAvailability,
-  }
+  };
 }

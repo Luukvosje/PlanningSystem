@@ -8,11 +8,9 @@
 import type { OrganizationMembershipResponse } from './organizationMembershipResponse';
 
 export interface LoginResponse {
-  /** @nullable */
-  accessToken?: string | null;
-  /** @nullable */
-  refreshToken?: string | null;
-  requiresOrganizationSelection?: boolean;
+  accessToken: string;
+  refreshToken: string;
+  requiresOrganizationSelection: boolean;
   /** @nullable */
   memberships?: OrganizationMembershipResponse[] | null;
   /** @nullable */

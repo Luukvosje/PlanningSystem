@@ -3,8 +3,10 @@ import type { z } from 'zod';
 import { LazyFormEditModal } from '#components';
 import type { FormSubmitConfig, MaybeRefOrGetter } from './control-types';
 import { resolveMaybeRefOrGetter } from './control-types';
-import { registerEdit, syncEditOptions, useEditRegistry } from './edit-registry';
+import { createInstanceRegistry } from './instance-registry';
 import { useForm, type FormClassOptions } from './Form';
+
+const registry = createInstanceRegistry<EditInstance>();
 
 export const EDIT_INJECTION_KEY = Symbol('form-edit');
 
@@ -48,9 +50,9 @@ export function useEdit<TSchema extends z.ZodType, TEntity>(
   id: symbol,
   options: UseEditOptions<TSchema, TEntity>,
 ): EditInstance<TSchema, TEntity> {
-  const optionsRef = syncEditOptions(id, options);
+  const optionsRef = registry.syncOptions(id, options);
 
-  const existing = useEditRegistry().value.find((item) => item.id === id);
+  const existing = registry.find(id);
 
   if (existing) {
     return existing as EditInstance<TSchema, TEntity>;
@@ -127,5 +129,5 @@ export function useEdit<TSchema extends z.ZodType, TEntity>(
     close,
   };
 
-  return registerEdit(instance) as EditInstance<TSchema, TEntity>;
+  return registry.register(instance) as EditInstance<TSchema, TEntity>;
 }

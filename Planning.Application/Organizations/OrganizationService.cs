@@ -8,14 +8,13 @@ using Planning.Domain.Users;
 
 namespace Planning.Application.Organizations;
 
-public class OrganizationService : IOrganizationService
+public class OrganizationService : TenantServiceBase, IOrganizationService
 {
     private const long MaxLogoBytes = 2 * 1024 * 1024;
 
     private readonly IOrganizationRepository _organizationRepository;
     private readonly IUserRepository _userRepository;
     private readonly IAccountRepository _accountRepository;
-    private readonly ICurrentUserContext _currentUserContext;
     private readonly IModuleService _moduleService;
     private readonly IOrganizationLogoStorage _logoStorage;
 
@@ -26,11 +25,11 @@ public class OrganizationService : IOrganizationService
         ICurrentUserContext currentUserContext,
         IModuleService moduleService,
         IOrganizationLogoStorage logoStorage)
+        : base(currentUserContext)
     {
         _organizationRepository = organizationRepository;
         _userRepository = userRepository;
         _accountRepository = accountRepository;
-        _currentUserContext = currentUserContext;
         _moduleService = moduleService;
         _logoStorage = logoStorage;
     }
@@ -39,16 +38,16 @@ public class OrganizationService : IOrganizationService
         CreateOrganizationRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.IsAuthenticated)
+        if (!CurrentUser.IsAuthenticated)
         {
             return Result<CreateOrganizationResponse>.Failure("Not authenticated.", "UNAUTHORIZED");
         }
 
-        var account = await _accountRepository.GetByIdAsync(_currentUserContext.AccountId, cancellationToken);
+        var account = await _accountRepository.GetByIdAsync(CurrentUser.AccountId, cancellationToken);
 
         if (account is null)
         {
-            return Result<CreateOrganizationResponse>.Failure("Account not found.", "NOT_FOUND");
+            return Result<CreateOrganizationResponse>.Failure("Account not found.", Failures.NotFound);
         }
 
         try
@@ -61,7 +60,7 @@ public class OrganizationService : IOrganizationService
             var lastName = account.LastName;
 
             var user = User.Create(
-                _currentUserContext.AccountId,
+                CurrentUser.AccountId,
                 organization.Id,
                 firstName,
                 lastName,
@@ -81,7 +80,7 @@ public class OrganizationService : IOrganizationService
         }
         catch (ArgumentException ex)
         {
-            return Result<CreateOrganizationResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+            return Result<CreateOrganizationResponse>.Failure(ex.Message, Failures.Validation);
         }
     }
 
@@ -89,26 +88,21 @@ public class OrganizationService : IOrganizationService
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.IsAuthenticated)
+        if (!CurrentUser.IsAuthenticated)
         {
             return Result<OrganizationResponse>.Failure("Not authenticated.", "UNAUTHORIZED");
         }
 
-        var membership = await _userRepository.GetByAccountAndOrganizationAsync(
-            _currentUserContext.AccountId,
-            id,
-            cancellationToken);
-
-        if (membership is null)
+        if (!await IsMemberOfAsync(id, cancellationToken))
         {
-            return Result<OrganizationResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationResponse>("Organization");
         }
 
         var organization = await _organizationRepository.GetByIdAsync(id, cancellationToken);
 
         if (organization is null)
         {
-            return Result<OrganizationResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationResponse>("Organization");
         }
 
         var modules = await _moduleService.GetOrganizationModulesAsync(organization.Id, cancellationToken);
@@ -118,28 +112,23 @@ public class OrganizationService : IOrganizationService
     public async Task<Result<OrganizationLogoFile>> GetCurrentLogoAsync(
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!CurrentUser.HasOrganization)
         {
-            return Result<OrganizationLogoFile>.Failure("No organization context.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<OrganizationLogoFile>();
         }
 
-        var organizationId = _currentUserContext.OrganizationId!.Value;
+        var organizationId = CurrentUser.OrganizationId!.Value;
 
-        var membership = await _userRepository.GetByAccountAndOrganizationAsync(
-            _currentUserContext.AccountId,
-            organizationId,
-            cancellationToken);
-
-        if (membership is null)
+        if (!await IsMemberOfAsync(organizationId, cancellationToken))
         {
-            return Result<OrganizationLogoFile>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationLogoFile>("Organization");
         }
 
         var logo = _logoStorage.Get(organizationId);
 
         if (logo is null)
         {
-            return Result<OrganizationLogoFile>.Failure("Logo not found.", "NOT_FOUND");
+            return Result<OrganizationLogoFile>.Failure("Logo not found.", Failures.NotFound);
         }
 
         return Result<OrganizationLogoFile>.Success(logo);
@@ -151,33 +140,28 @@ public class OrganizationService : IOrganizationService
         long size,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!CurrentUser.HasOrganization)
         {
-            return Result<OrganizationLogoUploadResponse>.Failure("No organization context.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<OrganizationLogoUploadResponse>();
         }
 
         if (size <= 0)
         {
-            return Result<OrganizationLogoUploadResponse>.Failure("No file uploaded.", "VALIDATION_ERROR");
+            return Result<OrganizationLogoUploadResponse>.Failure("No file uploaded.", Failures.Validation);
         }
 
         if (size > MaxLogoBytes)
         {
             return Result<OrganizationLogoUploadResponse>.Failure(
                 "Logo must be 2 MB or smaller.",
-                "VALIDATION_ERROR");
+                Failures.Validation);
         }
 
-        var organizationId = _currentUserContext.OrganizationId!.Value;
+        var organizationId = CurrentUser.OrganizationId!.Value;
 
-        var membership = await _userRepository.GetByAccountAndOrganizationAsync(
-            _currentUserContext.AccountId,
-            organizationId,
-            cancellationToken);
-
-        if (membership is null)
+        if (!await IsMemberOfAsync(organizationId, cancellationToken))
         {
-            return Result<OrganizationLogoUploadResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationLogoUploadResponse>("Organization");
         }
 
         try
@@ -191,9 +175,19 @@ public class OrganizationService : IOrganizationService
         }
         catch (ArgumentException ex)
         {
-            return Result<OrganizationLogoUploadResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+            return Result<OrganizationLogoUploadResponse>.Failure(ex.Message, Failures.Validation);
         }
     }
+
+    /// <summary>
+    /// Whether the signed-in account is a member of this organization. A non-member gets
+    /// NOT_FOUND rather than FORBIDDEN: they have no business learning the organization exists.
+    /// </summary>
+    private async Task<bool> IsMemberOfAsync(Guid organizationId, CancellationToken cancellationToken) =>
+        await _userRepository.GetByAccountAndOrganizationAsync(
+            CurrentUser.AccountId,
+            organizationId,
+            cancellationToken) is not null;
 
     private OrganizationResponse ToResponse(
         Organization organization,
@@ -203,40 +197,35 @@ public class OrganizationService : IOrganizationService
     public async Task<Result<OrganizationResponse>> GetCurrentAsync(
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!CurrentUser.HasOrganization)
         {
-            return Result<OrganizationResponse>.Failure("No organization context.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<OrganizationResponse>();
         }
 
-        return await GetByIdAsync(_currentUserContext.OrganizationId!.Value, cancellationToken);
+        return await GetByIdAsync(CurrentUser.OrganizationId!.Value, cancellationToken);
     }
 
     public async Task<Result<OrganizationResponse>> UpdateCurrentAsync(
         UpdateOrganizationRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!CurrentUser.HasOrganization)
         {
-            return Result<OrganizationResponse>.Failure("No organization context.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<OrganizationResponse>();
         }
 
-        var organizationId = _currentUserContext.OrganizationId!.Value;
+        var organizationId = CurrentUser.OrganizationId!.Value;
 
-        var membership = await _userRepository.GetByAccountAndOrganizationAsync(
-            _currentUserContext.AccountId,
-            organizationId,
-            cancellationToken);
-
-        if (membership is null)
+        if (!await IsMemberOfAsync(organizationId, cancellationToken))
         {
-            return Result<OrganizationResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationResponse>("Organization");
         }
 
         var organization = await _organizationRepository.GetByIdAsync(organizationId, cancellationToken);
 
         if (organization is null)
         {
-            return Result<OrganizationResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationResponse>("Organization");
         }
 
         if (await _organizationRepository.ExistsByEmailAsync(request.Email, organizationId, cancellationToken))
@@ -255,7 +244,7 @@ public class OrganizationService : IOrganizationService
         }
         catch (ArgumentException ex)
         {
-            return Result<OrganizationResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+            return Result<OrganizationResponse>.Failure(ex.Message, Failures.Validation);
         }
     }
 
@@ -263,28 +252,23 @@ public class OrganizationService : IOrganizationService
         UpdateOrganizationPlanningSettingsRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!CurrentUser.HasOrganization)
         {
-            return Result<OrganizationResponse>.Failure("No organization context.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<OrganizationResponse>();
         }
 
-        var organizationId = _currentUserContext.OrganizationId!.Value;
+        var organizationId = CurrentUser.OrganizationId!.Value;
 
-        var membership = await _userRepository.GetByAccountAndOrganizationAsync(
-            _currentUserContext.AccountId,
-            organizationId,
-            cancellationToken);
-
-        if (membership is null)
+        if (!await IsMemberOfAsync(organizationId, cancellationToken))
         {
-            return Result<OrganizationResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationResponse>("Organization");
         }
 
         var organization = await _organizationRepository.GetByIdAsync(organizationId, cancellationToken);
 
         if (organization is null)
         {
-            return Result<OrganizationResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<OrganizationResponse>("Organization");
         }
 
         try
@@ -302,14 +286,14 @@ public class OrganizationService : IOrganizationService
         }
         catch (ArgumentException ex)
         {
-            return Result<OrganizationResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+            return Result<OrganizationResponse>.Failure(ex.Message, Failures.Validation);
         }
     }
 
     public async Task<Result<IReadOnlyList<OrganizationMembershipResponse>>> GetMineAsync(
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.IsAuthenticated)
+        if (!CurrentUser.IsAuthenticated)
         {
             return Result<IReadOnlyList<OrganizationMembershipResponse>>.Failure(
                 "Not authenticated.",
@@ -317,24 +301,14 @@ public class OrganizationService : IOrganizationService
         }
 
         var memberships = await _userRepository.GetByAccountIdAsync(
-            _currentUserContext.AccountId,
+            CurrentUser.AccountId,
             cancellationToken);
 
-        var responses = new List<OrganizationMembershipResponse>();
+        var names = await _organizationRepository.GetNamesByIdsAsync(
+            memberships.Select(x => x.OrganizationId).Distinct().ToList(),
+            cancellationToken);
 
-        foreach (var membership in memberships)
-        {
-            var organization = await _organizationRepository.GetByIdAsync(
-                membership.OrganizationId,
-                cancellationToken);
-
-            responses.Add(new OrganizationMembershipResponse(
-                membership.OrganizationId,
-                organization?.Name ?? "Unknown",
-                membership.Id,
-                membership.Role));
-        }
-
-        return Result<IReadOnlyList<OrganizationMembershipResponse>>.Success(responses);
+        return Result<IReadOnlyList<OrganizationMembershipResponse>>.Success(
+            OrganizationMapper.ToMembershipResponses(memberships, names));
     }
 }

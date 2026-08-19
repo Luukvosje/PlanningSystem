@@ -94,15 +94,11 @@ const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCod
 		</component>
 
 		<template #footer>
-			<p class="text-sm text-muted text-center">
-				{{ t('auth.noAccountYet') }}
-				<NuxtLink
-					:to="{ path: '/register', query: { redirect: '/join', code: joinForm.state.code } }"
-					class="text-primary font-medium"
-				>
-					{{ t('auth.register') }}
-				</NuxtLink>
-			</p>
+			<AuthFooterLink
+				:question="t('auth.noAccountYet')"
+				:link-label="t('auth.register')"
+				:to="{ path: '/register', query: { redirect: '/join', code: joinForm.state.code } }"
+			/>
 		</template>
 	</LayoutCard>
 </template>

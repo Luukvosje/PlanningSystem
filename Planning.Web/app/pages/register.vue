@@ -114,15 +114,11 @@ const registerForm = useForm({
 		</component>
 
 		<template #footer>
-			<p class="text-sm text-muted text-center">
-				{{ t('auth.alreadyHaveAccount') }}
-				<NuxtLink
-					to="/login"
-					class="text-primary font-medium"
-				>
-					{{ t('auth.login') }}
-				</NuxtLink>
-			</p>
+			<AuthFooterLink
+				:question="t('auth.alreadyHaveAccount')"
+				:link-label="t('auth.login')"
+				to="/login"
+			/>
 		</template>
 	</LayoutCard>
 </template>

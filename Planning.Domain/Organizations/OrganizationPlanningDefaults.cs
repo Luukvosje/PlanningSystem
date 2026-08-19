@@ -2,12 +2,12 @@ namespace Planning.Domain.Organizations;
 
 public static class OrganizationPlanningDefaults
 {
-    public static IReadOnlyList<TimeOnly> ImportantWorkTimes { get; } =
+    public static IReadOnlyList<ImportantWorkTime> ImportantWorkTimes { get; } =
     [
-        new(6, 0),
-        new(9, 0),
-        new(13, 0),
-        new(17, 0),
-        new(21, 0),
+        new(label: null, startTime: new TimeOnly(6, 0)),
+        new(label: null, startTime: new TimeOnly(9, 0)),
+        new(label: null, startTime: new TimeOnly(13, 0)),
+        new(label: null, startTime: new TimeOnly(17, 0)),
+        new(label: null, startTime: new TimeOnly(21, 0)),
     ];
 }

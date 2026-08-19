@@ -111,15 +111,11 @@ const orgForm = useForm({
 		/>
 
 		<template #footer>
-			<p class="text-sm text-muted text-center">
-				{{ t('auth.noAccountYet') }}
-				<NuxtLink
-					to="/register"
-					class="text-primary font-medium"
-				>
-					{{ t('auth.register') }}
-				</NuxtLink>
-			</p>
+			<AuthFooterLink
+				:question="t('auth.noAccountYet')"
+				:link-label="t('auth.register')"
+				to="/register"
+			/>
 		</template>
 	</LayoutCard>
 </template>

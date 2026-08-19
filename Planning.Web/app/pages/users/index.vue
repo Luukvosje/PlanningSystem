@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TableColumn, TableRow } from '@nuxt/ui';
+import type { TableColumn } from '@nuxt/ui';
 import type { UserResponse } from '~/generated/models';
 
 definePageMeta({ layout: 'default' });
@@ -17,7 +17,6 @@ onMounted(async () => {
 });
 
 const { data: users, isLoading, error } = useUsers();
-const { message } = useApiError(error);
 
 const canInvite = computed(() => canManageInvites(auth.currentUser?.role));
 
@@ -65,10 +64,9 @@ function matchesUserFilter(user: UserResponse, filter: string) {
   return haystack.includes(query);
 }
 
-function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
-  const id = row.original.id;
-  if (id) {
-    navigateTo(`/users/${id}`);
+function openUser(user: UserResponse) {
+  if (user.id) {
+    navigateTo(`/users/${user.id}`);
   }
 }
 </script>
@@ -77,7 +75,6 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
 	<LayoutPageContainer fill>
 		<LayoutPageHeader
 			class="shrink-0"
-			:title="t('nav.team')"
 			:subtitle="auth.currentUser?.organizationName"
 		>
 			<template #actions>
@@ -91,62 +88,35 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
 			</template>
 		</LayoutPageHeader>
 
-		<UAlert
-			v-if="error"
-			class="shrink-0"
-			color="error"
-			:title="message"
-		/>
-
-		<UiLoadingIndicator
-			v-else-if="isLoading"
-			class="shrink-0"
-			:label="t('users.loading')"
-		/>
-
-		<div
-			v-else
-			class="flex min-h-0 flex-1 flex-col gap-4"
+		<UiQueryState
+			:error="error"
+			:loading="isLoading"
+			:loading-label="t('users.loading')"
 		>
-			<UInput
-				v-model="globalFilter"
-				icon="i-lucide-search"
-				:placeholder="t('users.searchPlaceholder')"
-				class="max-w-md shrink-0"
-			/>
+			<div class="flex min-h-0 flex-1 flex-col gap-4">
+				<UInput
+					v-model="globalFilter"
+					icon="i-lucide-search"
+					:placeholder="t('users.searchPlaceholder')"
+					class="max-w-md shrink-0"
+				/>
 
-			<div class="min-h-0 flex-1 overflow-hidden rounded-xl border border-default">
-				<UTable
-					v-model:global-filter="globalFilter"
-					:data="users ?? []"
+				<UiDataTable
+					v-model:search="globalFilter"
+					:rows="users"
 					:columns="columns"
-					:global-filter-options="{
-						globalFilterFn: (row, _columnId, filterValue) => matchesUserFilter(row.original, filterValue),
-					}"
-					sticky
-					class="h-full"
-					@select="onRowSelect"
+					:filter-fn="matchesUserFilter"
+					:empty-title="canInvite ? t('users.emptyManage') : t('users.empty')"
+					:no-results-title="t('users.noResults')"
+					@select="openUser"
 				>
-					<template #empty>
-						<div class="flex h-full min-h-48 flex-col items-center justify-center gap-3 py-6">
-							<template v-if="!(users?.length) && !globalFilter">
-								<p class="text-muted text-sm">
-									{{ t('users.empty') }}
-								</p>
-								<UButton
-									v-if="canInvite"
-									@click="inviteCreate.open()"
-								>
-									{{ t('nav.invites') }}
-								</UButton>
-							</template>
-							<p
-								v-else
-								class="text-muted text-sm"
-							>
-								{{ t('users.noResults') }}
-							</p>
-						</div>
+					<template #empty-action>
+						<UButton
+							v-if="canInvite"
+							@click="inviteCreate.open()"
+						>
+							{{ t('nav.invites') }}
+						</UButton>
 					</template>
 
 					<template #role-cell="{ row }">
@@ -163,8 +133,8 @@ function onRowSelect(_event: Event, row: TableRow<UserResponse>) {
 							{{ row.original.isActive ? t('users.active') : t('users.inactive') }}
 						</UBadge>
 					</template>
-				</UTable>
+				</UiDataTable>
 			</div>
-		</div>
+		</UiQueryState>
 	</LayoutPageContainer>
 </template>

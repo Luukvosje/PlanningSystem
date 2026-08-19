@@ -20,6 +20,7 @@ public class CustomerRepository : ICustomerRepository
         Guid organizationId,
         CancellationToken cancellationToken = default) =>
         await _context.Customers
+            .AsNoTracking()
             .Where(x => x.OrganizationId == organizationId)
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
@@ -42,6 +43,4 @@ public class CustomerRepository : ICustomerRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) =>
-        await _context.Customers.AnyAsync(x => x.Id == id, cancellationToken);
 }

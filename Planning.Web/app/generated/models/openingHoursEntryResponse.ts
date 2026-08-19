@@ -8,9 +8,7 @@
 import type { Weekday } from './weekday';
 
 export interface OpeningHoursEntryResponse {
-  day?: Weekday;
-  /** @nullable */
-  openTime?: string | null;
-  /** @nullable */
-  closeTime?: string | null;
+  day: Weekday;
+  openTime: string;
+  closeTime: string;
 }

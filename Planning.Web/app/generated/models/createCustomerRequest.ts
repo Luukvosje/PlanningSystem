@@ -7,10 +7,8 @@
  */
 
 export interface CreateCustomerRequest {
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  email?: string | null;
+  name: string;
+  email: string;
   /** @nullable */
   address?: string | null;
 }

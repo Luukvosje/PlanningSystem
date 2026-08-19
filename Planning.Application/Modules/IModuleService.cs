@@ -14,6 +14,10 @@ public interface IModuleService
         Guid userId,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyDictionary<Guid, IReadOnlyList<ModuleSettingResponse>>> GetUserModulesByUsersAsync(
+        IReadOnlyList<Guid> userIds,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<ModuleSettingResponse>> GetEffectiveModulesAsync(
         Guid userId,
         Guid organizationId,

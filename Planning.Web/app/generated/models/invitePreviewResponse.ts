@@ -7,8 +7,7 @@
  */
 
 export interface InvitePreviewResponse {
-  /** @nullable */
-  organizationName?: string | null;
-  expiresAtUtc?: string;
-  isValid?: boolean;
+  organizationName: string;
+  expiresAtUtc: string;
+  isValid: boolean;
 }

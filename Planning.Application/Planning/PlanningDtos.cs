@@ -2,6 +2,19 @@ using Planning.Domain.Enums;
 
 namespace Planning.Application.Planning;
 
+/// <summary>Fields shared by the create and update requests, so one validator covers both.</summary>
+public interface IPlanningRequestFields
+{
+    Guid AssignedUserId { get; }
+    string Title { get; }
+    string? Description { get; }
+    string? Notes { get; }
+    DateTime StartUtc { get; }
+    DateTime EndUtc { get; }
+    string? Color { get; }
+    PlanningStatus Status { get; }
+}
+
 public sealed record CreatePlanningRequest(
     Guid AssignedUserId,
     Guid? CustomerId,
@@ -11,7 +24,7 @@ public sealed record CreatePlanningRequest(
     DateTime StartUtc,
     DateTime EndUtc,
     string? Color,
-    PlanningStatus Status = PlanningStatus.Confirmed);
+    PlanningStatus Status = PlanningStatus.Confirmed) : IPlanningRequestFields;
 
 public sealed record UpdatePlanningRequest(
     Guid AssignedUserId,
@@ -22,7 +35,7 @@ public sealed record UpdatePlanningRequest(
     DateTime StartUtc,
     DateTime EndUtc,
     PlanningStatus Status,
-    string? Color);
+    string? Color) : IPlanningRequestFields;
 
 public sealed record MovePlanningRequest(
     Guid AssignedUserId,
@@ -43,8 +56,6 @@ public sealed record PlanningListRequest(
     string? Search,
     int Page = 1,
     int PageSize = 500);
-
-public sealed record WeekPlanningRequest(DateTime WeekStartUtc);
 
 public sealed record PlanningResponse(
     Guid Id,

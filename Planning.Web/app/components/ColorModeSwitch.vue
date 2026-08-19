@@ -24,7 +24,7 @@ const isLight = computed(() => colorMode.value === 'light');
 	>
 		<UButton
 			:variant="isLight ? 'soft' : 'ghost'"
-			:color="isLight ? 'secondary' : 'neutral'"
+			:color="isLight ? 'brand' : 'neutral'"
 			size="xs"
 			icon="i-lucide-sun"
 			:label="compact ? undefined : t('common.colorMode.light')"
@@ -36,7 +36,7 @@ const isLight = computed(() => colorMode.value === 'light');
 		/>
 		<UButton
 			:variant="!isLight ? 'soft' : 'ghost'"
-			:color="!isLight ? 'secondary' : 'neutral'"
+			:color="!isLight ? 'brand' : 'neutral'"
 			size="xs"
 			icon="i-lucide-moon"
 			:label="compact ? undefined : t('common.colorMode.dark')"

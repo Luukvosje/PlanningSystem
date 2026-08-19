@@ -7,14 +7,12 @@
  */
 
 export interface CustomerResponse {
-  id?: string;
-  organizationId?: string;
-  /** @nullable */
-  name?: string | null;
-  /** @nullable */
-  email?: string | null;
+  id: string;
+  organizationId: string;
+  name: string;
+  email: string;
   /** @nullable */
   address?: string | null;
-  createdAtUtc?: string;
-  updatedAtUtc?: string;
+  createdAtUtc: string;
+  updatedAtUtc: string;
 }

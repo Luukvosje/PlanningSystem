@@ -7,6 +7,7 @@ export function useProfileApi() {
   const auth = useAuthStore()
   const queryClient = useQueryClient()
   const toast = useToast()
+  const { t } = useI18n()
 
   const updateProfile = useMutation({
     mutationFn: (request: UpdateProfileRequest) => putApiAuthMe(request),
@@ -21,7 +22,7 @@ export function useProfileApi() {
       }
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.auth.me })
-      toast.add({ title: 'Profiel bijgewerkt', color: 'success' })
+      toast.add({ title: t('settings.toast.profileUpdated'), color: 'success' })
     },
     onError: (error) => {
       const { message } = useApiError(error)

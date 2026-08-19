@@ -42,12 +42,12 @@ public class InviteService : IInviteService
     {
         if (!_currentUserContext.HasOrganization || _currentUserContext.UserId is null)
         {
-            return Result<InviteResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Result<InviteResponse>.Failure("Organization context is required.", Failures.NoOrganization);
         }
 
         if (_currentUserContext.Role is not (UserRole.Owner or UserRole.Admin))
         {
-            return Result<InviteResponse>.Failure("Only owners and admins can create invites.", "FORBIDDEN");
+            return Result<InviteResponse>.Failure("Only owners and admins can create invites.", Failures.Forbidden);
         }
 
         var utcNow = DateTime.UtcNow;
@@ -80,7 +80,7 @@ public class InviteService : IInviteService
 
         if (invite is null)
         {
-            return Result<AcceptInviteResponse>.Failure("Invite not found.", "NOT_FOUND");
+            return Result<AcceptInviteResponse>.Failure("Invite not found.", Failures.NotFound);
         }
 
         var utcNow = DateTime.UtcNow;
@@ -109,7 +109,7 @@ public class InviteService : IInviteService
 
         if (account is null)
         {
-            return Result<AcceptInviteResponse>.Failure("Account not found.", "NOT_FOUND");
+            return Result<AcceptInviteResponse>.Failure("Account not found.", Failures.NotFound);
         }
 
         var firstName = account.FirstName;
@@ -139,7 +139,7 @@ public class InviteService : IInviteService
         }
         catch (ArgumentException ex)
         {
-            return Result<AcceptInviteResponse>.Failure(ex.Message, "VALIDATION_ERROR");
+            return Result<AcceptInviteResponse>.Failure(ex.Message, Failures.Validation);
         }
         catch (InvalidOperationException ex)
         {
@@ -155,14 +155,14 @@ public class InviteService : IInviteService
 
         if (invite is null)
         {
-            return Result<InvitePreviewResponse>.Failure("Invite not found.", "NOT_FOUND");
+            return Result<InvitePreviewResponse>.Failure("Invite not found.", Failures.NotFound);
         }
 
         var organization = await _organizationRepository.GetByIdAsync(invite.OrganizationId, cancellationToken);
 
         if (organization is null)
         {
-            return Result<InvitePreviewResponse>.Failure("Organization not found.", "NOT_FOUND");
+            return Result<InvitePreviewResponse>.Failure("Organization not found.", Failures.NotFound);
         }
 
         return Result<InvitePreviewResponse>.Success(new InvitePreviewResponse(

@@ -15,13 +15,15 @@ const {
   coarseGridLines,
   showTimeSlots,
   isZoomedOut,
-  isCompactMode,
 } = useTimeline();
 const { openingHours } = usePlanningSettings();
 const store = usePlanningStore();
 
 function openingOverlaysForDay(day: TimelineDayHeader) {
-  if (isCompactMode.value && day.window) {
+  // Blocks are positioned with compact math whenever the day has a window, so the shading has
+  // to follow the same rule. Gating this on the row layout instead made the grey bands miss the
+  // blocks in the default setup (spacious rows + showFullDay false).
+  if (day.window) {
     return getOutsideOpeningOverlaysCompact(day.date, day.width, openingHours.value, day.window);
   }
 
@@ -68,7 +70,7 @@ function dayBorderClass(day: TimelineDayHeader) {
 			class="shrink-0 h-full relative"
 			:class="[
 				dayBorderClass(day),
-				day.isWeekend && store.showWeekends ? 'bg-muted/20' : 'bg-secondary/5',
+				day.isWeekend && store.showWeekends ? 'bg-muted/20' : 'bg-brand/5',
 			]"
 			:style="{ width: `${day.width}px` }"
 		>

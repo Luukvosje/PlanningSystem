@@ -6,6 +6,8 @@
  * OpenAPI spec version: v1
  */
 
-export type GetApiPlanningWeekParams = {
-WeekStartUtc?: string;
-};
+export interface ImportantWorkTimeResponse {
+  /** @nullable */
+  label?: string | null;
+  startTime: string;
+}

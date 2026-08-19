@@ -28,6 +28,19 @@ public class ApplicationDbContext : DbContext
     public DbSet<OrganizationModule> OrganizationModules => Set<OrganizationModule>();
     public DbSet<UserModule> UserModules => Set<UserModule>();
 
+    /// <summary>
+    /// Every DateTime column in this schema holds UTC (they are all named <c>*Utc</c>), but
+    /// datetime2 cannot record that. Without this the API would serialize timestamps without a
+    /// <c>Z</c> and every client would read them as local time. See <see cref="UtcDateTimeConverter"/>.
+    /// </summary>
+    protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
+    {
+        configurationBuilder.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+        configurationBuilder.Properties<DateTime?>().HaveConversion<NullableUtcDateTimeConverter>();
+
+        base.ConfigureConventions(configurationBuilder);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);

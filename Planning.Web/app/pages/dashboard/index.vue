@@ -17,18 +17,17 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 <template>
 	<LayoutPageContainer>
 		<LayoutPageHeader
-			title="Dashboard"
 			:subtitle="t('dashboard.overview', { organization: organizationName })"
 		/>
 
-		<div class="flex flex-col gap-4 ">
+		<div class="flex flex-col gap-6">
 			<DashboardNextShiftCard />
-			
-			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+			<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 				<LayoutCard>
 					<div class="flex items-start justify-between">
 						<div>
-							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
+							<p class="text-xs font-semibold uppercase tracking-wide text-muted">
 								{{ t('nav.organization') }}
 							</p>
 							<p class="mt-2 text-lg font-semibold">
@@ -37,7 +36,7 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 						</div>
 						<UIcon
 							name="i-lucide-building-2"
-							class="size-5 text-secondary"
+							class="size-5 text-brand"
 						/>
 					</div>
 				</LayoutCard>
@@ -45,21 +44,21 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 				<LayoutCard>
 					<div class="flex items-start justify-between">
 						<div>
-							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
+							<p class="text-xs font-semibold uppercase tracking-wide text-muted">
 								{{ t('dashboard.teamMembers') }}
 							</p>
 							<p class="mt-2 text-lg font-semibold">
 								<UIcon
 									v-if="isLoading"
 									name="i-lucide-loader-circle"
-									class="size-5 text-primary animate-spin"
+									class="size-5 text-brand animate-spin"
 								/>
 								<span v-else>{{ teamCount }}</span>
 							</p>
 						</div>
 						<UIcon
 							name="i-lucide-users"
-							class="size-5 text-secondary"
+							class="size-5 text-brand"
 						/>
 					</div>
 				</LayoutCard>
@@ -67,7 +66,7 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 				<LayoutCard>
 					<div class="flex items-start justify-between">
 						<div>
-							<p class="text-xs font-semibold uppercase tracking-wider text-muted">
+							<p class="text-xs font-semibold uppercase tracking-wide text-muted">
 								{{ t('dashboard.yourRole') }}
 							</p>
 							<p class="mt-2 text-lg font-semibold">
@@ -76,13 +75,13 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 						</div>
 						<UIcon
 							name="i-lucide-shield"
-							class="size-5 text-secondary"
+							class="size-5 text-brand"
 						/>
 					</div>
 				</LayoutCard>
 			</div>
 
-			<div class="grid gap-4 sm:grid-cols-2">
+			<div class="grid gap-6 sm:grid-cols-2">
 				<LayoutCard :title="t('dashboard.quickLinks')">
 					<div class="flex flex-col gap-2">
 						<UButton

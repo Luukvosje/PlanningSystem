@@ -26,17 +26,6 @@ export const CONCEPT_BLOCK_STYLE = {
   backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.28) 4px, rgba(255,255,255,0.28) 8px)',
 } as const;
 
-export const COLOR_PRESETS = [
-  '#6366F1',
-  '#14B8A8',
-  '#F59E0B',
-  '#EF4444',
-  '#8B5CF6',
-  '#EC4899',
-  '#06B6D4',
-  '#84CC16',
-];
-
 export function getStatusLabel(status: PlanningStatus, t: Translate): string {
   const labels: Record<PlanningStatus, string> = {
     Planned: t('planning.status.planned'),
@@ -103,10 +92,6 @@ export function eachMonthInRange(rangeStart: Date, rangeEnd: Date): { start: Dat
   return months;
 }
 
-export function toUtcIso(date: Date): string {
-  return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())).toISOString();
-}
-
 export function toUtcDateTimeIso(date: Date): string {
   return date.toISOString();
 }
@@ -116,14 +101,6 @@ export function toDateKey(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
-}
-
-export function snapToMinutes(date: Date, minutes: number): Date {
-  const copy = new Date(date);
-  const totalMinutes = copy.getHours() * 60 + copy.getMinutes();
-  const snapped = Math.round(totalMinutes / minutes) * minutes;
-  copy.setHours(Math.floor(snapped / 60), snapped % 60, 0, 0);
-  return copy;
 }
 
 export function formatTimeRange(startUtc: string, endUtc: string, locale: string): string {

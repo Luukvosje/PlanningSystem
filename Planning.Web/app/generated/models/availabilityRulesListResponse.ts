@@ -8,6 +8,5 @@
 import type { AvailabilityRuleResponse } from './availabilityRuleResponse';
 
 export interface AvailabilityRulesListResponse {
-  /** @nullable */
-  items?: AvailabilityRuleResponse[] | null;
+  items: AvailabilityRuleResponse[];
 }

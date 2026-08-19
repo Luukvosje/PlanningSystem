@@ -8,11 +8,10 @@
 import type { PlanningResponse } from './planningResponse';
 
 export interface PlanningListResponse {
-  /** @nullable */
-  items?: PlanningResponse[] | null;
-  totalCount?: number;
-  page?: number;
-  pageSize?: number;
-  rangeStartUtc?: string;
-  rangeEndUtc?: string;
+  items: PlanningResponse[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  rangeStartUtc: string;
+  rangeEndUtc: string;
 }

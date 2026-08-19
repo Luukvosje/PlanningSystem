@@ -39,11 +39,3 @@ public class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenReques
         RuleFor(x => x.RefreshToken).NotEmpty().MaximumLength(512);
     }
 }
-
-public class SwitchOrganizationRequestValidator : AbstractValidator<SwitchOrganizationRequest>
-{
-    public SwitchOrganizationRequestValidator()
-    {
-        RuleFor(x => x.OrganizationId).NotEmpty();
-    }
-}

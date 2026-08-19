@@ -8,27 +8,24 @@
 import type { PlanningStatus } from './planningStatus';
 
 export interface PlanningResponse {
-  id?: string;
-  organizationId?: string;
-  assignedUserId?: string;
-  /** @nullable */
-  assignedUserName?: string | null;
+  id: string;
+  organizationId: string;
+  assignedUserId: string;
+  assignedUserName: string;
   /** @nullable */
   customerId?: string | null;
   /** @nullable */
   customerName?: string | null;
-  /** @nullable */
-  title?: string | null;
+  title: string;
   /** @nullable */
   description?: string | null;
   /** @nullable */
   notes?: string | null;
-  startUtc?: string;
-  endUtc?: string;
-  status?: PlanningStatus;
-  /** @nullable */
-  color?: string | null;
-  hasOverlap?: boolean;
-  createdAtUtc?: string;
-  updatedAtUtc?: string;
+  startUtc: string;
+  endUtc: string;
+  status: PlanningStatus;
+  color: string;
+  hasOverlap: boolean;
+  createdAtUtc: string;
+  updatedAtUtc: string;
 }

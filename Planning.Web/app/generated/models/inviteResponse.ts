@@ -7,7 +7,6 @@
  */
 
 export interface InviteResponse {
-  /** @nullable */
-  code?: string | null;
-  expiresAtUtc?: string;
+  code: string;
+  expiresAtUtc: string;
 }

@@ -6,7 +6,7 @@ public class Organization : BaseEntity
 {
     public string Name { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
-    public List<TimeOnly> ImportantWorkTimes { get; private set; } = OrganizationPlanningDefaults.ImportantWorkTimes.ToList();
+    public List<ImportantWorkTime> ImportantWorkTimes { get; private set; } = OrganizationPlanningDefaults.ImportantWorkTimes.ToList();
     public List<DayOpeningHours> OpeningHours { get; private set; } = [];
 
     private Organization()
@@ -53,14 +53,13 @@ public class Organization : BaseEntity
     }
 
     public void UpdatePlanningSettings(
-        IReadOnlyList<TimeOnly> importantWorkTimes,
+        IReadOnlyList<ImportantWorkTime> importantWorkTimes,
         IReadOnlyList<DayOpeningHours> openingHours,
         DateTime utcNow)
     {
-        ImportantWorkTimes = importantWorkTimes
-            .Distinct()
-            .OrderBy(time => time)
-            .ToList();
+        // Order is user-curated (an entry can carry a name and be used as a quick-pick preset),
+        // so it is kept as-is rather than sorted by time.
+        ImportantWorkTimes = importantWorkTimes.ToList();
 
         OpeningHours = openingHours
             .GroupBy(entry => entry.Day)

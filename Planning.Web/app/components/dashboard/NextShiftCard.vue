@@ -68,7 +68,7 @@ const intlLocale = computed(() => getIntlLocale(locale.value));
 			<div class="flex items-center justify-end gap-3">
 				<UIcon
 					name="i-lucide-calendar-clock"
-					class="size-5 text-secondary"
+					class="size-5 text-brand"
 				/>
 				<UButton
 					to="/planning"

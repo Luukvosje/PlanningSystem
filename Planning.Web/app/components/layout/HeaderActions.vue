@@ -30,7 +30,7 @@ const switchActions = computed(() =>
   props.items.filter((action): action is HeaderActionSwitch => action.type === 'switch'),
 );
 
-const menuItems = computed<DropdownMenuItem[]>(() =>
+const typedMenuItems = computed<DropdownMenuItem[]>(() =>
   props.items.flatMap((action): DropdownMenuItem[] => {
     if (action.type === 'button') {
       return [{
@@ -72,6 +72,30 @@ const menuItems = computed<DropdownMenuItem[]>(() =>
     return [];
   }),
 );
+
+const overlayMenuItems = computed<DropdownMenuItem[]>(() =>
+  overlayActions.value.map((action) => ({
+    slot: action.key,
+    class: 'cursor-default data-highlighted:before:bg-transparent',
+    onSelect: (event: Event) => {
+      event.preventDefault();
+    },
+  })),
+);
+
+const menuItems = computed<DropdownMenuItem[][]>(() => {
+  const groups: DropdownMenuItem[][] = [];
+
+  if (overlayMenuItems.value.length) {
+    groups.push(overlayMenuItems.value);
+  }
+
+  if (typedMenuItems.value.length) {
+    groups.push(typedMenuItems.value);
+  }
+
+  return groups;
+});
 
 function onSelectMenuValue(action: HeaderActionSelect, value: unknown) {
   if (typeof value === 'string') {
@@ -115,7 +139,7 @@ function onSwitchValue(action: HeaderActionSwitch, value: unknown) {
 				<USwitch
 					:model-value="action.modelValue"
 					size="sm"
-					color="secondary"
+					color="brand"
 					@update:model-value="onSwitchValue(action, $event)"
 				/>
 			</div>
@@ -129,7 +153,7 @@ function onSwitchValue(action: HeaderActionSwitch, value: unknown) {
 					:icon="item.icon"
 					:label="item.label"
 					:variant="action.value === item.value ? 'solid' : 'outline'"
-					:color="action.value === item.value ? 'secondary' : 'neutral'"
+					:color="action.value === item.value ? 'brand' : 'neutral'"
 					size="sm"
 					@click="action.onUpdate(item.value)"
 				/>
@@ -187,19 +211,18 @@ function onSwitchValue(action: HeaderActionSwitch, value: unknown) {
 		/>
 
 		<template
-			v-if="overlayActions.length"
-			#content-top
+			v-for="action in overlayActions"
+			:key="action.key"
+			#[action.key]
 		>
-			<div
-				class="flex flex-col gap-2 p-2"
-				:class="menuItems.length ? 'border-b border-default' : undefined"
-			>
-				<div
-					v-for="action in overlayActions"
-					:key="action.key"
+			<div class="flex w-full min-w-0 flex-col gap-1">
+				<p
+					v-if="action.type === 'popover'"
+					class="px-1 text-xs font-semibold tracking-wide text-muted uppercase"
 				>
-					<slot :name="action.key" />
-				</div>
+					{{ action.label }}
+				</p>
+				<slot :name="action.key" />
 			</div>
 		</template>
 
@@ -211,7 +234,7 @@ function onSwitchValue(action: HeaderActionSwitch, value: unknown) {
 			<USwitch
 				:model-value="action.modelValue"
 				size="sm"
-				color="secondary"
+				color="brand"
 				@update:model-value="onSwitchValue(action, $event)"
 				@click.stop
 			/>

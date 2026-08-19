@@ -7,9 +7,9 @@
  */
 
 export interface MovePlanningRequest {
-  assignedUserId?: string;
+  assignedUserId: string;
   /** @nullable */
   customerId?: string | null;
-  startUtc?: string;
-  endUtc?: string;
+  startUtc: string;
+  endUtc: string;
 }

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { PlanningFormData } from '~/types/planning';
+import { DEFAULT_PLANNING_COLOR } from '~/types/planning';
 
 const { t } = useI18n();
 const store = usePlanningStore();
@@ -17,7 +18,7 @@ const form = reactive<PlanningFormData>({
   assignedUserId: '',
   customerId: null,
   status: 'Confirmed',
-  color: '#6366F1',
+  color: DEFAULT_PLANNING_COLOR,
   startUtc: '',
   endUtc: '',
 });
@@ -64,7 +65,7 @@ watch(() => store.createDraft, (draft) => {
   form.assignedUserId = draft.assignedUserId;
   form.customerId = draft.customerId ?? null;
   form.status = draft.status ?? store.filters.statuses[0] ?? 'Confirmed';
-  form.color = '#6366F1';
+  form.color = DEFAULT_PLANNING_COLOR;
   form.startUtc = draft.startUtc;
   form.endUtc = draft.endUtc;
 }, { immediate: true });
@@ -334,11 +335,18 @@ return;
 					name="startUtc"
 					:error="periodFieldError"
 				>
-					<DateTimeRangePicker
-						v-model:start="rangeStart"
-						v-model:end="rangeEnd"
-						:disabled="!canManage"
-					/>
+					<div class="space-y-2">
+						<PlanningSidebarImportantTimes
+							v-model:start="rangeStart"
+							v-model:end="rangeEnd"
+							:disabled="!canManage"
+						/>
+						<DateTimeRangePicker
+							v-model:start="rangeStart"
+							v-model:end="rangeEnd"
+							:disabled="!canManage"
+						/>
+					</div>
 				</UFormField>
 
 				<UFormField

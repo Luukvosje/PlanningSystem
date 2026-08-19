@@ -7,10 +7,7 @@
  */
 
 export interface UpdateProfileRequest {
-  /** @nullable */
-  email?: string | null;
-  /** @nullable */
-  firstName?: string | null;
-  /** @nullable */
-  lastName?: string | null;
+  email: string;
+  firstName: string;
+  lastName: string;
 }

@@ -5,36 +5,37 @@ using Planning.Domain.Organizations;
 
 namespace Planning.Application.Organizations;
 
-public class CreateOrganizationRequestValidator : AbstractValidator<CreateOrganizationRequest>
+/// <summary>
+/// One rule set for both the create and update request; they validate the same fields, and
+/// keeping two copies meant a rule could be tightened on one path and not the other.
+/// </summary>
+public abstract class OrganizationRequestValidator<T> : AbstractValidator<T>
+    where T : IOrganizationRequestFields
 {
-    public CreateOrganizationRequestValidator()
+    protected OrganizationRequestValidator()
     {
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(320);
     }
 }
 
-public class UpdateOrganizationRequestValidator : AbstractValidator<UpdateOrganizationRequest>
-{
-    public UpdateOrganizationRequestValidator()
-    {
-        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
-        RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(320);
-    }
-}
+public class CreateOrganizationRequestValidator : OrganizationRequestValidator<CreateOrganizationRequest>;
+
+public class UpdateOrganizationRequestValidator : OrganizationRequestValidator<UpdateOrganizationRequest>;
 
 public class UpdateOrganizationPlanningSettingsRequestValidator
     : AbstractValidator<UpdateOrganizationPlanningSettingsRequest>
 {
     public UpdateOrganizationPlanningSettingsRequestValidator()
     {
-        RuleForEach(x => x.ImportantWorkTimes)
-            .Must(BeValidTime)
-            .WithMessage("Important work times must use HH:mm format.");
+        RuleForEach(x => x.ImportantWorkTimes).ChildRules(entry =>
+        {
+            entry.RuleFor(x => x.Label).MaximumLength(50);
 
-        RuleFor(x => x.ImportantWorkTimes)
-            .Must(times => times.Distinct(StringComparer.OrdinalIgnoreCase).Count() == times.Count)
-            .WithMessage("Important work times must be unique.");
+            entry.RuleFor(x => x.StartTime)
+                .Must(BeValidTime)
+                .WithMessage("Start time must use HH:mm format.");
+        });
 
         RuleFor(x => x.ImportantWorkTimes)
             .Must(times => times.Count <= 24)
@@ -69,11 +70,12 @@ public class UpdateOrganizationPlanningSettingsRequestValidator
 
 internal static class OrganizationPlanningSettingsParser
 {
-    public static IReadOnlyList<TimeOnly> ParseImportantWorkTimes(IReadOnlyList<string> values) =>
+    public static IReadOnlyList<ImportantWorkTime> ParseImportantWorkTimes(
+        IReadOnlyList<ImportantWorkTimeRequest> values) =>
         values
-            .Select(value => TimeOnly.ParseExact(value, "HH:mm", CultureInfo.InvariantCulture))
-            .Distinct()
-            .OrderBy(time => time)
+            .Select(entry => new ImportantWorkTime(
+                entry.Label,
+                TimeOnly.ParseExact(entry.StartTime, "HH:mm", CultureInfo.InvariantCulture)))
             .ToList();
 
     public static IReadOnlyList<DayOpeningHours> ParseOpeningHours(

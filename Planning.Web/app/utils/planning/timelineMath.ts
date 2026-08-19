@@ -1,18 +1,25 @@
 import type { Composer } from 'vue-i18n';
 import type { TimelineZoom } from '~/types/planning';
-import type { OpeningHoursEntry } from '~/utils/planning/planningSettings';
+import type { OpeningHoursEntry } from '~/utils/planning/timeOfDay';
 import {
+  atTimeOnDate,
   getOpeningHoursForDate,
+  minutesToDayPx,
   parseTimeToMinutes,
   sortImportantTimes,
-} from '~/utils/planning/planningSettings';
-import { addDays } from './dateUtils';
+} from '~/utils/planning/timeOfDay';
+import { addDays, isWeekend, toDateKey } from './dateUtils';
 
 type Translate = Composer['t'];
 
 export const COMPACT_PADDING_MINUTES = 30;
-export const DEFAULT_OFFICE_START = '07:00';
-export const DEFAULT_OFFICE_END = '19:00';
+/**
+ * Fallback window when an organization has no opening hours and no important work times.
+ * The whole day, deliberately: opening hours are a visual aid, so assuming a narrower window
+ * would hide real bookings from a board that was never configured.
+ */
+export const DEFAULT_OFFICE_START = '00:00';
+export const DEFAULT_OFFICE_END = '23:59';
 
 export interface DayTimeWindow {
   start: Date
@@ -261,11 +268,6 @@ export function getDayCount(start: Date, end: Date): number {
   return Math.ceil((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
 }
 
-function isWeekendDate(date: Date): boolean {
-  const day = date.getDay();
-  return day === 0 || day === 6;
-}
-
 /** Weekdays only when showWeekends is false. */
 export function countVisibleDaysInRange(start: Date, end: Date, showWeekends: boolean): number {
   const total = getDayCount(start, end);
@@ -276,7 +278,7 @@ export function countVisibleDaysInRange(start: Date, end: Date, showWeekends: bo
   let count = 0;
   for (let i = 0; i < total; i++) {
     const date = addDays(start, i);
-    if (!isWeekendDate(date)) {
+    if (!isWeekend(date)) {
       count++;
     }
   }
@@ -290,7 +292,7 @@ export function countVisibleDaysBefore(date: Date, rangeStart: Date, showWeekend
   let count = 0;
 
   for (let d = new Date(rangeStart); d < dayStart; d = addDays(d, 1)) {
-    if (showWeekends || !isWeekendDate(d)) {
+    if (showWeekends || !isWeekend(d)) {
       count++;
     }
   }
@@ -334,19 +336,6 @@ export function pxToUtcIso(
   return new Date(rangeStart.getTime() + finalPx * msPerPx).toISOString();
 }
 
-export function pxToTime(
-  px: number,
-  rangeStart: Date,
-  dayWidth: number,
-): Date {
-  const dayIndex = Math.floor(px / dayWidth);
-  const dayFraction = (px % dayWidth) / dayWidth;
-  const result = addDays(rangeStart, dayIndex);
-  const totalMinutes = Math.round(dayFraction * 24 * 60 / SNAP_MINUTES) * SNAP_MINUTES;
-  result.setHours(Math.floor(totalMinutes / 60), totalMinutes % 60, 0, 0);
-  return result;
-}
-
 export function getTimelineWidth(dayCount: number, dayWidth: number): number {
   return dayCount * dayWidth;
 }
@@ -354,42 +343,42 @@ export function getTimelineWidth(dayCount: number, dayWidth: number): number {
 /** Below this slot width (px) the time label is hidden and shown in a tooltip instead. */
 export const MIN_LABEL_SLOT_WIDTH = 32;
 
-export interface TimeSlotMarker {
-  leftPx: number
-  width: number
-  label: string
-  showLabel: boolean
+/**
+ * Rough px-per-character for the 10px/font-semibold pill labels used for important-time
+ * markers. Time strings vary in length by locale/format (24h "06:00" vs. 12h "06:00 AM"), so
+ * label width is estimated from the actual string rather than assumed from a fixed format.
+ */
+const LABEL_CHAR_WIDTH_PX = 5.5;
+/** Pill horizontal padding (px-1.5 both sides + ring border) added on top of the text width. */
+const LABEL_HORIZONTAL_PADDING_PX = 18;
+/** Extra breathing room (px) kept between two adjacent visible pills. */
+const LABEL_GAP_BUFFER_PX = 6;
+
+function estimateLabelWidth(label: string): number {
+  return label.length * LABEL_CHAR_WIDTH_PX + LABEL_HORIZONTAL_PADDING_PX;
 }
 
-export function getTimeSlotMarkers(zoom: TimelineZoom, dayWidth: number, locale: string): TimeSlotMarker[] {
-  const slotMinutes = ZOOM_MINUTES[zoom];
-  if (slotMinutes >= 24 * 60) {
-    return [];
-  }
+/**
+ * Hides labels that would otherwise visually overlap a previously-shown label, based on each
+ * label's own estimated rendered width rather than a fixed gap. Lines are compared by their
+ * (already absolute) leftPx, so callers must pass lines whose leftPx is in a single shared
+ * coordinate space — e.g. flattened across day columns rather than relative to each day's own
+ * start.
+ */
+export function suppressCollidingLabels(lines: TimelineGridLine[]): TimelineGridLine[] {
+  const sorted = [...lines].sort((a, b) => a.leftPx - b.leftPx);
+  let lastShownRight = -Infinity;
 
-  const slotsPerDay = (24 * 60) / slotMinutes;
-  const slotWidth = dayWidth / slotsPerDay;
-  const showLabel = slotWidth >= MIN_LABEL_SLOT_WIDTH;
-
-  const timeOptions: Intl.DateTimeFormatOptions = slotMinutes < 60 ?
-    { hour: '2-digit', minute: '2-digit' } :
-    { hour: '2-digit' };
-
-  const formatter = new Intl.DateTimeFormat(locale, timeOptions);
-  const markers: TimeSlotMarker[] = [];
-
-  for (let i = 0; i < slotsPerDay; i++) {
-    const totalMinutes = i * slotMinutes;
-    const date = new Date(2000, 0, 1, Math.floor(totalMinutes / 60), totalMinutes % 60);
-    markers.push({
-      leftPx: i * slotWidth,
-      width: slotWidth,
-      label: formatter.format(date),
-      showLabel,
-    });
-  }
-
-  return markers;
+  return sorted.map((line) => {
+    if (!line.label) {
+      return line;
+    }
+    if (line.leftPx < lastShownRight) {
+      return { ...line, showLabel: false };
+    }
+    lastShownRight = line.leftPx + estimateLabelWidth(line.label) + LABEL_GAP_BUFFER_PX;
+    return { ...line, showLabel: true };
+  });
 }
 
 export function showsTimeSlots(zoom: TimelineZoom): boolean {
@@ -418,7 +407,7 @@ export function getImportantGridLines(
   const formatter = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit' });
 
   return importantTimes.map((time) => {
-    const minutes = parseTimeToMinutesFromString(time);
+    const minutes = parseTimeToMinutes(time);
     const date = new Date(2000, 0, 1, Math.floor(minutes / 60), minutes % 60);
     return {
       leftPx: minutesToDayPx(minutes, dayWidth),
@@ -428,10 +417,6 @@ export function getImportantGridLines(
       isImportant: true,
     };
   });
-}
-
-function minutesToDayPx(minutes: number, dayWidth: number): number {
-  return (minutes / (24 * 60)) * dayWidth;
 }
 
 /**
@@ -532,11 +517,6 @@ export function getTimelineGridLines(
   return lines;
 }
 
-function parseTimeToMinutesFromString(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours! * 60 + minutes!;
-}
-
 export function getCurrentTimePx(rangeStart: Date, rangeEnd: Date, dayWidth: number): number | null {
   const now = new Date();
   if (now < rangeStart || now >= rangeEnd) {
@@ -548,20 +528,6 @@ export function getCurrentTimePx(rangeStart: Date, rangeEnd: Date, dayWidth: num
 export function pxFromPointerEvent(event: PointerEvent, timelineRow: HTMLElement): number {
   const rect = timelineRow.getBoundingClientRect();
   return event.clientX - rect.left;
-}
-
-export function toDateKey(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-function createLocalDateTime(date: Date, time: string): Date {
-  const [hours, minutes] = time.split(':').map(Number);
-  const result = new Date(date);
-  result.setHours(hours ?? 0, minutes ?? 0, 0, 0);
-  return result;
 }
 
 function dayBounds(date: Date): { start: Date, end: Date } {
@@ -578,26 +544,26 @@ export function getOfficeHoursWindow(
   const hours = getOpeningHoursForDate(date, openingHours);
   if (hours) {
     return {
-      start: createLocalDateTime(date, hours.openTime),
-      end: createLocalDateTime(date, hours.closeTime),
+      start: atTimeOnDate(date, hours.openTime),
+      end: atTimeOnDate(date, hours.closeTime),
     };
   }
 
   if (importantWorkTimes.length > 0) {
     const sorted = sortImportantTimes(importantWorkTimes);
     return {
-      start: createLocalDateTime(date, sorted[0]!),
-      end: createLocalDateTime(date, sorted[sorted.length - 1]!),
+      start: atTimeOnDate(date, sorted[0]!),
+      end: atTimeOnDate(date, sorted[sorted.length - 1]!),
     };
   }
 
   return {
-    start: createLocalDateTime(date, DEFAULT_OFFICE_START),
-    end: createLocalDateTime(date, DEFAULT_OFFICE_END),
+    start: atTimeOnDate(date, DEFAULT_OFFICE_START),
+    end: atTimeOnDate(date, DEFAULT_OFFICE_END),
   };
 }
 
-function recordsForDay(records: RecordLike[], date: Date): RecordLike[] {
+export function recordsForDay<T extends RecordLike>(records: T[], date: Date): T[] {
   const { start: dayStart, end: dayEnd } = dayBounds(date);
   return records.filter((record) => {
     const start = new Date(record.startUtc);

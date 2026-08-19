@@ -24,6 +24,17 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@nuxt/ui', '@nuxt/eslint', '@nuxtjs/i18n'],
 
+  ui: {
+    theme: {
+      // Replaces the default ['primary', 'secondary', ...]. `neutral` is always available and is
+      // not listed here. Mapping to actual palettes happens in app/app.config.ts.
+      colors: ['brand', 'success', 'info', 'warning', 'error'],
+      defaultVariants: {
+        color: 'brand',
+      },
+    },
+  },
+
   colorMode: {
     preference: 'light',
     fallback: 'light',
@@ -61,4 +72,4 @@ export default defineNuxtConfig({
   imports: {
     dirs: ['composables/**'],
   },
-})
+});

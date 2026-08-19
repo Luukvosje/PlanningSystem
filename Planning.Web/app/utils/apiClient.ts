@@ -54,6 +54,9 @@ async function refreshAccessToken(
   if (!promise) {
     promise = (async () => {
       try {
+        // Deliberately a raw $fetch and not the generated postApiAuthRefresh: that one routes
+        // through customFetch below, which is what triggers this refresh in the first place -
+        // going through it here would recurse on every 401.
         const response = await $fetch<{
           accessToken?: string | null
           refreshToken?: string | null

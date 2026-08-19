@@ -7,6 +7,5 @@
  */
 
 export interface AcceptInviteRequest {
-  /** @nullable */
-  code?: string | null;
+  code: string;
 }

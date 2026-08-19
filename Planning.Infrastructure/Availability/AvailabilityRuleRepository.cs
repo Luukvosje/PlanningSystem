@@ -23,6 +23,7 @@ public class AvailabilityRuleRepository : IAvailabilityRuleRepository
         Guid employeeId,
         CancellationToken cancellationToken = default) =>
         await _context.AvailabilityRules
+            .AsNoTracking()
             .Where(x => x.OrganizationId == organizationId && x.EmployeeId == employeeId)
             .OrderBy(x => x.Type)
             .ThenBy(x => x.Weekday)
@@ -43,6 +44,7 @@ public class AvailabilityRuleRepository : IAvailabilityRuleRepository
         }
 
         return await _context.AvailabilityRules
+            .AsNoTracking()
             .Where(x =>
                 x.OrganizationId == organizationId
                 && employeeIds.Contains(x.EmployeeId)

@@ -48,57 +48,30 @@ async function removeRule(rule: AvailabilityRule) {
 			/>
 		</template>
 
-		<UiLoadingIndicator
-			v-if="isLoading"
-			:label="t('availability.loading')"
-		/>
-
-		<p
-			v-else-if="weeklyRules.length === 0"
-			class="text-sm text-muted text-center py-2"
+		<UiQueryState
+			:loading="isLoading"
+			:loading-label="t('availability.loading')"
 		>
-			{{ t('availability.noWeeklyBlocks') }}
-		</p>
+			<UiEmptyState
+				v-if="weeklyRules.length === 0"
+				:title="t('availability.noWeeklyBlocks')"
+			/>
 
-		<div
-			v-else
-			class="space-y-2"
-		>
 			<div
-				v-for="rule in weeklyRules"
-				:key="rule.id"
-				class="flex items-start justify-between gap-3 rounded-md border border-default px-3 py-2"
+				v-else
+				class="flex flex-col gap-2"
 			>
-				<div class="min-w-0">
-					<p class="font-medium">
-						{{ formatWeeklyRuleLabel(rule.weekday!, rule.startTime, rule.endTime, t) }}
-					</p>
-					<p
-						v-if="rule.reason"
-						class="text-sm text-muted mt-0.5"
-					>
-						{{ rule.reason }}
-					</p>
-				</div>
-				<div class="flex shrink-0 gap-1">
-					<UButton
-						icon="i-lucide-pencil"
-						variant="ghost"
-						color="neutral"
-						size="sm"
-						@click="openEdit(rule)"
-					/>
-					<UButton
-						icon="i-lucide-trash-2"
-						variant="ghost"
-						color="error"
-						size="sm"
-						:loading="api.remove.isPending.value"
-						@click="removeRule(rule)"
-					/>
-				</div>
+				<AvailabilityRuleRow
+					v-for="rule in weeklyRules"
+					:key="rule.id"
+					:label="formatWeeklyRuleLabel(rule.weekday!, rule.startTime, rule.endTime, t)"
+					:description="rule.reason"
+					:removing="api.remove.isPending.value"
+					@edit="openEdit(rule)"
+					@remove="removeRule(rule)"
+				/>
 			</div>
-		</div>
+		</UiQueryState>
 
 		<AvailabilityRuleSheet
 			v-model:open="sheetOpen"

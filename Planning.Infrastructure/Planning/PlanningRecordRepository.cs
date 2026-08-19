@@ -17,15 +17,6 @@ public class PlanningRecordRepository : IPlanningRecordRepository
     public async Task<PlanningRecord?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
         await _context.PlanningRecords.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
-    public async Task<IReadOnlyList<PlanningRecord>> GetByOrganizationAndWeekAsync(
-        Guid organizationId,
-        DateTime weekStartUtc,
-        DateTime weekEndUtc,
-        CancellationToken cancellationToken = default) =>
-        await BuildRangeQuery(organizationId, weekStartUtc, weekEndUtc, null, null, null, null)
-            .OrderBy(x => x.StartUtc)
-            .ToListAsync(cancellationToken);
-
     public async Task<(IReadOnlyList<PlanningRecord> Items, int TotalCount)> GetByOrganizationAndRangeAsync(
         Guid organizationId,
         DateTime rangeStartUtc,
@@ -50,6 +41,7 @@ public class PlanningRecordRepository : IPlanningRecordRepository
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
+            .AsNoTracking()
             .OrderBy(x => x.StartUtc)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
@@ -75,9 +67,6 @@ public class PlanningRecordRepository : IPlanningRecordRepository
         _context.PlanningRecords.Remove(planningRecord);
         await _context.SaveChangesAsync(cancellationToken);
     }
-
-    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default) =>
-        await _context.PlanningRecords.AnyAsync(x => x.Id == id, cancellationToken);
 
     private IQueryable<PlanningRecord> BuildRangeQuery(
         Guid organizationId,

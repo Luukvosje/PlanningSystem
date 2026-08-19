@@ -12,9 +12,9 @@ export interface UpdateAvailabilityRuleRequest {
   weekday?: Weekday;
   /** @nullable */
   date?: string | null;
-  startTime?: string;
-  endTime?: string;
-  status?: AvailabilityRuleStatus;
+  startTime: string;
+  endTime: string;
+  status: AvailabilityRuleStatus;
   /** @nullable */
   reason?: string | null;
 }

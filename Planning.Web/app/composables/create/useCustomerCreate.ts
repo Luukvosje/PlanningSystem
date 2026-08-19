@@ -23,7 +23,6 @@ export function useCustomerCreate() {
       { name: 'address', label: t('customers.fields.address'), type: 'textarea', props: { rows: 3 } },
     ]),
     submitLabel: computed(() => t('customers.create.submit')),
-    validateOn: ['input', 'blur', 'change'],
     onSubmit: async (data) => {
       const customer = await customersApi.create({
         name: data.name,

@@ -8,6 +8,5 @@
 import type { UnavailablePeriodResponse } from './unavailablePeriodResponse';
 
 export interface PlanningAvailabilityResponse {
-  /** @nullable */
-  periods?: UnavailablePeriodResponse[] | null;
+  periods: UnavailablePeriodResponse[];
 }

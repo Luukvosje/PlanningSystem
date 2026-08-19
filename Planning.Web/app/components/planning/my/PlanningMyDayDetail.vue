@@ -60,8 +60,8 @@ async function removeException(rule: AvailabilityRule) {
 		:class="[
 			flush
 				? ''
-				: (day?.isToday ? 'rounded-xl border border-secondary/50' : 'rounded-xl border border-default'),
-			compact && day?.isToday ? 'bg-secondary/5' : '',
+				: (day?.isToday ? 'rounded-xl border border-brand/50' : 'rounded-xl border border-default'),
+			compact && day?.isToday ? 'bg-brand/5' : '',
 		]"
 	>
 		<template v-if="loading">
@@ -112,7 +112,7 @@ async function removeException(rule: AvailabilityRule) {
 			>
 				<p
 					class="w-full truncate text-center text-xs font-semibold uppercase tracking-wide text-muted"
-					:class="day.isToday ? 'text-secondary' : ''"
+					:class="day.isToday ? 'text-brand' : ''"
 				>
 					{{ formatAgendaDayHeader(day.date, intlLocale) }}
 				</p>
@@ -138,7 +138,7 @@ async function removeException(rule: AvailabilityRule) {
 
 				<UBadge
 					v-if="day.isToday"
-					color="secondary"
+					color="brand"
 					variant="subtle"
 					size="sm"
 					:label="t('dashboard.today')"

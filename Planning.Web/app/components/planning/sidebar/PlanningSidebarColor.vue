@@ -45,7 +45,7 @@ const isHovered = ref(false);
 					:key="c"
 					type="button"
 					class="size-5 rounded-full ring-2 ring-offset-2 transition-transform hover:scale-110 focus:outline-none"
-					:class="c === props.color ? 'ring-primary-500' : 'ring-transparent'"
+					:class="c === props.color ? 'ring-brand' : 'ring-transparent'"
 					:style="{ backgroundColor: c }"
 					:disabled="!canManage"
 					:aria-label="`${t('planning.color')} ${c}`"

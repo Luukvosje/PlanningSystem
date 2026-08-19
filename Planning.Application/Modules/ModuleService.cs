@@ -1,28 +1,26 @@
 using Planning.Application.Common;
 using Planning.Domain.Enums;
 using Planning.Domain.Modules;
-using Planning.Domain.Organizations;
 using Planning.Domain.Users;
 
 namespace Planning.Application.Modules;
 
-public class ModuleService : IModuleService
+public class ModuleService : TenantServiceBase, IModuleService
 {
     private static readonly AppModule[] AllModules =
         [AppModule.Planning, AppModule.Klant, AppModule.Beheer];
 
     private readonly IModuleRepository _moduleRepository;
     private readonly IUserRepository _userRepository;
-    private readonly ICurrentUserContext _currentUserContext;
 
     public ModuleService(
         IModuleRepository moduleRepository,
         IUserRepository userRepository,
         ICurrentUserContext currentUserContext)
+        : base(currentUserContext)
     {
         _moduleRepository = moduleRepository;
         _userRepository = userRepository;
-        _currentUserContext = currentUserContext;
     }
 
     public async Task<IReadOnlyList<ModuleSettingResponse>> GetOrganizationModulesAsync(
@@ -39,6 +37,17 @@ public class ModuleService : IModuleService
     {
         var modules = await _moduleRepository.GetUserModulesAsync(userId, cancellationToken);
         return ToResponses(modules);
+    }
+
+    public async Task<IReadOnlyDictionary<Guid, IReadOnlyList<ModuleSettingResponse>>> GetUserModulesByUsersAsync(
+        IReadOnlyList<Guid> userIds,
+        CancellationToken cancellationToken = default)
+    {
+        var modulesByUser = await _moduleRepository.GetUserModulesByUsersAsync(userIds, cancellationToken);
+
+        return modulesByUser.ToDictionary(
+            entry => entry.Key,
+            entry => ToResponses(entry.Value));
     }
 
     public async Task<IReadOnlyList<ModuleSettingResponse>> GetEffectiveModulesAsync(
@@ -93,21 +102,16 @@ public class ModuleService : IModuleService
         UpdateModulesRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
-                "Organization context is required.",
-                "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<IReadOnlyList<ModuleSettingResponse>>();
         }
 
-        if (_currentUserContext.Role is not (UserRole.Owner or UserRole.Admin))
+        if (CurrentUser.Role is not (UserRole.Owner or UserRole.Admin))
         {
-            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
-                "Only owners and admins can update organization modules.",
-                "FORBIDDEN");
+            return Failures.ForbiddenFor<IReadOnlyList<ModuleSettingResponse>>("Only owners and admins can update organization modules.");
         }
 
-        var organizationId = _currentUserContext.OrganizationId!.Value;
         var updates = new Dictionary<AppModule, bool>(ToDictionary(request))
         {
             [AppModule.Beheer] = true,
@@ -124,28 +128,21 @@ public class ModuleService : IModuleService
         UpdateModulesRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
-                "Organization context is required.",
-                "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<IReadOnlyList<ModuleSettingResponse>>();
         }
 
-        if (_currentUserContext.Role is not (UserRole.Owner or UserRole.Admin))
+        if (CurrentUser.Role is not (UserRole.Owner or UserRole.Admin))
         {
-            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
-                "Only owners and admins can update user modules.",
-                "FORBIDDEN");
+            return Failures.ForbiddenFor<IReadOnlyList<ModuleSettingResponse>>("Only owners and admins can update user modules.");
         }
 
-        var organizationId = _currentUserContext.OrganizationId!.Value;
         var targetUser = await _userRepository.GetByIdAsync(userId, cancellationToken);
 
-        if (targetUser is null || targetUser.OrganizationId != organizationId)
+        if (targetUser is null || !Owns(targetUser))
         {
-            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
-                "User not found.",
-                "NOT_FOUND");
+            return Failures.NotFoundFor<IReadOnlyList<ModuleSettingResponse>>("User");
         }
 
         var orgModules = await _moduleRepository.GetOrganizationModulesAsync(organizationId, cancellationToken);
@@ -167,7 +164,7 @@ public class ModuleService : IModuleService
                 {
                     return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
                         $"Module '{module}' is disabled at organization level.",
-                        "VALIDATION_ERROR");
+                        Failures.Validation);
                 }
 
                 updates[module] = false;

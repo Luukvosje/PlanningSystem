@@ -1,24 +1,22 @@
 using Planning.Application.Common;
 using Planning.Application.Modules;
 using Planning.Domain.Enums;
-using Planning.Domain.Organizations;
 using Planning.Domain.Users;
 
 namespace Planning.Application.Users;
 
-public class UserService : IUserService
+public class UserService : TenantServiceBase, IUserService
 {
     private readonly IUserRepository _userRepository;
-    private readonly ICurrentUserContext _currentUserContext;
     private readonly IModuleService _moduleService;
 
     public UserService(
         IUserRepository userRepository,
         ICurrentUserContext currentUserContext,
         IModuleService moduleService)
+        : base(currentUserContext)
     {
         _userRepository = userRepository;
-        _currentUserContext = currentUserContext;
         _moduleService = moduleService;
     }
 
@@ -26,16 +24,16 @@ public class UserService : IUserService
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!CurrentUser.HasOrganization)
         {
-            return Result<UserResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<UserResponse>();
         }
 
         var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
-        if (user is null || user.OrganizationId != _currentUserContext.OrganizationId)
+        if (user is null || !Owns(user))
         {
-            return Result<UserResponse>.Failure("User not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<UserResponse>("User");
         }
 
         var modules = await _moduleService.GetUserModulesAsync(user.Id, cancellationToken);
@@ -45,23 +43,22 @@ public class UserService : IUserService
     public async Task<Result<IReadOnlyList<UserResponse>>> GetByOrganizationAsync(
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!TryGetOrganizationId(out var organizationId))
         {
-            return Result<IReadOnlyList<UserResponse>>.Failure(
-                "Organization context is required.",
-                "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<IReadOnlyList<UserResponse>>();
         }
 
-        var users = await _userRepository.GetByOrganizationIdAsync(
-            _currentUserContext.OrganizationId!.Value,
+        var users = await _userRepository.GetByOrganizationIdAsync(organizationId, cancellationToken);
+
+        var modulesByUser = await _moduleService.GetUserModulesByUsersAsync(
+            users.Select(x => x.Id).ToList(),
             cancellationToken);
 
-        var response = new List<UserResponse>();
-        foreach (var user in users)
-        {
-            var modules = await _moduleService.GetUserModulesAsync(user.Id, cancellationToken);
-            response.Add(UserMapper.ToResponse(user, modules));
-        }
+        var response = users
+            .Select(user => UserMapper.ToResponse(
+                user,
+                modulesByUser.GetValueOrDefault(user.Id, [])))
+            .ToList();
 
         return Result<IReadOnlyList<UserResponse>>.Success(response);
     }
@@ -71,40 +68,40 @@ public class UserService : IUserService
         UpdateUserRoleRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization || _currentUserContext.UserId is null)
+        if (!CurrentUser.HasOrganization || CurrentUser.UserId is null)
         {
-            return Result<UserResponse>.Failure("Organization context is required.", "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<UserResponse>();
         }
 
-        if (_currentUserContext.Role is not (UserRole.Owner or UserRole.Admin))
+        if (CurrentUser.Role is not (UserRole.Owner or UserRole.Admin))
         {
-            return Result<UserResponse>.Failure("Only owners and admins can change roles.", "FORBIDDEN");
+            return Failures.ForbiddenFor<UserResponse>("Only owners and admins can change roles.");
         }
 
         if (request.Role is UserRole.Owner)
         {
-            return Result<UserResponse>.Failure("Cannot assign the owner role.", "VALIDATION_ERROR");
+            return Result<UserResponse>.Failure("Cannot assign the owner role.", Failures.Validation);
         }
 
         var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
-        if (user is null || user.OrganizationId != _currentUserContext.OrganizationId)
+        if (user is null || !Owns(user))
         {
-            return Result<UserResponse>.Failure("User not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<UserResponse>("User");
         }
 
         if (user.Role is UserRole.Owner)
         {
-            return Result<UserResponse>.Failure("Cannot change the owner role.", "VALIDATION_ERROR");
+            return Result<UserResponse>.Failure("Cannot change the owner role.", Failures.Validation);
         }
 
-        if (user.Id == _currentUserContext.UserId
-            && _currentUserContext.Role is UserRole.Admin
+        if (user.Id == CurrentUser.UserId
+            && CurrentUser.Role is UserRole.Admin
             && request.Role is not UserRole.Admin)
         {
             return Result<UserResponse>.Failure(
                 "You cannot remove your own admin role.",
-                "VALIDATION_ERROR");
+                Failures.Validation);
         }
 
         user.ChangeRole(request.Role, DateTime.UtcNow);
@@ -119,18 +116,16 @@ public class UserService : IUserService
         UpdateModulesRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (!_currentUserContext.HasOrganization)
+        if (!CurrentUser.HasOrganization)
         {
-            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure(
-                "Organization context is required.",
-                "NO_ORGANIZATION");
+            return Failures.NoOrganizationContext<IReadOnlyList<ModuleSettingResponse>>();
         }
 
         var user = await _userRepository.GetByIdAsync(id, cancellationToken);
 
-        if (user is null || user.OrganizationId != _currentUserContext.OrganizationId)
+        if (user is null || !Owns(user))
         {
-            return Result<IReadOnlyList<ModuleSettingResponse>>.Failure("User not found.", "NOT_FOUND");
+            return Failures.NotFoundFor<IReadOnlyList<ModuleSettingResponse>>("User");
         }
 
         return await _moduleService.UpdateUserModulesAsync(id, request, cancellationToken);
