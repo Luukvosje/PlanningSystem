@@ -108,27 +108,10 @@ async function onDelete() {
 						>
 							<component
 								:is="customerForm.render"
-							>
-								<template #footer>
-									<div class="flex items-center justify-end gap-2 pt-4">
-										<UButton
-											type="button"
-											variant="outline"
-											color="neutral"
-											:disabled="customerForm.isSubmitting.value"
-											@click="cancelEdit"
-										>
-											{{ t('common.actions.cancel') }}
-										</UButton>
-										<UButton
-											type="submit"
-											:loading="customerForm.isSubmitting.value"
-										>
-											{{ t('common.actions.save') }}
-										</UButton>
-									</div>
-								</template>
-							</component>
+							/>
+							<component
+								:is="customerForm.renderFooter"
+							/>
 						</template>
 					</CustomerDetails>
 
