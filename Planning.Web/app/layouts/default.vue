@@ -372,11 +372,13 @@ const userMenuContent = computed(() => ({
 				/>
 				<UIcon
 					:name="pageIcon"
-					class="size-5 text-brand max-lg:size-4"
+					class="size-5 shrink-0 text-brand max-lg:size-4"
 				/>
-				<h1 class="min-w-0 truncate font-semibold text-highlighted max-lg:text-sm">
-					{{ pageTitle }}
-				</h1>
+				<slot name="title">
+					<h1 class="min-w-0 truncate font-semibold text-highlighted max-lg:text-sm">
+						{{ pageTitle }}
+					</h1>
+				</slot>
 
 				<div class="ms-auto flex min-w-0 items-center justify-end gap-2 max-lg:gap-1.5">
 					<slot name="actions" />

@@ -51,14 +51,14 @@ const passThroughSlots = computed(() =>
 </script>
 
 <template>
-	<div class="min-h-0 flex-1 overflow-hidden rounded-lg border border-default">
+	<div class="min-h-0 flex-1 overflow-hidden ">
 		<UTable
 			v-model:global-filter="search"
 			:data="rows ?? []"
 			:columns="columns"
 			:global-filter-options="filterOptions"
 			sticky
-			class="h-full"
+			class="h-full border border-default rounded-lg"
 			:ui="selectable ? { tr: 'data-[selectable=true]:cursor-pointer' } : undefined"
 			@select="onSelect"
 		>

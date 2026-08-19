@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { BreadcrumbItem } from '@nuxt/ui';
 import { useQueryClient } from '@tanstack/vue-query';
 import { queryKeys } from '~/utils/queryKeys';
 
-definePageMeta({ layout: 'default' });
+definePageMeta({ layout: false });
 
 const route = useRoute();
 const router = useRouter();
@@ -25,6 +26,11 @@ onMounted(async () => {
 });
 
 const { data: customer, isLoading, error } = useCustomer(id);
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
+  { label: t('nav.customers'), to: '/customers' },
+  { label: customer.value?.name ?? t('common.loading') },
+]);
+
 const showDeleteModal = ref(false);
 const isDeleting = ref(false);
 
@@ -48,57 +54,52 @@ async function onDelete() {
 </script>
 
 <template>
-	<LayoutPageContainer>
-		<LayoutPageHeader>
-			<UButton
-				to="/customers"
-				variant="ghost"
-				color="neutral"
-				icon="i-lucide-arrow-left"
-			>
-				{{ t('customers.backToList') }}
-			</UButton>
+	<NuxtLayout name="default">
+		<template #title>
+			<UBreadcrumb :items="breadcrumbs" />
+		</template>
 
-			<template
-				v-if="canManage && customer"
-				#actions
-			>
-				<UButton
-					variant="outline"
-					color="neutral"
-					icon="i-lucide-pencil"
-					@click="customerEdit.open(customer)"
-				>
-					{{ t('common.actions.edit') }}
-				</UButton>
-				<UButton
-					variant="outline"
-					color="error"
-					icon="i-lucide-trash-2"
-					@click="() => { showDeleteModal = true }"
-				>
-					{{ t('common.actions.delete') }}
-				</UButton>
-			</template>
-		</LayoutPageHeader>
-
-		<UiQueryState
-			:error="error"
-			:loading="isLoading"
-			:loading-label="t('customers.loadingOne')"
+		<template
+			v-if="canManage && customer"
+			#actions
 		>
-			<template v-if="customer">
-				<CustomerCard :customer="customer" />
+			<UButton
+				variant="outline"
+				color="neutral"
+				icon="i-lucide-pencil"
+				@click="customerEdit.open(customer)"
+			>
+				{{ t('common.actions.edit') }}
+			</UButton>
+			<UButton
+				variant="outline"
+				color="error"
+				icon="i-lucide-trash-2"
+				@click="() => { showDeleteModal = true }"
+			>
+				{{ t('common.actions.delete') }}
+			</UButton>
+		</template>
 
-				<UiConfirmModal
-					v-model:open="showDeleteModal"
-					:title="t('customers.deleteTitle')"
-					:description="t('customers.deleteDescription')"
-					:confirm-label="t('common.actions.delete')"
-					:loading="isDeleting"
-					@confirm="onDelete"
-				/>
-			</template>
-		</UiQueryState>
-	</LayoutPageContainer>
+		<LayoutPageContainer>
+			<UiQueryState
+				:error="error"
+				:loading="isLoading"
+				:loading-label="t('customers.loadingOne')"
+			>
+				<template v-if="customer">
+					<CustomerCard :customer="customer" />
+
+					<UiConfirmModal
+						v-model:open="showDeleteModal"
+						:title="t('customers.deleteTitle')"
+						:description="t('customers.deleteDescription')"
+						:confirm-label="t('common.actions.delete')"
+						:loading="isDeleting"
+						@confirm="onDelete"
+					/>
+				</template>
+			</UiQueryState>
+		</LayoutPageContainer>
+	</NuxtLayout>
 </template>

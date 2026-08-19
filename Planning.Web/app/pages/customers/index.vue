@@ -2,7 +2,7 @@
 import type { TableColumn } from '@nuxt/ui';
 import type { CustomerResponse } from '~/generated/models';
 
-definePageMeta({ layout: 'default' });
+definePageMeta({ layout: false });
 
 const auth = useAuthStore();
 const customerCreate = useCustomerCreate();
@@ -58,56 +58,51 @@ function openCustomer(customer: CustomerResponse) {
 </script>
 
 <template>
-	<LayoutPageContainer fill>
-		<LayoutPageHeader
-			class="shrink-0"
-			:subtitle="auth.currentUser?.organizationName"
-		>
-			<template
+	<NuxtLayout name="default">
+		<template #actions>
+			<UButton
 				v-if="canManage"
-				#actions
+				icon="i-lucide-plus"
+				@click="customerCreate.open()"
 			>
-				<UButton
-					icon="i-lucide-plus"
-					@click="customerCreate.open()"
-				>
-					{{ t('customers.create.title') }}
-				</UButton>
-			</template>
-		</LayoutPageHeader>
+				{{ t('customers.create.title') }}
+			</UButton>
+		</template>
 
-		<UiQueryState
-			:error="error"
-			:loading="isLoading"
-			:loading-label="t('customers.loading')"
-		>
-			<div class="flex min-h-0 flex-1 flex-col gap-4">
-				<UInput
-					v-model="globalFilter"
-					icon="i-lucide-search"
-					:placeholder="t('customers.searchPlaceholder')"
-					class="max-w-md shrink-0"
-				/>
+		<LayoutPageContainer fill>
+			<UiQueryState
+				:error="error"
+				:loading="isLoading"
+				:loading-label="t('customers.loading')"
+			>
+				<div class="flex min-h-0 flex-1 flex-col gap-4">
+					<UInput
+						v-model="globalFilter"
+						icon="i-lucide-search"
+						:placeholder="t('customers.searchPlaceholder')"
+						class="max-w-md shrink-0"
+					/>
 
-				<UiDataTable
-					v-model:search="globalFilter"
-					:rows="customers"
-					:columns="columns"
-					:filter-fn="matchesCustomerFilter"
-					:empty-title="canManage ? t('customers.emptyManage') : t('customers.empty')"
-					:no-results-title="t('customers.noResults')"
-					@select="openCustomer"
-				>
-					<template #empty-action>
-						<UButton
-							v-if="canManage"
-							@click="customerCreate.open()"
-						>
-							{{ t('customers.add') }}
-						</UButton>
-					</template>
-				</UiDataTable>
-			</div>
-		</UiQueryState>
-	</LayoutPageContainer>
+					<UiDataTable
+						v-model:search="globalFilter"
+						:rows="customers"
+						:columns="columns"
+						:filter-fn="matchesCustomerFilter"
+						:empty-title="canManage ? t('customers.emptyManage') : t('customers.empty')"
+						:no-results-title="t('customers.noResults')"
+						@select="openCustomer"
+					>
+						<template #empty-action>
+							<UButton
+								v-if="canManage"
+								@click="customerCreate.open()"
+							>
+								{{ t('customers.add') }}
+							</UButton>
+						</template>
+					</UiDataTable>
+				</div>
+			</UiQueryState>
+		</LayoutPageContainer>
+	</NuxtLayout>
 </template>

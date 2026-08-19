@@ -1,35 +1,37 @@
 <script setup lang="ts">
-definePageMeta({ layout: 'default' });
+import type { BreadcrumbItem } from '@nuxt/ui';
+
+definePageMeta({ layout: false });
 
 const route = useRoute();
 const id = computed(() => route.params.id as string);
 
 const { data: user, isLoading, error } = useUser(id);
 const { t } = useI18n();
+
+const breadcrumbs = computed<BreadcrumbItem[]>(() => [
+  { label: t('nav.team'), to: '/users' },
+  { label: user.value ? `${user.value.firstName} ${user.value.lastName}` : t('common.loading') },
+]);
 </script>
 
 <template>
-	<LayoutPageContainer>
-		<LayoutPageHeader>
-			<UButton
-				to="/users"
-				variant="ghost"
-				color="neutral"
-				icon="i-lucide-arrow-left"
-			>
-				{{ t('users.backToList') }}
-			</UButton>
-		</LayoutPageHeader>
+	<NuxtLayout name="default">
+		<template #title>
+			<UBreadcrumb :items="breadcrumbs" />
+		</template>
 
-		<UiQueryState
-			:error="error"
-			:loading="isLoading"
-			:loading-label="t('users.loadingOne')"
-		>
-			<UsersCard
-				v-if="user"
-				:user="user"
-			/>
-		</UiQueryState>
-	</LayoutPageContainer>
+		<LayoutPageContainer>
+			<UiQueryState
+				:error="error"
+				:loading="isLoading"
+				:loading-label="t('users.loadingOne')"
+			>
+				<UsersCard
+					v-if="user"
+					:user="user"
+				/>
+			</UiQueryState>
+		</LayoutPageContainer>
+	</NuxtLayout>
 </template>
