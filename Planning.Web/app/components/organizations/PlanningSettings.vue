@@ -91,8 +91,7 @@ return;
 </script>
 
 <template>
-	<LayoutCard
-		fill
+	<LayoutSection
 		:title="t('organizations.planningSettings.title')"
 		:description="t('organizations.planningSettings.description')"
 	>
@@ -104,10 +103,10 @@ return;
 		<component
 			:is="form.render"
 			v-else
-		/>
-
-		<template #footer>
-			<component :is="form.renderFooter" />
-		</template>
-	</LayoutCard>
+		>
+			<template #footer>
+				<component :is="form.renderFooter" />
+			</template>
+		</component>
+	</LayoutSection>
 </template>

@@ -73,8 +73,8 @@ watch(
 
 <template>
 	<LayoutPageContainer>
-		<LayoutPageHeader
-			:subtitle="t('settings.description')"
+		<LayoutSectionHeader
+			:description="t('settings.description')"
 		/>
 
 		<UiQueryState
@@ -82,10 +82,7 @@ watch(
 			:loading="profileLoading && !auth.currentUser"
 			:loading-label="t('settings.loadingProfile')"
 		>
-			<LayoutCard
-				class="overflow-visible"
-				:title="t('settings.profile')"
-			>
+			<LayoutSection :title="t('settings.profile')">
 				<component :is="profileForm.render">
 					<template #control-firstName="{ form }">
 						<div class="grid grid-cols-2 gap-4">
@@ -115,14 +112,13 @@ watch(
 							</UFormField>
 						</div>
 					</template>
+					<template #footer>
+						<component :is="profileForm.renderFooter" />
+					</template>
 				</component>
-
-				<template #footer>
-					<component :is="profileForm.renderFooter" />
-				</template>
-			</LayoutCard>
+			</LayoutSection>
 		</UiQueryState>
 
-		<AvailabilityWeeklyPatternCard v-if="showAvailabilityPattern" />
+		<AvailabilityWeeklyPattern v-if="showAvailabilityPattern" />
 	</LayoutPageContainer>
 </template>

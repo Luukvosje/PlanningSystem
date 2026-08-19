@@ -27,7 +27,7 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 				:loading="isLoading"
 				:loading-label="t('users.loadingOne')"
 			>
-				<UsersCard
+				<UsersDetails
 					v-if="user"
 					:user="user"
 				/>

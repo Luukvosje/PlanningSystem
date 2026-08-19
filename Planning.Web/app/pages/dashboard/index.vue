@@ -16,8 +16,8 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 
 <template>
 	<LayoutPageContainer>
-		<LayoutPageHeader
-			:subtitle="t('dashboard.overview', { organization: organizationName })"
+		<LayoutSectionHeader
+			:description="t('dashboard.overview', { organization: organizationName })"
 		/>
 
 		<div class="flex flex-col gap-6">

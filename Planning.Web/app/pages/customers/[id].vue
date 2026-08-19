@@ -101,36 +101,36 @@ async function onDelete() {
 				:loading-label="t('customers.loadingOne')"
 			>
 				<template v-if="customer">
-						<CustomerCard :customer="customer">
-							<template
-								v-if="isEditing"
-								#default
+					<CustomerDetails :customer="customer">
+						<template
+							v-if="isEditing"
+							#default
+						>
+							<component
+								:is="customerForm.render"
 							>
-								<component
-									:is="customerForm.render"
-								>
-									<template #footer>
-										<div class="flex items-center justify-end gap-2 pt-4">
-											<UButton
-												type="button"
-												variant="outline"
-												color="neutral"
-												:disabled="customerForm.isSubmitting.value"
-												@click="cancelEdit"
-											>
-												{{ t('common.actions.cancel') }}
-											</UButton>
-											<UButton
-												type="submit"
-												:loading="customerForm.isSubmitting.value"
-											>
-												{{ t('common.actions.save') }}
-											</UButton>
-										</div>
-									</template>
-								</component>
-							</template>
-						</CustomerCard>
+								<template #footer>
+									<div class="flex items-center justify-end gap-2 pt-4">
+										<UButton
+											type="button"
+											variant="outline"
+											color="neutral"
+											:disabled="customerForm.isSubmitting.value"
+											@click="cancelEdit"
+										>
+											{{ t('common.actions.cancel') }}
+										</UButton>
+										<UButton
+											type="submit"
+											:loading="customerForm.isSubmitting.value"
+										>
+											{{ t('common.actions.save') }}
+										</UButton>
+									</div>
+								</template>
+							</component>
+						</template>
+					</CustomerDetails>
 
 					<UiConfirmModal
 						v-model:open="showDeleteModal"

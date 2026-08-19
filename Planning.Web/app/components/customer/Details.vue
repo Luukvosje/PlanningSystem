@@ -9,24 +9,16 @@ const { t } = useI18n();
 </script>
 
 <template>
-	<div class="flex flex-col gap-2">
-
-		<LayoutPageHeader
-			:title="customer.name"
-			:subtitle="customer.email"
-		/>
-	
+	<LayoutSection
+		:title="customer.name"
+		:description="customer.email"
+	>
 		<slot>
-			<dl class="space-y-3 text-sm">
+			<dl
+				v-if="customer.address"
+				class="space-y-3 text-sm"
+			>
 				<div>
-					<dt class="text-muted">
-						{{ t('customers.fields.email') }}
-					</dt>
-					<dd class="font-medium">
-						{{ customer.email }}
-					</dd>
-				</div>
-				<div v-if="customer.address">
 					<dt class="text-muted">
 						{{ t('customers.fields.address') }}
 					</dt>
@@ -36,5 +28,5 @@ const { t } = useI18n();
 				</div>
 			</dl>
 		</slot>
-	</div>
+	</LayoutSection>
 </template>

@@ -44,7 +44,7 @@ async function onFileSelected(event: Event) {
 </script>
 
 <template>
-	<LayoutCard :title="t('organizations.logo.title')">
+	<LayoutSection :title="t('organizations.logo.title')">
 		<div class="flex items-center gap-4">
 			<div
 				class="flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-default bg-elevated"
@@ -84,5 +84,5 @@ async function onFileSelected(event: Event) {
 				/>
 			</div>
 		</div>
-	</LayoutCard>
+	</LayoutSection>
 </template>
