@@ -4,6 +4,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const auth = useAuthStore();
   const queryClient = useQueryClient();
 
+  // Entering the site validates the session against /me first (with a silent
+  // token refresh behind it), so every decision below runs on a session that
+  // is known to work instead of on mere cookie presence.
+  await ensureSession(auth, queryClient);
+
   const publicRoutes = new Set(['/', '/login', '/register', '/join']);
   const bootstrapRoutes = new Set([
     '/organizations/new',

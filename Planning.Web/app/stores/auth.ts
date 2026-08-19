@@ -31,7 +31,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   const currentUser = ref<CurrentUserResponse | null>(null)
 
-  const isAuthenticated = computed(() => !!accessToken.value || !!refreshToken.value)
+  // Deliberately not `accessToken || refreshToken`: an access token that cannot
+  // be renewed is a session that will die mid-navigation. No refresh cookie
+  // means logged out, everywhere.
+  const isAuthenticated = computed(() => !!refreshToken.value)
 
   const hasOrganization = computed(() => !!organizationId.value)
 
