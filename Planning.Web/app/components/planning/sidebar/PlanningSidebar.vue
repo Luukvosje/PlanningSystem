@@ -341,7 +341,7 @@ return;
 							v-model:end="rangeEnd"
 							:disabled="!canManage"
 						/>
-						<DateTimeRangePicker
+						<ControlsDateTimeRangePicker
 							v-model:start="rangeStart"
 							v-model:end="rangeEnd"
 							:disabled="!canManage"

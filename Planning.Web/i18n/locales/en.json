@@ -170,6 +170,7 @@
     "deleted": "Customer deleted",
     "deleteTitle": "Delete customer",
     "deleteDescription": "Are you sure you want to delete this customer? This action cannot be undone.",
+    "details": "Details",
     "fields": {
       "name": "Name",
       "email": "Email",

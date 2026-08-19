@@ -256,7 +256,7 @@ const userMenuContent = computed(() => ({
 						</NuxtLink>
 					</div>
 
-					<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+					<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2">
 						<UNavigationMenu
 							:items="navigationItems"
 							orientation="vertical"
@@ -268,7 +268,7 @@ const userMenuContent = computed(() => ({
 					</div>
 
 					<div class="flex shrink-0 flex-col gap-3 p-4">
-						<ColorModeSwitch />
+						<ControlsColorModeSwitch />
 
 						<USelect
 							v-if="organizationOptions.length > 0"
@@ -327,7 +327,7 @@ const userMenuContent = computed(() => ({
 			</template>
 
 			<template #footer>
-				<ColorModeSwitch />
+				<ControlsColorModeSwitch />
 
 				<USelect
 					v-if="organizationOptions.length > 0"

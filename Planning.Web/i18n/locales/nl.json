@@ -170,6 +170,7 @@
     "deleted": "Klant verwijderd",
     "deleteTitle": "Klant verwijderen",
     "deleteDescription": "Weet je zeker dat je deze klant wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "details": "Gegevens",
     "fields": {
       "name": "Naam",
       "email": "E-mail",

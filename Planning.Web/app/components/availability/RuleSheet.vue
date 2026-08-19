@@ -181,10 +181,9 @@ async function save() {
 					:label="t('availability.date')"
 					required
 				>
-					<UInput
+					<ControlsDateSelectInput
 						v-model="date"
-						type="date"
-						class="w-full"
+						:disabled="isSaving"
 					/>
 				</UFormField>
 

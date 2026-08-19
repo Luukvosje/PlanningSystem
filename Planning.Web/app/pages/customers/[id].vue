@@ -13,7 +13,6 @@ const auth = useAuthStore();
 const customersApi = useCustomersApi();
 const queryClient = useQueryClient();
 const toast = useToast();
-const customerEdit = useCustomerEdit();
 const canManage = computed(() => canManageCustomers(auth.currentUser?.role));
 const { t } = useI18n();
 
@@ -26,10 +25,23 @@ onMounted(async () => {
 });
 
 const { data: customer, isLoading, error } = useCustomer(id);
+
 const breadcrumbs = computed<BreadcrumbItem[]>(() => [
   { label: t('nav.customers'), to: '/customers' },
   { label: customer.value?.name ?? t('common.loading') },
 ]);
+
+const isEditing = ref(false);
+const customerForm = useCustomerForm(customer, {
+  onSaved: () => {
+    isEditing.value = false;
+  },
+});
+
+function cancelEdit() {
+  customerForm.discard();
+  isEditing.value = false;
+}
 
 const showDeleteModal = ref(false);
 const isDeleting = ref(false);
@@ -64,10 +76,11 @@ async function onDelete() {
 			#actions
 		>
 			<UButton
+				v-if="!isEditing"
 				variant="outline"
 				color="neutral"
 				icon="i-lucide-pencil"
-				@click="customerEdit.open(customer)"
+				@click="() => { isEditing = true }"
 			>
 				{{ t('common.actions.edit') }}
 			</UButton>
@@ -88,7 +101,36 @@ async function onDelete() {
 				:loading-label="t('customers.loadingOne')"
 			>
 				<template v-if="customer">
-					<CustomerCard :customer="customer" />
+						<CustomerCard :customer="customer">
+							<template
+								v-if="isEditing"
+								#default
+							>
+								<component
+									:is="customerForm.render"
+								>
+									<template #footer>
+										<div class="flex items-center justify-end gap-2 pt-4">
+											<UButton
+												type="button"
+												variant="outline"
+												color="neutral"
+												:disabled="customerForm.isSubmitting.value"
+												@click="cancelEdit"
+											>
+												{{ t('common.actions.cancel') }}
+											</UButton>
+											<UButton
+												type="submit"
+												:loading="customerForm.isSubmitting.value"
+											>
+												{{ t('common.actions.save') }}
+											</UButton>
+										</div>
+									</template>
+								</component>
+							</template>
+						</CustomerCard>
 
 					<UiConfirmModal
 						v-model:open="showDeleteModal"
