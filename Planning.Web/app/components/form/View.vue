@@ -34,7 +34,7 @@ function setFormRef(instance: Element | ComponentPublicInstance | null) {
 		:state="form.state"
 		:validate-on="form.validateOn"
 		:loading-auto="false"
-		:class="form.grid ? 'flex h-full min-h-0 flex-1 flex-col' : 'flex flex-col gap-3'"
+		:class="['w-full', form.grid ? 'flex h-full min-h-0 flex-1 flex-col' : 'flex flex-col gap-3']"
 		@submit="form.handleSubmit"
 	>
 		<div :class="form.grid ? 'min-h-0 grow divide-y divide-default overflow-auto' : 'contents'">

@@ -10,7 +10,7 @@
 			>
 				Planning
 			</NuxtLink>
-			<ColorModeSwitch class="w-full max-w-xs" />
+			<ControlsColorModeSwitch class="w-full max-w-xs" />
 		</div>
 		<slot />
 	</div>

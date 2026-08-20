@@ -1,41 +1,9 @@
 <script setup lang="ts">
-import { useQueryClient } from '@tanstack/vue-query';
-import { createOrganizationSchema } from '~/schemas/organization.schema';
-
 definePageMeta({ layout: 'auth' });
 
 const FormView = resolveComponent('FormView');
-
-const auth = useAuthStore();
-const orgsApi = useOrganizationsApi();
-const router = useRouter();
-const queryClient = useQueryClient();
-const toast = useToast();
 const { t } = useI18n();
-
-const organizationSchema = createOrganizationSchema(t);
-
-const organizationForm = useForm({
-  schema: organizationSchema,
-  initialState: { name: '', email: '' },
-  controls: [
-    { name: 'name', label: t('organizations.fields.name'), type: 'input', required: true },
-    { name: 'email', label: t('organizations.fields.email'), type: 'email', required: true },
-  ],
-  submit: { label: t('organizations.create.title'), block: true },
-  onSubmit: async (data) => {
-    const response = await orgsApi.create(data);
-
-    if (response.organization?.id) {
-      auth.setOrganizationId(response.organization.id);
-    }
-    await auth.fetchMe();
-    await queryClient.invalidateQueries();
-
-    toast.add({ title: t('organizations.created'), color: 'success' });
-    await router.push('/users');
-  },
-});
+const organizationForm = useCreateOrganizationForm();
 </script>
 
 <template>

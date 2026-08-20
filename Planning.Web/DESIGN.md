@@ -5,7 +5,7 @@ is de maatstaf: dat is het scherm waar het meeste denkwerk in zit, en de rest is
 getrokken. Wijk je hiervan af, pas dan dit document aan — een spec die de code tegenspreekt is
 erger dan geen spec.
 
-## De acht regels
+## De negen regels
 
 1. **Semantische tokens, bijna dogmatisch.** `bg-default` / `bg-muted` / `bg-elevated`,
    `text-default` / `text-muted` / `text-dimmed` / `text-highlighted`, `border-default`.
@@ -37,6 +37,11 @@ erger dan geen spec.
    uit `nuxt.config.ts`. Icon-only knoppen krijgen altijd een `aria-label`.
 8. **Nauwelijks animatie.** Een handvol `transition-colors`/`transition-shadow`, geen
    `duration-*` of `ease-*`. Tijdens slepen wordt de transitie bewust uitgezet.
+9. **Geen kaarten binnen een pagina.** De content-area van de app-shell is al een omrande,
+   afgeronde panel. Een `LayoutCard` daarbinnen is een doos in een doos: twee randen, twee radii,
+   dubbele padding, zonder dat er iets extra's gegroepeerd wordt. Blokken op een pagina scheid je
+   met een `LayoutSection` — kop, omschrijving, `gap-6` ertussen. `LayoutCard` blijft alleen voor
+   wat écht op zichzelf zweeft: de auth-schermen en de dashboard-tegels.
 
 ## Kleur
 
@@ -68,6 +73,68 @@ Twee schalen, bewust verschillend:
 Een tijdlijn scan je, een formulier vul je in. Beheer is daarom iets ruimer, maar gebruikt
 dezelfde tokens en hetzelfde kop-recept (`text-xs font-semibold uppercase tracking-wide text-muted`).
 
+## Pagina-anatomie
+
+De app-chrome (`layouts/default.vue`) is de enige plek met een paginakop. Een pagina rendert
+daarin via slots en zet er geen tweede balk onder.
+
+| Slot | Wat erin gaat |
+|---|---|
+| `#title` | alleen als de standaardtitel niet klopt — op detailpagina's een `UBreadcrumb` |
+| `#actions` | de acties van de pagina: aanmaken, verwijderen, periodenavigatie |
+
+Een pagina die een slot vult zet `definePageMeta({ layout: false })` en wikkelt zichzelf in
+`<NuxtLayout name="default">`. Pagina's zonder acties laten dat achterwege en houden de
+standaardkop.
+
+### Lijstpagina
+
+`UiDataTable` in een `LayoutPageContainer fill`, zoekveld erboven, de primaire actie
+("Klant toevoegen") in `#actions` achter een rechtencheck. Een rij klikt door naar de detailpagina.
+
+### Detailpagina
+
+- **Titel is een kruimelpad**: `Klanten › Acme B.V.`, waarvan alleen de eerste kruimel klikbaar
+  is. Tijdens het laden staat er `Laden...` in plaats van een lege kruimel. Geen losse
+  terug-knop — dat is wat het kruimelpad al doet.
+- **Je ziet altijd dezelfde sectie.** De detailpagina opent in leesweergave. `Bewerken` staat in
+  `#actions` en wisselt de inhoud van diezelfde sectie om naar het formulier — de kop met de naam
+  blijft staan, de pagina springt niet. Opslaan of annuleren brengt je terug naar de leesweergave.
+  Geen bewerk-modal: die verbergt de context die je net aan het lezen was.
+- Een detailcomponent (`components/customer/Details.vue`) geeft daarvoor een default slot met de
+  leesweergave als fallback. De pagina vult dat slot alleen tijdens het bewerken.
+- **Zonder beheerrechten** verschijnt de `Bewerken`-knop niet en blijft het bij lezen. Een
+  invoerveld tonen dat bij opslaan een 403 oplevert is erger dan het veld niet tonen.
+- **Verwijderen** staat in `#actions` en gaat via `UiConfirmModal`, niet in het formulier.
+- Meerdere kaarten naast elkaar in een `grid grid-cols-1 gap-6 lg:grid-cols-2`.
+
+Dit geldt voor elke entiteit met een detailpagina — klanten, gebruikers, en wat er nog bij komt.
+Modals blijven over voor **aanmaken** (`useCreate`), waar nog geen record is om naartoe te
+navigeren.
+
+### Formulieren
+
+**Een `useForm(...)`-definitie staat nooit in een `.vue`-bestand.** Elk formulier krijgt een
+composable in `app/composables/forms/use<Iets>Form.ts` die het schema, de controls, `onSubmit`
+en het spiegelen van server-data naar `form.state` bevat en de `Form` teruggeeft. De pagina
+roept die composable aan en beslist alleen nog *wanneer* het formulier zichtbaar is.
+
+```ts
+const form = useCustomerForm(customer, { onSaved: () => { isEditing.value = false } })
+```
+
+Wat er in die composable hoort: het schema, de controls, `onSubmit` inclusief cache-invalidatie,
+toasts en navigatie, en het spiegelen van server-data naar `form.state`. Wat de pagina houdt:
+laadstatus, rechten, en de vraag wanneer het formulier zichtbaar is. Alle formulieren staan er —
+zie `app/composables/forms/`.
+
+Zo blijft een pagina leesbaar als een pagina: data laden, staat kiezen, renderen. `grid: true`
+levert de label-links/veld-rechts opmaak en de route-leave-guard.
+
+De knoppen horen in de **`#footer`-slot van `form.render`**, niet in een slot van de omliggende
+container. Alleen daar staan ze binnen het `<form>`-element, en alleen daar doet `type="submit"`
+wat het belooft. Buiten het formulier is de opslaan-knop een knop die nergens op aangesloten is.
+
 ## Gedeelde bouwstenen
 
 Gebruik deze in plaats van het patroon opnieuw te schrijven:
@@ -75,8 +142,9 @@ Gebruik deze in plaats van het patroon opnieuw te schrijven:
 | Component | Waarvoor |
 |---|---|
 | `LayoutPageContainer` | paginawrapper, `gap-6`-ritme |
-| `LayoutPageHeader` | balk boven de content: context links, acties rechts. **Rendert geen titel** — die staat al in de chrome |
-| `LayoutCard` | kaart met kop, body en voettekst |
+| `LayoutSection` | blok binnen een pagina: kop, omschrijving, `#actions`, content. De standaard — zie regel 9 |
+| `LayoutSectionHeader` | alleen de kop van zo'n blok, of een losse omschrijving boven een pagina. **Rendert nooit de paginatitel** — die staat al in de chrome |
+| `LayoutCard` | alleen wat op zichzelf zweeft: auth-schermen, dashboard-tegels |
 | `UiDataTable` | lijstweergave met zoekfilter, lege staat en klikbare rijen |
 | `UiEmptyState` | "hier staat nog niets" |
 | `UiQueryState` | fout → laden → content, in die volgorde |

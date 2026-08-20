@@ -168,9 +168,9 @@
     "created": "Klant aangemaakt",
     "updated": "Klant bijgewerkt",
     "deleted": "Klant verwijderd",
-    "backToList": "Terug naar klanten",
     "deleteTitle": "Klant verwijderen",
     "deleteDescription": "Weet je zeker dat je deze klant wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "details": "Gegevens",
     "fields": {
       "name": "Naam",
       "email": "E-mail",
@@ -246,7 +246,6 @@
       "role": "Rol",
       "status": "Status"
     },
-    "backToList": "Terug naar team",
     "loadingOne": "Teamlid laden...",
     "modules": {
       "title": "Modules",

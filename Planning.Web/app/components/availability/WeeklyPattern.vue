@@ -35,7 +35,7 @@ async function removeRule(rule: AvailabilityRule) {
 </script>
 
 <template>
-	<LayoutCard
+	<LayoutSection
 		:title="t('availability.weeklyBlocks')"
 		:description="t('availability.weeklyBlocksDescription')"
 	>
@@ -79,5 +79,5 @@ async function removeRule(rule: AvailabilityRule) {
 			type="Weekly"
 			:rule="editingRule"
 		/>
-	</LayoutCard>
+	</LayoutSection>
 </template>

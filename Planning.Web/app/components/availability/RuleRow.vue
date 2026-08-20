@@ -18,8 +18,8 @@ const { t } = useI18n();
 </script>
 
 <template>
-	<div class="flex items-start justify-between gap-3 rounded-md border border-default px-3 py-2">
-		<div class="min-w-0">
+	<div class="flex items-center justify-between gap-3 rounded-md border border-default px-3 py-2">
+		<div class="min-w-0 ">
 			<p class="truncate text-sm font-medium">
 				{{ label }}
 			</p>

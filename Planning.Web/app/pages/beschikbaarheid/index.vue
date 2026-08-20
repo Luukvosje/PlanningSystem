@@ -26,7 +26,7 @@ const targetUserId = computed(() => {
 
 <template>
 	<LayoutPageContainer>
-		<LayoutPageHeader :subtitle="t('availability.pageDescription')" />
+		<LayoutSectionHeader :description="t('availability.pageDescription')" />
 
 		<AvailabilityRulesEditor
 			v-if="targetUserId"
