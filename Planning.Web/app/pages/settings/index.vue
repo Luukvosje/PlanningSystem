@@ -7,7 +7,7 @@ definePageMeta({ layout: 'default' });
 const { t } = useI18n();
 
 const auth = useAuthStore();
-const { isLoading: profileLoading, error: profileError } = useCurrentUser();
+const { data: currentUser, isLoading: profileLoading, error: profileError } = useCurrentUser();
 
 const showAvailabilityPattern = computed(() =>
   canAccessModule(AppModule.Planning, auth.currentUser?.modules),
@@ -15,7 +15,10 @@ const showAvailabilityPattern = computed(() =>
 
 onMounted(() => auth.fetchMe());
 
-const profileForm = useProfileForm();
+const profileEdit = useProfileEdit();
+const profileControls = profileEdit.form.controls;
+const profile = computed(() => currentUser.value ?? auth.currentUser);
+const profileValues = computed(() => profile.value ? profileEdit.toState(profile.value) : {});
 </script>
 
 <template>
@@ -30,39 +33,25 @@ const profileForm = useProfileForm();
 			:loading-label="t('settings.loadingProfile')"
 		>
 			<LayoutSection :title="t('settings.profile')">
-				<component :is="profileForm.render">
-					<template #control-firstName="{ form }">
-						<div class="grid grid-cols-2 gap-4">
-							<UFormField
-								:label="t('auth.firstName')"
-								name="firstName"
-								required
-							>
-								<UInput
-									v-model="form.state.firstName"
-									autocomplete="given-name"
-									class="w-full"
-									:disabled="form.isSubmitting.value"
-								/>
-							</UFormField>
-							<UFormField
-								:label="t('auth.lastName')"
-								name="lastName"
-								required
-							>
-								<UInput
-									v-model="form.state.lastName"
-									autocomplete="family-name"
-									class="w-full"
-									:disabled="form.isSubmitting.value"
-								/>
-							</UFormField>
-						</div>
-					</template>
-					<template #footer>
-						<component :is="profileForm.renderFooter" />
-					</template>
-				</component>
+				<template
+					v-if="profile"
+					#actions
+				>
+					<UButton
+						variant="outline"
+						color="neutral"
+						icon="i-lucide-pencil"
+						size="sm"
+						@click="profileEdit.open(profile)"
+					>
+						{{ t('common.actions.edit') }}
+					</UButton>
+				</template>
+
+				<FormDisplay
+					:controls="profileControls"
+					:values="profileValues"
+				/>
 			</LayoutSection>
 		</UiQueryState>
 

@@ -14,7 +14,11 @@ onMounted(async () => {
   }
 });
 
-const organizationForm = useOrganizationSettingsForm();
+const organizationEdit = useOrganizationEdit();
+const organizationControls = organizationEdit.form.controls;
+const organizationValues = computed(() =>
+  organization.value ? organizationEdit.toState(organization.value) : {},
+);
 </script>
 
 <template>
@@ -36,11 +40,25 @@ const organizationForm = useOrganizationSettingsForm();
 					/>
 
 					<LayoutSection :title="t('organizations.details')">
-						<component :is="organizationForm.render">
-							<template #footer>
-								<component :is="organizationForm.renderFooter" />
-							</template>
-						</component>
+						<template
+							v-if="organization"
+							#actions
+						>
+							<UButton
+								variant="outline"
+								color="neutral"
+								icon="i-lucide-pencil"
+								size="sm"
+								@click="organizationEdit.open(organization)"
+							>
+								{{ t('common.actions.edit') }}
+							</UButton>
+						</template>
+
+						<FormDisplay
+							:controls="organizationControls"
+							:values="organizationValues"
+						/>
 					</LayoutSection>
 				</div>
 

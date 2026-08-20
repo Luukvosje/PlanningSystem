@@ -1,17 +1,17 @@
+import type { CurrentUserResponse } from '~/generated/models';
+import { useEdit } from '~/lib/form/useEdit';
 import { createUpdateProfileSchema } from '~/schemas/auth.schema';
 
-export function useProfileForm() {
-  const auth = useAuthStore();
+const PROFILE_EDIT_KEY = Symbol('profile-edit');
+
+export function useProfileEdit() {
   const { updateProfile } = useProfileApi();
   const { t } = useI18n();
 
-  const form = useForm({
+  return useEdit(PROFILE_EDIT_KEY, {
+    title: computed(() => t('settings.edit.title')),
+    description: computed(() => t('settings.edit.description')),
     schema: createUpdateProfileSchema(t),
-    initialState: {
-      firstName: auth.currentUser?.firstName ?? '',
-      lastName: auth.currentUser?.lastName ?? '',
-      email: auth.currentUser?.email ?? '',
-    },
     controls: computed(() => [
       {
         name: 'firstName',
@@ -25,7 +25,6 @@ export function useProfileForm() {
         label: t('auth.lastName'),
         type: 'input',
         required: true,
-        hidden: true,
         props: { autocomplete: 'family-name' },
       },
       {
@@ -36,26 +35,13 @@ export function useProfileForm() {
         props: { autocomplete: 'email' },
       },
     ]),
-    grid: true,
-    onSubmit: async (data) => {
+    toState: (user: CurrentUserResponse) => ({
+      firstName: user.firstName ?? '',
+      lastName: user.lastName ?? '',
+      email: user.email ?? '',
+    }),
+    onSubmit: async (_user, data) => {
       await updateProfile.mutateAsync(data);
     },
   });
-
-  watch(
-    () => auth.currentUser,
-    (user) => {
-      if (!user) {
-        return;
-      }
-
-      form.state.firstName = user.firstName ?? '';
-      form.state.lastName = user.lastName ?? '';
-      form.state.email = user.email ?? '';
-      form.markClean();
-    },
-    { immediate: true },
-  );
-
-  return form;
 }
