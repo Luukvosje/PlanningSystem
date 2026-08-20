@@ -31,17 +31,16 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
   { label: customer.value?.name ?? t('common.loading') },
 ]);
 
-const isEditing = ref(false);
-const customerForm = useCustomerForm(customer, {
-  onSaved: () => {
-    isEditing.value = false;
-  },
-});
-
-function cancelEdit() {
-  customerForm.discard();
-  isEditing.value = false;
-}
+// Placeholders: the numbers need an aggregate endpoint that doesn't exist yet.
+const statTiles = computed(() => [
+  { key: 'shiftsThisMonth', icon: 'i-lucide-calendar-check' },
+  { key: 'hoursThisMonth', icon: 'i-lucide-clock' },
+  { key: 'lastShift', icon: 'i-lucide-history' },
+  { key: 'activeEmployees', icon: 'i-lucide-users' },
+].map((tile) => ({
+  ...tile,
+  label: t(`customers.stats.${tile.key}`),
+})));
 
 const showDeleteModal = ref(false);
 const isDeleting = ref(false);
@@ -76,15 +75,6 @@ async function onDelete() {
 			#actions
 		>
 			<UButton
-				v-if="!isEditing"
-				variant="outline"
-				color="neutral"
-				icon="i-lucide-pencil"
-				@click="() => { isEditing = true }"
-			>
-				{{ t('common.actions.edit') }}
-			</UButton>
-			<UButton
 				variant="outline"
 				color="error"
 				icon="i-lucide-trash-2"
@@ -101,19 +91,25 @@ async function onDelete() {
 				:loading-label="t('customers.loadingOne')"
 			>
 				<template v-if="customer">
-					<CustomerDetails :customer="customer">
-						<template
-							v-if="isEditing"
-							#default
-						>
-							<component
-								:is="customerForm.render"
-							/>
-							<component
-								:is="customerForm.renderFooter"
-							/>
-						</template>
-					</CustomerDetails>
+					<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+						<UiStatTile
+							v-for="tile in statTiles"
+							:key="tile.key"
+							:label="tile.label"
+							:icon="tile.icon"
+							:placeholder="t('customers.stats.unavailable')"
+						/>
+					</div>
+
+					<LayoutSection :title="t('customers.trend.title')">
+						<UiEmptyState
+							icon="i-lucide-chart-line"
+							:title="t('customers.trend.empty')"
+							:description="t('customers.trend.emptyDescription')"
+						/>
+					</LayoutSection>
+
+					<CustomerDetails :customer="customer" />
 
 					<UiConfirmModal
 						v-model:open="showDeleteModal"

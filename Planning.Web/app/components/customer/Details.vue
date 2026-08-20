@@ -1,32 +1,40 @@
 <script setup lang="ts">
 import type { CustomerResponse } from '~/generated/models';
 
-defineProps<{
+const props = defineProps<{
   customer: CustomerResponse
 }>();
 
+const auth = useAuthStore();
+const canManage = computed(() => canManageCustomers(auth.currentUser?.role));
+const customerEdit = useCustomerEdit();
 const { t } = useI18n();
+
+// Same controls the edit modal renders, so a new field shows up in both without a second declaration.
+const controls = customerEdit.form.controls;
+const values = computed(() => customerEdit.toState(props.customer));
 </script>
 
 <template>
-	<LayoutSection
-		:title="customer.name"
-		:description="customer.email"
-	>
-		<slot>
-			<dl
-				v-if="customer.address"
-				class="space-y-3 text-sm"
+	<LayoutSection :title="t('customers.details')">
+		<template
+			v-if="canManage"
+			#actions
+		>
+			<UButton
+				variant="outline"
+				color="neutral"
+				icon="i-lucide-pencil"
+				size="sm"
+				@click="customerEdit.open(customer)"
 			>
-				<div>
-					<dt class="text-muted">
-						{{ t('customers.fields.address') }}
-					</dt>
-					<dd class="font-medium whitespace-pre-line">
-						{{ customer.address }}
-					</dd>
-				</div>
-			</dl>
-		</slot>
+				{{ t('common.actions.edit') }}
+			</UButton>
+		</template>
+
+		<FormDisplay
+			:controls="controls"
+			:values="values"
+		/>
 	</LayoutSection>
 </template>
