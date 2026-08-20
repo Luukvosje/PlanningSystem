@@ -42,6 +42,8 @@ export interface EditInstance<TSchema extends z.ZodType = z.ZodType, TEntity = u
   modalUi: ComputedRef<Record<string, unknown>>
   bodyExtra: ComputedRef<Component | undefined>
   extensions: ComputedRef<Record<string, Ref<unknown>>>
+  /** Exposed so a read-only view can render the exact values the form would be filled with. */
+  toState: (entity: TEntity) => Partial<z.infer<TSchema>>
   open: (entity: TEntity) => void
   close: () => void
 }
@@ -125,6 +127,7 @@ export function useEdit<TSchema extends z.ZodType, TEntity>(
     modalUi,
     bodyExtra,
     extensions,
+    toState: (value: TEntity) => optionsRef.value.toState(value),
     open,
     close,
   };

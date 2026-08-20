@@ -18,6 +18,11 @@ export interface BaseFormControl {
   description?: string
   /** Extra props passed to UFormField */
   fieldProps?: Record<string, unknown>
+  /**
+   * Overrides how the value reads in a read-only view (`FormDisplay`). Only needed when the raw
+   * value isn't presentable on its own — dates, amounts, enums. Ignored by `FormView`.
+   */
+  display?: (value: unknown) => string | null
 }
 
 export interface BuiltInFormControl extends BaseFormControl {
