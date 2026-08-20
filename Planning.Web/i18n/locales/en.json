@@ -1,6 +1,7 @@
 {
   "common": {
     "unknown": "Unknown",
+    "empty": "—",
     "account": "Account",
     "actions": {
       "save": "Save",
@@ -171,6 +172,18 @@
     "deleteTitle": "Delete customer",
     "deleteDescription": "Are you sure you want to delete this customer? This action cannot be undone.",
     "details": "Details",
+    "stats": {
+      "shiftsThisMonth": "Shifts this month",
+      "hoursThisMonth": "Hours this month",
+      "lastShift": "Last shift",
+      "activeEmployees": "Active employees",
+      "unavailable": "Not available yet"
+    },
+    "trend": {
+      "title": "Trend",
+      "empty": "No figures available yet",
+      "emptyDescription": "Once planning has been recorded for this customer, the trend appears here."
+    },
     "fields": {
       "name": "Name",
       "email": "Email",
@@ -337,6 +350,10 @@
     "loading": "Loading organization...",
     "details": "Details",
     "manageDescription": "Manage your organization's details.",
+    "edit": {
+      "title": "Edit organisation",
+      "description": "Change your organisation's details."
+    },
     "created": "Organization created",
     "invited": "Invited?",
     "fields": {
@@ -389,6 +406,10 @@
     "description": "Manage your personal details.",
     "loadingProfile": "Loading profile...",
     "profile": "Profile",
+    "edit": {
+      "title": "Edit profile",
+      "description": "Change your personal details."
+    },
     "toast": {
       "profileUpdated": "Profile updated"
     }
