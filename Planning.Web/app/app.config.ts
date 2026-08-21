@@ -13,7 +13,7 @@ export default defineAppConfig({
      */
     colors: {
       brand: 'teal',
-      neutral: 'slate',
+      neutral: 'olive',
     },
     icons: {
       light: 'i-lucide-sun',
