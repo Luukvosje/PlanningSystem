@@ -386,6 +386,13 @@ const userMenuContent = computed(() => ({
 			</div>
 
 			<div
+				v-if="$slots.tabs"
+				class="flex shrink-0 items-center border-b border-default px-4 max-lg:px-3"
+			>
+				<slot name="tabs" />
+			</div>
+
+			<div
 				class="flex min-h-0 flex-1 flex-col overflow-hidden"
 				:class="isEdgeAlignedPage ? 'p-0' : 'p-4 max-lg:p-3'"
 			>

@@ -22,10 +22,12 @@ export const queryKeys = {
       ['planning', 'range', start, end, filterKey] as const,
     detail: (id: string) => ['planning', 'detail', id] as const,
     nextShift: (userId?: string) => ['planning', 'nextShift', userId] as const,
+    forEntity: (kind: 'customer' | 'user', id: string, start?: string, end?: string) =>
+      ['planning', 'entity', kind, id, start, end] as const,
   },
   availability: {
     rules: (employeeId?: string) => ['availability', 'rules', employeeId] as const,
     planning: (start?: string, end?: string, employeeIds?: string) =>
       ['availability', 'planning', start, end, employeeIds] as const,
   },
-} as const
+} as const;

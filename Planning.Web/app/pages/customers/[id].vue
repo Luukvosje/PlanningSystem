@@ -31,16 +31,15 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
   { label: customer.value?.name ?? t('common.loading') },
 ]);
 
-// Placeholders: the numbers need an aggregate endpoint that doesn't exist yet.
-const statTiles = computed(() => [
-  { key: 'shiftsThisMonth', icon: 'i-lucide-calendar-check' },
-  { key: 'hoursThisMonth', icon: 'i-lucide-clock' },
-  { key: 'lastShift', icon: 'i-lucide-history' },
-  { key: 'activeEmployees', icon: 'i-lucide-users' },
-].map((tile) => ({
-  ...tile,
-  label: t(`customers.stats.${tile.key}`),
-})));
+const { tab, items: tabItems } = useEntityTabs(computed(() => [
+  { value: 'overview', label: t('customers.tabs.overview') },
+  { value: 'details', label: t('customers.tabs.details') },
+  { value: 'planning', label: t('customers.tabs.planning') },
+]));
+
+// The Details tab already is the form for anyone who may edit, so this is a shortcut to it
+// rather than a mode switch — hence hidden once you are there.
+const showEdit = computed(() => canManage.value && !!customer.value && tab.value !== 'details');
 
 const showDeleteModal = ref(false);
 const isDeleting = ref(false);
@@ -75,13 +74,28 @@ async function onDelete() {
 			#actions
 		>
 			<UButton
-				variant="outline"
+				v-if="showEdit"
+				icon="i-lucide-pencil"
+				@click="tab = 'details'"
+			>
+				{{ t('common.actions.edit') }}
+			</UButton>
+
+			<UButton
+				variant="ghost"
 				color="error"
 				icon="i-lucide-trash-2"
 				@click="() => { showDeleteModal = true }"
 			>
 				{{ t('common.actions.delete') }}
 			</UButton>
+		</template>
+
+		<template #tabs>
+			<LayoutPageTabs
+				v-model="tab"
+				:items="tabItems"
+			/>
 		</template>
 
 		<LayoutPageContainer>
@@ -91,25 +105,17 @@ async function onDelete() {
 				:loading-label="t('customers.loadingOne')"
 			>
 				<template v-if="customer">
-					<div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-						<UiStatTile
-							v-for="tile in statTiles"
-							:key="tile.key"
-							:label="tile.label"
-							:icon="tile.icon"
-							:placeholder="t('customers.stats.unavailable')"
-						/>
-					</div>
+					<CustomerOverview v-if="tab === 'overview'" />
 
-					<LayoutSection :title="t('customers.trend.title')">
-						<UiEmptyState
-							icon="i-lucide-chart-line"
-							:title="t('customers.trend.empty')"
-							:description="t('customers.trend.emptyDescription')"
-						/>
-					</LayoutSection>
+					<CustomerDetails
+						v-else-if="tab === 'details'"
+						:customer="customer"
+					/>
 
-					<CustomerDetails :customer="customer" />
+					<PlanningEntityShifts
+						v-else
+						:customer-id="id"
+					/>
 
 					<UiConfirmModal
 						v-model:open="showDeleteModal"

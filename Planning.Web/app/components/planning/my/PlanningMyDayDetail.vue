@@ -153,7 +153,7 @@ async function removeException(rule: AvailabilityRule) {
 						? 'flex flex-col gap-2 px-2 pb-3'
 						: 'divide-y divide-accented'"
 				>
-					<PlanningMyShiftItem
+					<PlanningShiftItem
 						v-for="shift in day.shifts"
 						:key="shift.id"
 						:shift="shift"
