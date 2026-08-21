@@ -3,7 +3,7 @@ import {
   getApiOrganizationsId,
   getApiOrganizationsMine,
   postApiOrganizations,
-} from '~/generated/api/organizations/organizations'
+} from '~/generated/api/organizations/organizations';
 
 export function useOrganizationsApi() {
   return {
@@ -11,5 +11,5 @@ export function useOrganizationsApi() {
     getCurrent: getApiOrganizationsCurrent,
     getMine: getApiOrganizationsMine,
     getById: getApiOrganizationsId,
-  }
+  };
 }

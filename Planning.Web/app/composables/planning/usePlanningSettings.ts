@@ -15,8 +15,8 @@ export function usePlanningSettings() {
   const importantWorkTimeEntries = computed<ImportantWorkTimeRow[]>(() => {
     const entries = organization.value?.importantWorkTimes;
     if (!entries?.length) {
-return getDefaultImportantWorkTimes();
-}
+      return getDefaultImportantWorkTimes();
+    }
     return entries.map((entry) => ({
       label: entry.label ?? '',
       startTime: normalizeTimeValue(entry.startTime),
@@ -27,8 +27,8 @@ return getDefaultImportantWorkTimes();
   const importantWorkTimes = computed(() => {
     const times = toTimeStrings(importantWorkTimeEntries.value);
     if (!times.length) {
-return DEFAULT_IMPORTANT_WORK_TIMES;
-}
+      return DEFAULT_IMPORTANT_WORK_TIMES;
+    }
     return uniqueImportantTimes(times);
   });
 

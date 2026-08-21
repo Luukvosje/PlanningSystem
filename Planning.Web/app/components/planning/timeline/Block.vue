@@ -67,8 +67,8 @@ function clearTooltipShowTimer() {
 function onPointerEnter() {
   onHover.value = true;
   if (tooltipDisabled.value) {
-return;
-}
+    return;
+  }
   clearTooltipShowTimer();
   tooltipShowTimer = setTimeout(() => {
     tooltipOpen.value = true;
@@ -114,18 +114,18 @@ function onPointerDown(event: PointerEvent) {
   clearTooltipShowTimer();
   tooltipOpen.value = false;
   if (!canManage.value) {
-return;
-}
+    return;
+  }
   if ((event.target as HTMLElement).dataset.resize) {
-return;
-}
+    return;
+  }
   startDrag(event, props.record, props.rowId, props.layout);
 }
 
 function onClick() {
   if (consumeClickSuppression(props.record.id)) {
-return;
-}
+    return;
+  }
   store.openEdit(props.record.id);
 }
 

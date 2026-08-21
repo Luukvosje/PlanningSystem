@@ -38,8 +38,8 @@ export function getStatusLabel(status: PlanningStatus, t: Translate): string {
 
 export function getBlockColor(color?: string | null, status?: PlanningStatus): string {
   if (color) {
-return color;
-}
+    return color;
+  }
   if (status) {
     return STATUS_COLORS[status];
   }

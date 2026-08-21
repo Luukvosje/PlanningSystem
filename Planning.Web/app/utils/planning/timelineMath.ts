@@ -61,11 +61,11 @@ export type PlanningLayoutMode = 'compact' | 'spacious' | 'default';
 /** Returns the lane height for the given zoom level and optional layout mode. */
 export function getLaneHeight(zoom: TimelineZoom, layout: PlanningLayoutMode = 'default'): number {
   if (layout === 'compact') {
-return LANE_HEIGHT_COMPACT;
-}
+    return LANE_HEIGHT_COMPACT;
+  }
   if (layout === 'spacious') {
-return LANE_HEIGHT_SPACIOUS;
-}
+    return LANE_HEIGHT_SPACIOUS;
+  }
   return DETAIL_ZOOM_LEVELS.includes(zoom) ? LANE_HEIGHT_DETAIL : LANE_HEIGHT;
 }
 

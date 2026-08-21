@@ -1,6 +1,6 @@
-import type { UnavailablePeriod } from '~/types/availability'
-import type { PlanningRecord } from '~/types/planning'
-import { pxFromPointerEvent, SNAP_MINUTES } from '~/utils/planning/timelineMath'
+import type { UnavailablePeriod } from '~/types/availability';
+import type { PlanningRecord } from '~/types/planning';
+import { pxFromPointerEvent, SNAP_MINUTES } from '~/utils/planning/timelineMath';
 import {
   collectBlockSnapPoints,
   getRowAvailabilitySnapPoints,
@@ -8,11 +8,11 @@ import {
   mergeSnapPoints,
   snapPxToTimeline,
   type BlockSnapOptions,
-} from '~/utils/planning/blockSnap'
-import { suppressPlanningBlockClick } from '~/composables/planning/useDragPlanning'
+} from '~/utils/planning/blockSnap';
+import { suppressPlanningBlockClick } from '~/composables/planning/useDragPlanning';
 
-const DRAG_THRESHOLD_PX = 4
-const MIN_WIDTH_PX = 4
+const DRAG_THRESHOLD_PX = 4;
+const MIN_WIDTH_PX = 4;
 
 type ResizeState = {
   recordId: string
@@ -32,21 +32,21 @@ function computeSnappedResize(
   minWidth: number,
   snapOptions: BlockSnapOptions = {},
 ): Pick<ResizeState, 'edge' | 'leftPx' | 'widthPx'> {
-  const snappedPx = snapPxToTimeline(mousePx, dayWidth, snapOptions)
+  const snappedPx = snapPxToTimeline(mousePx, dayWidth, snapOptions);
 
   if (edge === 'start') {
-    let leftPx = Math.min(snappedPx, anchorRightPx - minWidth)
-    let widthPx = anchorRightPx - leftPx
+    let leftPx = Math.min(snappedPx, anchorRightPx - minWidth);
+    let widthPx = anchorRightPx - leftPx;
 
     if (widthPx < minWidth) {
-      widthPx = minWidth
-      leftPx = anchorRightPx - minWidth
+      widthPx = minWidth;
+      leftPx = anchorRightPx - minWidth;
     }
 
-    return { edge: 'start', leftPx, widthPx }
+    return { edge: 'start', leftPx, widthPx };
   }
 
-  let widthPx = snappedPx - anchorLeftPx
+  let widthPx = snappedPx - anchorLeftPx;
 
   if (widthPx < minWidth) {
     if (snappedPx < anchorLeftPx) {
@@ -54,37 +54,37 @@ function computeSnappedResize(
         edge: 'start',
         leftPx: snappedPx,
         widthPx: minWidth,
-      }
+      };
     }
-    widthPx = minWidth
+    widthPx = minWidth;
   }
 
-  return { edge: 'end', leftPx: anchorLeftPx, widthPx }
+  return { edge: 'end', leftPx: anchorLeftPx, widthPx };
 }
 
 export function useResizePlanning() {
-  const store = usePlanningStore()
-  const api = usePlanningApi()
-  const toast = useToast()
-  const { canManage } = usePlanningPermissions()
-  const { pxToUtcIso, dayWidth, timeToPx, dateRange } = useTimeline()
-  const { importantWorkTimes } = usePlanningSettings()
+  const store = usePlanningStore();
+  const api = usePlanningApi();
+  const toast = useToast();
+  const { canManage } = usePlanningPermissions();
+  const { pxToUtcIso, dayWidth, timeToPx, dateRange } = useTimeline();
+  const { importantWorkTimes } = usePlanningSettings();
   const rowRecordsMap = inject<ComputedRef<Map<string, PlanningRecord[]>>>(
     'timelineRowRecords',
     computed(() => new Map()),
-  )
+  );
   const availabilityPeriods = inject<ComputedRef<UnavailablePeriod[]>>(
     'timelineAvailabilityPeriods',
     computed(() => []),
-  )
+  );
 
-  const minDurationPx = computed(() => (SNAP_MINUTES / (24 * 60)) * dayWidth.value)
+  const minDurationPx = computed(() => (SNAP_MINUTES / (24 * 60)) * dayWidth.value);
 
-  const resizingId = ref<string | null>(null)
-  const resizePreview = ref<{ recordId: string, leftPx: number, widthPx: number } | null>(null)
+  const resizingId = ref<string | null>(null);
+  const resizePreview = ref<{ recordId: string, leftPx: number, widthPx: number } | null>(null);
 
   function getSnapOptions(rowId: string, recordId: string): BlockSnapOptions {
-    const records = rowRecordsMap.value.get(rowId) ?? []
+    const records = rowRecordsMap.value.get(rowId) ?? [];
     return {
       snapToBlocks: store.snapToBlocks,
       blockSnapPoints: mergeSnapPoints(
@@ -99,7 +99,7 @@ export function useResizePlanning() {
         ),
       ),
       importantTimes: importantWorkTimes.value,
-    }
+    };
   }
 
   function startResize(
@@ -109,22 +109,26 @@ export function useResizePlanning() {
     layout: { leftPx: number, widthPx: number },
     rowId: string,
   ) {
-    if (!canManage.value) return
+    if (!canManage.value) {
+      return;
+    }
 
-    const rowEl = (event.target as HTMLElement).closest<HTMLElement>('[data-timeline-row]')
-    if (!rowEl) return
+    const rowEl = (event.target as HTMLElement).closest<HTMLElement>('[data-timeline-row]');
+    if (!rowEl) {
+      return;
+    }
 
-    event.preventDefault()
-    event.stopPropagation()
+    event.preventDefault();
+    event.stopPropagation();
 
-    store.selectPlanning(record.id, { openSidebar: false })
+    store.selectPlanning(record.id, { openSidebar: false });
 
-    resizingId.value = record.id
+    resizingId.value = record.id;
 
-    const anchorLeftPx = layout.leftPx
-    const anchorRightPx = layout.leftPx + layout.widthPx
-    const startMousePx = pxFromPointerEvent(event, rowEl)
-    const snapOptions = getSnapOptions(rowId, record.id)
+    const anchorLeftPx = layout.leftPx;
+    const anchorRightPx = layout.leftPx + layout.widthPx;
+    const startMousePx = pxFromPointerEvent(event, rowEl);
+    const snapOptions = getSnapOptions(rowId, record.id);
 
     let state: ResizeState = {
       recordId: record.id,
@@ -133,25 +137,25 @@ export function useResizePlanning() {
       widthPx: layout.widthPx,
       assignedUserId: record.assignedUserId,
       customerId: record.customerId ?? null,
-    }
+    };
 
-    let movedPx = 0
+    let movedPx = 0;
 
     const updatePreview = () => {
       resizePreview.value = {
         recordId: record.id,
         leftPx: state.leftPx,
         widthPx: state.widthPx,
-      }
-    }
+      };
+    };
 
-    updatePreview()
+    updatePreview();
 
     const onMove = (e: PointerEvent) => {
-      const mousePx = pxFromPointerEvent(e, rowEl)
-      movedPx = Math.max(movedPx, Math.abs(mousePx - startMousePx))
+      const mousePx = pxFromPointerEvent(e, rowEl);
+      movedPx = Math.max(movedPx, Math.abs(mousePx - startMousePx));
 
-      const minWidth = Math.max(minDurationPx.value, MIN_WIDTH_PX)
+      const minWidth = Math.max(minDurationPx.value, MIN_WIDTH_PX);
       const resized = computeSnappedResize(
         state.edge,
         mousePx,
@@ -160,17 +164,17 @@ export function useResizePlanning() {
         dayWidth.value,
         minWidth,
         snapOptions,
-      )
-      state = { ...state, ...resized }
-      updatePreview()
-    }
+      );
+      state = { ...state, ...resized };
+      updatePreview();
+    };
 
     const onUp = async (e: PointerEvent) => {
-      document.removeEventListener('pointermove', onMove)
-      document.removeEventListener('pointerup', onUp)
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
 
-      const mousePx = pxFromPointerEvent(e, rowEl)
-      const minWidth = Math.max(minDurationPx.value, MIN_WIDTH_PX)
+      const mousePx = pxFromPointerEvent(e, rowEl);
+      const minWidth = Math.max(minDurationPx.value, MIN_WIDTH_PX);
       const resized = computeSnappedResize(
         state.edge,
         mousePx,
@@ -179,24 +183,24 @@ export function useResizePlanning() {
         dayWidth.value,
         minWidth,
         snapOptions,
-      )
-      state = { ...state, ...resized }
+      );
+      state = { ...state, ...resized };
 
-      resizingId.value = null
-      resizePreview.value = null
+      resizingId.value = null;
+      resizePreview.value = null;
 
       if (state.widthPx < minWidth) {
-        return
+        return;
       }
 
       if (movedPx >= DRAG_THRESHOLD_PX) {
-        suppressPlanningBlockClick(record.id)
+        suppressPlanningBlockClick(record.id);
       }
 
-      const startUtc = pxToUtcIso(state.leftPx, false)
-      const endUtc = pxToUtcIso(state.leftPx + state.widthPx, false)
+      const startUtc = pxToUtcIso(state.leftPx, false);
+      const endUtc = pxToUtcIso(state.leftPx + state.widthPx, false);
 
-      store.applyOptimisticPatch(record.id, { startUtc, endUtc })
+      store.applyOptimisticPatch(record.id, { startUtc, endUtc });
 
       try {
         await api.move(record.id, {
@@ -204,23 +208,22 @@ export function useResizePlanning() {
           customerId: state.customerId,
           startUtc,
           endUtc,
-        })
-        await api.invalidatePlanning()
-        store.clearOptimisticPatch(record.id)
+        });
+        await api.invalidatePlanning();
+        store.clearOptimisticPatch(record.id);
+      } catch {
+        store.clearOptimisticPatch(record.id);
+        toast.add({ title: 'Aanpassen mislukt', color: 'error' });
       }
-      catch {
-        store.clearOptimisticPatch(record.id)
-        toast.add({ title: 'Aanpassen mislukt', color: 'error' })
-      }
-    }
+    };
 
-    document.addEventListener('pointermove', onMove)
-    document.addEventListener('pointerup', onUp)
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
   }
 
   return {
     resizingId,
     resizePreview,
     startResize,
-  }
+  };
 }

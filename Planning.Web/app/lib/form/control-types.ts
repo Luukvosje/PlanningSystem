@@ -1,7 +1,7 @@
-import type { Component, ComputedRef, Ref } from 'vue'
-import { toValue } from 'vue'
-import type { z } from 'zod'
-import type { Form } from './Form'
+import type { Component, ComputedRef, Ref } from 'vue';
+import { toValue } from 'vue';
+import type { z } from 'zod';
+import type { Form } from './Form';
 
 export type BuiltInControlType = 'input' | 'email' | 'password' | 'textarea' | 'select'
 
@@ -38,11 +38,11 @@ export interface CustomFormControl extends BaseFormControl {
 export type FormControl = BuiltInFormControl | CustomFormControl
 
 export function isBuiltInControl(control: FormControl): control is BuiltInFormControl {
-  return 'type' in control
+  return 'type' in control;
 }
 
 export function isCustomControl(control: FormControl): control is CustomFormControl {
-  return 'component' in control
+  return 'component' in control;
 }
 
 export interface FormSubmitConfig {
@@ -55,7 +55,7 @@ export interface FormSubmitConfig {
 export type MaybeRefOrGetter<T> = T | Ref<T> | ComputedRef<T>
 
 export function resolveMaybeRefOrGetter<T>(source: MaybeRefOrGetter<T>): T {
-  return toValue(source)
+  return toValue(source);
 }
 
 export function resolveControlProps(
@@ -63,9 +63,9 @@ export function resolveControlProps(
   ctx: ControlRenderContext,
 ): Record<string, unknown> {
   if (!control.props) {
-    return {}
+    return {};
   }
-  return typeof control.props === 'function'
-    ? control.props(ctx)
-    : control.props
+  return typeof control.props === 'function' ?
+    control.props(ctx) :
+    control.props;
 }
