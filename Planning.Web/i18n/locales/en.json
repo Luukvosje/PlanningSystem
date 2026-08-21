@@ -194,9 +194,10 @@
       "description": "Add a customer to your organization.",
       "submit": "Create customer"
     },
-    "edit": {
-      "title": "Edit customer",
-      "description": "Update this customer's details."
+    "tabs": {
+      "overview": "Overview",
+      "details": "Details",
+      "planning": "Planning"
     }
   },
   "invites": {
@@ -263,6 +264,10 @@
     "modules": {
       "title": "Modules",
       "description": "Decide which modules this user can use."
+    },
+    "tabs": {
+      "details": "Details",
+      "planning": "Planning"
     }
   },
   "planning": {
@@ -344,16 +349,18 @@
     "previousWeek": "Previous week",
     "nextWeek": "Next week",
     "thisWeek": "This week",
-    "shift": "Shift"
+    "shift": "Shift",
+    "entityShifts": {
+      "title": "Shifts",
+      "loading": "Loading shifts...",
+      "empty": "No shifts in this period",
+      "emptyDescription": "Shifts from the past month up to three months ahead appear here."
+    }
   },
   "organizations": {
     "loading": "Loading organization...",
     "details": "Details",
     "manageDescription": "Manage your organization's details.",
-    "edit": {
-      "title": "Edit organisation",
-      "description": "Change your organisation's details."
-    },
     "created": "Organization created",
     "invited": "Invited?",
     "fields": {
@@ -406,10 +413,6 @@
     "description": "Manage your personal details.",
     "loadingProfile": "Loading profile...",
     "profile": "Profile",
-    "edit": {
-      "title": "Edit profile",
-      "description": "Change your personal details."
-    },
     "toast": {
       "profileUpdated": "Profile updated"
     }

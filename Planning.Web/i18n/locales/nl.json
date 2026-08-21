@@ -194,9 +194,10 @@
       "description": "Voeg een klant toe aan je organisatie.",
       "submit": "Klant aanmaken"
     },
-    "edit": {
-      "title": "Klant bewerken",
-      "description": "Pas de gegevens van deze klant aan."
+    "tabs": {
+      "overview": "Overzicht",
+      "details": "Gegevens",
+      "planning": "Planning"
     }
   },
   "invites": {
@@ -263,6 +264,10 @@
     "modules": {
       "title": "Modules",
       "description": "Bepaal welke modules deze gebruiker mag gebruiken."
+    },
+    "tabs": {
+      "details": "Gegevens",
+      "planning": "Planning"
     }
   },
   "planning": {
@@ -344,16 +349,18 @@
     "previousWeek": "Vorige week",
     "nextWeek": "Volgende week",
     "thisWeek": "Deze week",
-    "shift": "Dienst"
+    "shift": "Dienst",
+    "entityShifts": {
+      "title": "Diensten",
+      "loading": "Diensten laden...",
+      "empty": "Geen diensten in deze periode",
+      "emptyDescription": "Diensten van de afgelopen maand tot drie maanden vooruit staan hier."
+    }
   },
   "organizations": {
     "loading": "Organisatie laden...",
     "details": "Gegevens",
     "manageDescription": "Beheer de gegevens van je organisatie.",
-    "edit": {
-      "title": "Organisatie bewerken",
-      "description": "Pas de gegevens van je organisatie aan."
-    },
     "created": "Organisatie aangemaakt",
     "invited": "Uitgenodigd?",
     "fields": {
@@ -406,10 +413,6 @@
     "description": "Beheer je persoonlijke gegevens.",
     "loadingProfile": "Profiel laden...",
     "profile": "Profiel",
-    "edit": {
-      "title": "Profiel bewerken",
-      "description": "Pas je persoonlijke gegevens aan."
-    },
     "toast": {
       "profileUpdated": "Profiel bijgewerkt"
     }
