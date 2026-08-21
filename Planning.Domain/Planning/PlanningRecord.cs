@@ -88,7 +88,7 @@ public class PlanningRecord : TenantEntity
         string? notes,
         DateTime startUtc,
         DateTime endUtc,
-        string color,
+        string? color,
         DateTime utcNow)
     {
         ValidateTitle(title);
