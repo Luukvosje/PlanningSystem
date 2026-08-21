@@ -15,10 +15,6 @@ onMounted(async () => {
 });
 
 const organizationEdit = useOrganizationEdit();
-const organizationControls = organizationEdit.form.controls;
-const organizationValues = computed(() =>
-  organization.value ? organizationEdit.toState(organization.value) : {},
-);
 </script>
 
 <template>
@@ -39,27 +35,12 @@ const organizationValues = computed(() =>
 						:organization="organization"
 					/>
 
-					<LayoutSection :title="t('organizations.details')">
-						<template
-							v-if="organization"
-							#actions
-						>
-							<UButton
-								variant="outline"
-								color="neutral"
-								icon="i-lucide-pencil"
-								size="sm"
-								@click="organizationEdit.open(organization)"
-							>
-								{{ t('common.actions.edit') }}
-							</UButton>
-						</template>
-
-						<FormDisplay
-							:controls="organizationControls"
-							:values="organizationValues"
-						/>
-					</LayoutSection>
+					<FormEditableSection
+						v-if="organization"
+						:edit="organizationEdit"
+						:entity="organization"
+						:title="t('organizations.details')"
+					/>
 				</div>
 
 				<OrganizationsPlanningSettings />

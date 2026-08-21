@@ -35,7 +35,7 @@ const rows = computed(() =>
 </script>
 
 <template>
-	<dl class="divide-y divide-default text-sm">
+	<dl class="text-sm">
 		<div
 			v-for="row in rows"
 			:key="row.control.name"

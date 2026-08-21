@@ -9,8 +9,6 @@ export function useProfileEdit() {
   const { t } = useI18n();
 
   return useEdit(PROFILE_EDIT_KEY, {
-    title: computed(() => t('settings.edit.title')),
-    description: computed(() => t('settings.edit.description')),
     schema: createUpdateProfileSchema(t),
     controls: computed(() => [
       {

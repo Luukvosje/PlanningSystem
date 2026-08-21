@@ -1,53 +1,35 @@
-import { computed, markRaw, ref, type Component, type ComputedRef, type Ref } from 'vue';
+import { markRaw, ref, type Ref } from 'vue';
 import type { z } from 'zod';
-import { LazyFormEditModal } from '#components';
-import type { FormSubmitConfig, MaybeRefOrGetter } from './control-types';
-import { resolveMaybeRefOrGetter } from './control-types';
+import type { FormClassOptions } from './Form';
+import { useForm } from './Form';
+import { registerDirtyForm } from './dirty-registry';
 import { createInstanceRegistry } from './instance-registry';
-import { useForm, type FormClassOptions } from './Form';
 
 const registry = createInstanceRegistry<EditInstance>();
 
-export const EDIT_INJECTION_KEY = Symbol('form-edit');
-
-export type EditFooterMode = 'submit' | 'close-only'
-
 export interface UseEditOptions<TSchema extends z.ZodType, TEntity>
   extends Pick<FormClassOptions<TSchema>, 'schema' | 'controls' | 'validateOn' | 'genericErrorMessage'> {
-  title: MaybeRefOrGetter<string>
-  description?: MaybeRefOrGetter<string | undefined>
-  submitLabel?: MaybeRefOrGetter<string>
-  cancelLabel?: MaybeRefOrGetter<string>
-  submit?: MaybeRefOrGetter<FormSubmitConfig>
-  footerMode?: MaybeRefOrGetter<EditFooterMode>
-  closeOnSuccess?: boolean
-  modalUi?: Record<string, unknown>
-  bodyExtra?: Component
-  extensions?: Record<string, Ref<unknown>>
   toState: (entity: TEntity) => Partial<z.infer<TSchema>>
   onSubmit: (entity: TEntity, data: z.infer<TSchema>) => Promise<void> | void
-  onOpen?: (entity: TEntity) => void
-  onClose?: () => void
 }
 
 export interface EditInstance<TSchema extends z.ZodType = z.ZodType, TEntity = unknown> {
   id: symbol
   entity: Ref<TEntity | null>
   form: ReturnType<typeof useForm<TSchema>>
-  title: ComputedRef<string>
-  description: ComputedRef<string | undefined>
-  submitLabel: ComputedRef<string>
-  cancelLabel: ComputedRef<string>
-  footerMode: ComputedRef<EditFooterMode>
-  modalUi: ComputedRef<Record<string, unknown>>
-  bodyExtra: ComputedRef<Component | undefined>
-  extensions: ComputedRef<Record<string, Ref<unknown>>>
   /** Exposed so a read-only view can render the exact values the form would be filled with. */
   toState: (entity: TEntity) => Partial<z.infer<TSchema>>
-  open: (entity: TEntity) => void
-  close: () => void
+  /** Fills the form from an entity and treats those values as the saved state. */
+  load: (entity: TEntity) => void
 }
 
+/**
+ * One editable entity: the form definition plus the entity it is currently bound to.
+ *
+ * May you edit, then you get the form — there is no read-then-click-Edit step and no modal. A modal
+ * would hide the very context you were reading; a swap costs a click for something you are allowed
+ * to do anyway. `FormEditableSection` renders the read-only view only for users without the right.
+ */
 export function useEdit<TSchema extends z.ZodType, TEntity>(
   id: symbol,
   options: UseEditOptions<TSchema, TEntity>,
@@ -60,22 +42,7 @@ export function useEdit<TSchema extends z.ZodType, TEntity>(
     return existing as EditInstance<TSchema, TEntity>;
   }
 
-  const { t } = useI18n();
-  const overlay = useOverlay();
-  const modal = overlay.create(LazyFormEditModal);
-
   const entity = ref<TEntity | null>(null) as Ref<TEntity | null>;
-
-  const title = computed(() => resolveMaybeRefOrGetter(optionsRef.value.title));
-  const description = computed(() => optionsRef.value.description ?
-    resolveMaybeRefOrGetter(optionsRef.value.description) :
-    undefined);
-  const submitLabel = computed(() => resolveMaybeRefOrGetter(optionsRef.value.submitLabel ?? t('common.actions.save')));
-  const cancelLabel = computed(() => resolveMaybeRefOrGetter(optionsRef.value.cancelLabel ?? t('common.actions.cancel')));
-  const footerMode = computed(() => resolveMaybeRefOrGetter(optionsRef.value.footerMode ?? 'submit'));
-  const modalUi = computed(() => optionsRef.value.modalUi ?? { content: 'sm:max-w-lg' });
-  const bodyExtra = computed(() => optionsRef.value.bodyExtra);
-  const extensions = computed(() => optionsRef.value.extensions ?? {});
 
   const form = markRaw(useForm({
     schema: options.schema,
@@ -83,7 +50,9 @@ export function useEdit<TSchema extends z.ZodType, TEntity>(
     controls: options.controls,
     validateOn: options.validateOn,
     genericErrorMessage: options.genericErrorMessage,
-    submit: options.submit ?? { hidden: true },
+    grid: true,
+    // The constructor's registration is scope-based, and this instance outlives the component that
+    // happened to create it - so it registers itself below instead, once and for good.
     trackNavigation: false,
     onSubmit: async (data) => {
       if (!entity.value) {
@@ -91,45 +60,24 @@ export function useEdit<TSchema extends z.ZodType, TEntity>(
       }
 
       await optionsRef.value.onSubmit(entity.value, data);
-
-      if (optionsRef.value.closeOnSuccess !== false) {
-        close();
-      }
     },
   }));
 
-  function handleClosed() {
-    form.reset();
-    entity.value = null;
-    optionsRef.value.onClose?.();
-  }
+  // Registered for the route-leave guard for as long as the app runs; `getDirtyForms()` filters on
+  // dirtiness, so a form nobody is editing costs nothing.
+  registerDirtyForm(form);
 
-  function open(value: TEntity) {
+  function load(value: TEntity) {
     entity.value = value;
     form.reset(optionsRef.value.toState(value));
-    optionsRef.value.onOpen?.(value);
-    modal.open({ edit: instance as EditInstance }).then(handleClosed);
-  }
-
-  function close() {
-    modal.close();
   }
 
   const instance: EditInstance<TSchema, TEntity> = {
     id,
     entity,
     form,
-    title,
-    description,
-    submitLabel,
-    cancelLabel,
-    footerMode,
-    modalUi,
-    bodyExtra,
-    extensions,
     toState: (value: TEntity) => optionsRef.value.toState(value),
-    open,
-    close,
+    load,
   };
 
   return registry.register(instance) as EditInstance<TSchema, TEntity>;

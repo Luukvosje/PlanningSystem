@@ -9,8 +9,6 @@ export function useOrganizationEdit() {
   const { t } = useI18n();
 
   return useEdit(ORGANIZATION_EDIT_KEY, {
-    title: computed(() => t('organizations.edit.title')),
-    description: computed(() => t('organizations.edit.description')),
     schema: createOrganizationSchema(t),
     controls: computed(() => [
       {

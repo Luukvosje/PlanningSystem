@@ -16,9 +16,7 @@ const showAvailabilityPattern = computed(() =>
 onMounted(() => auth.fetchMe());
 
 const profileEdit = useProfileEdit();
-const profileControls = profileEdit.form.controls;
 const profile = computed(() => currentUser.value ?? auth.currentUser);
-const profileValues = computed(() => profile.value ? profileEdit.toState(profile.value) : {});
 </script>
 
 <template>
@@ -32,27 +30,12 @@ const profileValues = computed(() => profile.value ? profileEdit.toState(profile
 			:loading="profileLoading && !auth.currentUser"
 			:loading-label="t('settings.loadingProfile')"
 		>
-			<LayoutSection :title="t('settings.profile')">
-				<template
-					v-if="profile"
-					#actions
-				>
-					<UButton
-						variant="outline"
-						color="neutral"
-						icon="i-lucide-pencil"
-						size="sm"
-						@click="profileEdit.open(profile)"
-					>
-						{{ t('common.actions.edit') }}
-					</UButton>
-				</template>
-
-				<FormDisplay
-					:controls="profileControls"
-					:values="profileValues"
-				/>
-			</LayoutSection>
+			<FormEditableSection
+				v-if="profile"
+				:edit="profileEdit"
+				:entity="profile"
+				:title="t('settings.profile')"
+			/>
 		</UiQueryState>
 
 		<AvailabilityWeeklyPattern v-if="showAvailabilityPattern" />

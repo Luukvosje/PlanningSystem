@@ -21,15 +21,12 @@ export function useCustomerEdit() {
   const { t } = useI18n();
 
   return useEdit(CUSTOMER_EDIT_KEY, {
-    title: computed(() => t('customers.edit.title')),
-    description: computed(() => t('customers.edit.description')),
     schema: createCustomerSchema(t),
     controls: computed(() => [
       { name: 'name', label: t('customers.fields.name'), type: 'input', required: true },
       { name: 'email', label: t('customers.fields.email'), type: 'email', required: true },
       { name: 'address', label: t('customers.fields.address'), type: 'textarea', props: { rows: 3 } },
     ]),
-    submitLabel: computed(() => t('common.actions.save')),
     toState: customerToState,
     onSubmit: async (customer, data) => {
       if (!customer.id) {
