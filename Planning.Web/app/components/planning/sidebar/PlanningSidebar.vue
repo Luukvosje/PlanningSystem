@@ -32,8 +32,8 @@ watch(
   () => [store.sidebarOpen, store.sidebarMode, store.createDraft, store.selectedPlanningId] as const,
   async ([open]) => {
     if (!open) {
-return;
-}
+      return;
+    }
     await nextTick();
     requestAnimationFrame(() => {
       titleInput.value?.inputRef?.focus();
@@ -43,8 +43,8 @@ return;
 
 watch(selectedRecord, (record) => {
   if (!record || isCreateMode.value) {
-return;
-}
+    return;
+  }
   form.title = record.title;
   form.description = record.description ?? '';
   form.notes = record.notes ?? '';
@@ -186,8 +186,8 @@ async function save() {
     }
 
     if (!selectedRecord.value) {
-return;
-}
+      return;
+    }
     await api.update(selectedRecord.value.id, {
       title: form.title,
       description: form.description || null,
@@ -212,15 +212,15 @@ return;
 
 async function onDelete() {
   if (!selectedRecord.value) {
-return;
-}
+    return;
+  }
   await deleteRecord(selectedRecord.value.id);
 }
 
 async function onDuplicate() {
   if (!selectedRecord.value) {
-return;
-}
+    return;
+  }
   await duplicateRecord(selectedRecord.value.id);
 }
 
@@ -228,8 +228,8 @@ const confirmMutation = api.useConfirmMutation();
 
 async function onConfirm() {
   if (!selectedRecord.value) {
-return;
-}
+    return;
+  }
   try {
     await confirmMutation.mutateAsync(selectedRecord.value.id);
     toast.add({ title: t('planning.bookingConfirmed'), color: 'success' });

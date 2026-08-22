@@ -43,8 +43,19 @@ function save() {
 			v-else
 			v-model="moduleState"
 			:toggle-states="toggleStates"
-			:saving="updateOrganizationModules.isPending.value"
-			@save="save"
+			:disabled="updateOrganizationModules.isPending.value"
 		/>
+
+		<template #footer>
+			<div class="flex justify-end">
+				<UButton
+					size="sm"
+					:loading="updateOrganizationModules.isPending.value"
+					@click="save"
+				>
+					{{ t('common.actions.save') }}
+				</UButton>
+			</div>
+		</template>
 	</LayoutCard>
 </template>

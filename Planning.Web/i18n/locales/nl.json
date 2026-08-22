@@ -1,6 +1,7 @@
 {
   "common": {
     "unknown": "Onbekend",
+    "empty": "—",
     "account": "Account",
     "actions": {
       "save": "Opslaan",
@@ -171,6 +172,18 @@
     "deleteTitle": "Klant verwijderen",
     "deleteDescription": "Weet je zeker dat je deze klant wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "details": "Gegevens",
+    "stats": {
+      "shiftsThisMonth": "Diensten deze maand",
+      "hoursThisMonth": "Uren deze maand",
+      "lastShift": "Laatste dienst",
+      "activeEmployees": "Actieve medewerkers",
+      "unavailable": "Nog niet beschikbaar"
+    },
+    "trend": {
+      "title": "Verloop",
+      "empty": "Nog geen cijfers beschikbaar",
+      "emptyDescription": "Zodra er planning voor deze klant is vastgelegd, verschijnt hier het verloop."
+    },
     "fields": {
       "name": "Naam",
       "email": "E-mail",
@@ -181,9 +194,10 @@
       "description": "Voeg een klant toe aan je organisatie.",
       "submit": "Klant aanmaken"
     },
-    "edit": {
-      "title": "Klant bewerken",
-      "description": "Pas de gegevens van deze klant aan."
+    "tabs": {
+      "overview": "Overzicht",
+      "details": "Gegevens",
+      "planning": "Planning"
     }
   },
   "invites": {
@@ -251,6 +265,19 @@
     "modules": {
       "title": "Modules",
       "description": "Bepaal welke modules deze gebruiker mag gebruiken."
+    },
+    "updated": "Teamlid bijgewerkt",
+    "fields": {
+      "role": "Rol",
+      "modules": "Modules"
+    },
+    "access": {
+      "title": "Rol en modules",
+      "description": "Bepaal wat dit teamlid mag doen en zien."
+    },
+    "tabs": {
+      "details": "Gegevens",
+      "planning": "Planning"
     }
   },
   "planning": {
@@ -334,12 +361,23 @@
     "previousWeek": "Vorige week",
     "nextWeek": "Volgende week",
     "thisWeek": "Deze week",
-    "shift": "Dienst"
+    "shift": "Dienst",
+    "entityShifts": {
+      "title": "Diensten",
+      "loading": "Diensten laden...",
+      "empty": "Geen diensten in deze periode",
+      "emptyDescription": "Diensten van de afgelopen maand tot drie maanden vooruit staan hier."
+    }
   },
   "organizations": {
     "loading": "Organisatie laden...",
     "details": "Gegevens",
     "manageDescription": "Beheer de gegevens van je organisatie.",
+    "tabs": {
+      "details": "Gegevens",
+      "planning": "Planning",
+      "modules": "Modules"
+    },
     "created": "Organisatie aangemaakt",
     "invited": "Uitgenodigd?",
     "fields": {
@@ -368,7 +406,7 @@
     },
     "planningSettings": {
       "title": "Planninginstellingen",
-      "description": "Belangrijke werktijden en openingstijden voor de planningweergave.",
+      "description": "Openingstijden en belangrijke werktijden voor de planningweergave.",
       "loading": "Planninginstellingen laden...",
       "importantTimes": "Belangrijke werktijden",
       "importantTimesDescription": "Deze tijden worden benadrukt op de planning, gebruikt voor smart snap bij nieuwe diensten, en zijn met één klik toepasbaar bij het inplannen.",
@@ -382,7 +420,6 @@
     },
     "toast": {
       "modulesUpdated": "Organisatiemodules bijgewerkt",
-      "userModulesUpdated": "Gebruikersmodules bijgewerkt",
       "updated": "Organisatie bijgewerkt",
       "planningSettingsSaved": "Planninginstellingen opgeslagen",
       "logoSaved": "Logo opgeslagen"
@@ -422,9 +459,13 @@
     }
   },
   "layout": {
-    "toggleSidebarShow": "Navigatie tonen",
-    "toggleSidebarHide": "Navigatie verbergen",
     "toggleSidebarMobile": "Zijbalk in-/uitschakelen",
+    "sidebarMode": {
+      "label": "Navigatie",
+      "open": "Altijd open",
+      "auto": "Automatisch",
+      "closed": "Dicht"
+    },
     "headerActions": {
       "open": "Acties"
     },

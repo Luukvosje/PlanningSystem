@@ -15,24 +15,24 @@ function close() {
 
 async function onDuplicate() {
   if (!menu.value) {
-return;
-}
+    return;
+  }
   await duplicateRecord(menu.value.recordId);
   close();
 }
 
 async function onDelete() {
   if (!menu.value) {
-return;
-}
+    return;
+  }
   await deleteRecord(menu.value.recordId);
   close();
 }
 
 function onEdit() {
   if (!menu.value) {
-return;
-}
+    return;
+  }
   store.openEdit(menu.value.recordId);
   close();
 }

@@ -63,8 +63,8 @@ export function getOutsideOpeningOverlays(
 ): { left: number, width: number }[] {
   const hours = getOpeningHoursForDate(date, openingHours);
   if (!hours) {
-return [];
-}
+    return [];
+  }
 
   const openPx = minutesToDayPx(parseTimeToMinutes(hours.openTime), dayWidth);
   const closePx = minutesToDayPx(parseTimeToMinutes(hours.closeTime), dayWidth);
@@ -93,8 +93,8 @@ export function getOutsideOpeningOverlaysCompact(
 ): { left: number, width: number }[] {
   const hours = getOpeningHoursForDate(date, openingHours);
   if (!hours) {
-return [];
-}
+    return [];
+  }
 
   const dayStart = new Date(date);
   dayStart.setHours(0, 0, 0, 0);
@@ -144,8 +144,8 @@ export function snapPxToImportantTime(
   toleranceMinutes = SMART_SNAP_TOLERANCE_MINUTES,
 ): number | null {
   if (importantTimes.length === 0 || dayWidth <= 0) {
-return null;
-}
+    return null;
+  }
 
   const dayIndex = Math.floor(px / dayWidth);
   const pxInDay = px - dayIndex * dayWidth;
@@ -196,8 +196,8 @@ export function uniqueImportantTimes(times: string[]): string[] {
   const seen = new Set<string>();
   return sortImportantTimes(times).filter((time) => {
     if (seen.has(time)) {
-return false;
-}
+      return false;
+    }
     seen.add(time);
     return true;
   });

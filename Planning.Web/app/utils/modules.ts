@@ -111,6 +111,22 @@ export function getUserModuleToggleStates(
   }, {} as Record<AppModule, ModuleToggleState>);
 }
 
+/**
+ * The selection to persist: a forced toggle (admin, or a module the organization doesn't have)
+ * always wins over whatever the switch was left on before the role changed.
+ */
+export function resolveModuleSelection(
+  toggleStates: Record<AppModule, ModuleToggleState>,
+  selection: Record<AppModule, boolean>,
+): Record<AppModule, boolean> {
+  return ALL_MODULES.reduce((result, module) => {
+    result[module] = toggleStates[module].disabled ?
+      toggleStates[module].checked :
+      selection[module];
+    return result;
+  }, {} as Record<AppModule, boolean>);
+}
+
 export function getOrganizationModuleToggleStates(
   orgModules: ModuleSettingResponse[] | null | undefined,
 ): Record<AppModule, ModuleToggleState> {
@@ -180,7 +196,7 @@ const ROUTE_MODULE_MAP: Array<{ prefix: string, module: AppModule }> = [
   { prefix: '/beschikbaarheid', module: AppModuleEnum.Planning },
   { prefix: '/customers', module: AppModuleEnum.Klant },
   { prefix: '/users', module: AppModuleEnum.Beheer },
-  { prefix: '/organizations', module: AppModuleEnum.Beheer },
+  { prefix: '/organization', module: AppModuleEnum.Beheer },
 ];
 
 export function getRequiredModuleForPath(path: string): AppModule | null {

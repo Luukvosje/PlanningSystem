@@ -13,6 +13,11 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
   { label: t('nav.team'), to: '/users' },
   { label: user.value ? `${user.value.firstName} ${user.value.lastName}` : t('common.loading') },
 ]);
+
+const { tab, items: tabItems } = useEntityTabs(computed(() => [
+  { value: 'details', label: t('users.tabs.details') },
+  { value: 'planning', label: t('users.tabs.planning') },
+]));
 </script>
 
 <template>
@@ -21,16 +26,30 @@ const breadcrumbs = computed<BreadcrumbItem[]>(() => [
 			<UBreadcrumb :items="breadcrumbs" />
 		</template>
 
+		<template #tabs>
+			<LayoutPageTabs
+				v-model="tab"
+				:items="tabItems"
+			/>
+		</template>
+
 		<LayoutPageContainer>
 			<UiQueryState
 				:error="error"
 				:loading="isLoading"
 				:loading-label="t('users.loadingOne')"
 			>
-				<UsersDetails
-					v-if="user"
-					:user="user"
-				/>
+				<template v-if="user">
+					<UsersDetails
+						v-if="tab === 'details'"
+						:user="user"
+					/>
+
+					<PlanningEntityShifts
+						v-else
+						:user-id="id"
+					/>
+				</template>
 			</UiQueryState>
 		</LayoutPageContainer>
 	</NuxtLayout>

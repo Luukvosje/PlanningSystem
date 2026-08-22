@@ -10,7 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // Route middleware is not a setup context, so useI18n() would throw here.
   const { t } = useNuxtApp().$i18n;
 
-  const excludedPaths = new Set(['/organizations/new', '/organizations/select', '/join']);
+  const excludedPaths = new Set(['/organization/new', '/organization/select', '/join']);
 
   if (!auth.isAuthenticated || !auth.hasOrganization || excludedPaths.has(to.path)) {
     return;
@@ -56,7 +56,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (!canAccessRoute(to.path, auth.currentUser?.modules)) {
-    const isOrgAdminRoute = to.path === '/organizations' || to.path.startsWith('/organizations/');
+    const isOrgAdminRoute = to.path === '/organization' || to.path.startsWith('/organization/');
     if (isOrgAdminRoute && canManageOrganization(auth.currentUser?.role)) {
       return;
     }

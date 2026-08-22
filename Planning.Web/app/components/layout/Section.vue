@@ -1,10 +1,11 @@
 <script setup lang="ts">
 /**
  * A block within a page: heading plus content, separated from its neighbours by the page's
- * `gap-6` rhythm rather than by a border. The page shell is already a bordered panel, so a
- * card here would be a box inside a box.
+ * `gap-6` rhythm rather than by a border. For read-only content — a list, a chart, an empty
+ * state — where a border would only add a box inside the page's own panel.
  *
- * `LayoutCard` is for things that genuinely float on their own — auth screens, dashboard tiles.
+ * `LayoutCard` is for things that stand on their own: auth screens, dashboard tiles, and every
+ * block you can type into — see `FormEditableSection`, which is the standard for entity fields.
  */
 defineProps<{
 	title?: string

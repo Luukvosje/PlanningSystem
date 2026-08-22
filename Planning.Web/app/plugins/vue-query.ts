@@ -1,4 +1,4 @@
-import { VueQueryPlugin, QueryClient, dehydrate, hydrate } from '@tanstack/vue-query'
+import { VueQueryPlugin, QueryClient, dehydrate, hydrate } from '@tanstack/vue-query';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const queryClient = new QueryClient({
@@ -9,20 +9,20 @@ export default defineNuxtPlugin((nuxtApp) => {
         refetchOnWindowFocus: false,
       },
     },
-  })
+  });
 
-  nuxtApp.vueApp.use(VueQueryPlugin, { queryClient })
+  nuxtApp.vueApp.use(VueQueryPlugin, { queryClient });
 
   if (import.meta.server) {
     nuxtApp.hooks.hook('app:rendered', () => {
-      nuxtApp.payload.vueQueryState = dehydrate(queryClient)
-    })
+      nuxtApp.payload.vueQueryState = dehydrate(queryClient);
+    });
   }
 
   if (import.meta.client && nuxtApp.payload.vueQueryState) {
-    hydrate(queryClient, nuxtApp.payload.vueQueryState)
+    hydrate(queryClient, nuxtApp.payload.vueQueryState);
   }
-})
+});
 
 declare module '#app' {
   interface NuxtPayload {

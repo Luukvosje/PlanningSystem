@@ -47,8 +47,8 @@ const layouts = computed(() =>
 const visibleRecords = computed(() => {
   const { scrollLeft, clientWidth } = store.timelineViewport;
   if (clientWidth <= 0) {
-return props.records;
-}
+    return props.records;
+  }
   const viewLeft = scrollLeft - rowLabelWidth;
   const viewRight = viewLeft + clientWidth;
   // Add generous buffer (2 screens) so blocks near the edge are already mounted when
@@ -57,8 +57,8 @@ return props.records;
   return props.records.filter((record) => {
     const layout = layouts.value.get(record.id);
     if (!layout) {
-return true;
-}
+      return true;
+    }
     return layout.leftPx + layout.widthPx >= viewLeft - buffer &&
       layout.leftPx <= viewRight + buffer;
   });
@@ -87,8 +87,8 @@ const availabilityOverlays = computed(() => {
 
 const selectionPreview = computed(() => {
   if (!selection.value) {
-return null;
-}
+    return null;
+  }
   const left = Math.min(selection.value.startPx, selection.value.endPx);
   const right = Math.max(selection.value.startPx, selection.value.endPx);
   const width = Math.max(right - left, minDurationPx.value);
@@ -143,8 +143,8 @@ return props.rowId;
 }
   const filteredCustomerIds = store.filters.customerIds;
   if (filteredCustomerIds.length === 1) {
-return filteredCustomerIds[0]!;
-}
+    return filteredCustomerIds[0]!;
+  }
   return null;
 }
 
@@ -169,7 +169,6 @@ function openCreate(startPx: number, endPx: number) {
     endUtc = new Date(new Date(startUtc).getTime() + minDurationMs).toISOString();
   }
 
-  // A null employee is valid: that is an open shift.
   store.openCreateSidebar({
     assignedUserId: resolveAssignedUserId(),
     customerId: resolveCustomerId(),
@@ -181,11 +180,11 @@ function openCreate(startPx: number, endPx: number) {
 
 function onRowPointerDown(event: PointerEvent) {
   if (!canManage.value || event.button !== 0) {
-return;
-}
+    return;
+  }
   if ((event.target as HTMLElement).closest('[data-timeline-block]')) {
-return;
-}
+    return;
+  }
 
   event.preventDefault();
 

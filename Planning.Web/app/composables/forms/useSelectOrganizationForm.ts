@@ -36,7 +36,7 @@ export function useSelectOrganizationForm() {
     }
 
     if (list.length === 0) {
-      await router.replace('/organizations/new');
+      await router.replace('/organization/new');
     } else if (list.length === 1 && list[0]?.organizationId) {
       await selectAndContinue(list[0].organizationId);
     }

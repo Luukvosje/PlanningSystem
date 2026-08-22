@@ -14,8 +14,8 @@ export function useAvailabilityWarning(
   function getEmployeeName(employeeId: string) {
     const user = users.value?.find((item) => item.id === employeeId);
     if (!user) {
-return t('planning.fields.employee');
-}
+      return t('planning.fields.employee');
+    }
     return `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim() || t('planning.fields.employee');
   }
 

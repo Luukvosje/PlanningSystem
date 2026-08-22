@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { isRef, unref, type ComponentPublicInstance, type MaybeRef } from 'vue';
-import type { Form as UFormInstance } from '#ui/types';
+import { unref, type MaybeRef } from 'vue';
 import type { FormControl, FormSubmitConfig } from '~/lib/form/control-types';
 import type { Form } from '~/lib/form/Form';
 
@@ -17,19 +16,11 @@ const submitConfig = computed(() => unref(props.form.submitConfig as MaybeRef<Fo
 const submitError = computed(() => unref(props.form.submitError));
 const isSubmitting = computed(() => unref(props.form.isSubmitting));
 const isDirty = computed(() => unref(props.form.isDirty));
-
-function setFormRef(instance: Element | ComponentPublicInstance | null) {
-  if (!isRef(props.form.formRef)) {
-    return;
-  }
-
-  props.form.formRef.value = instance as UFormInstance<Record<string, unknown>> | null;
-}
 </script>
 
 <template>
 	<UForm
-		:ref="setFormRef"
+		:ref="form.bindFormRef"
 		:schema="form.schema"
 		:state="form.state"
 		:validate-on="form.validateOn"
@@ -37,7 +28,7 @@ function setFormRef(instance: Element | ComponentPublicInstance | null) {
 		:class="['w-full', form.grid ? 'flex h-full min-h-0 flex-1 flex-col' : 'flex flex-col gap-3']"
 		@submit="form.handleSubmit"
 	>
-		<div :class="form.grid ? 'min-h-0 grow divide-y divide-default overflow-auto' : 'contents'">
+		<div :class="form.grid ? 'min-h-0 grow overflow-auto' : 'contents'">
 			<component
 				:is="form.header"
 				v-if="form.header"
@@ -62,12 +53,19 @@ function setFormRef(instance: Element | ComponentPublicInstance | null) {
 						v-if="form.grid"
 						class="grid grid-cols-1 items-start gap-x-4 gap-y-1 py-3 sm:grid-cols-[200px_1fr]"
 					>
-						<p class="text-muted text-sm sm:pt-2">
-							{{ control.label }}<span v-if="control.required"> *</span>
-						</p>
+						<div class="sm:pt-1.5">
+							<p class="text-muted text-sm">
+								{{ control.label }}<span v-if="control.required"> *</span>
+							</p>
+							<p
+								v-if="control.description"
+								class="text-dimmed mt-1 text-xs"
+							>
+								{{ control.description }}
+							</p>
+						</div>
 						<UFormField
 							:name="control.name"
-							:description="control.description"
 							v-bind="control.fieldProps"
 						>
 							<FormControl
@@ -132,7 +130,8 @@ function setFormRef(instance: Element | ComponentPublicInstance | null) {
 
 		<div
 			v-if="$slots.footer"
-			:class="isDirty ? 'sticky bottom-0 z-10 bg-default' : undefined"
+			class="border-t border-default pt-4"
+			:class="isDirty ? 'sticky bottom-0 z-10 bg-default pb-3 -mb-3 sm:pb-4 sm:-mb-4' : undefined"
 		>
 			<slot
 				name="footer"

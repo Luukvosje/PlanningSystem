@@ -48,4 +48,9 @@ export default withNuxt({
 		'app/shared/**',
 		'!pages/public/**/*.vue',
 	],
-});
+})
+	// A config object with only `ignores` is a global ignore, so it also applies to the
+	// rule sets Nuxt adds. orval output is regenerated from the API, not hand-edited.
+	.append({
+		ignores: ['app/generated/**'],
+	});

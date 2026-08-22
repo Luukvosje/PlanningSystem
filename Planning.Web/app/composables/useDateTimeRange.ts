@@ -34,8 +34,8 @@ function timeToMinutes(time: Time): number {
 export function formatDateTimeRangeDuration(start: Date, end: Date, t: ReturnType<typeof useI18n>['t']): string {
   const ms = end.getTime() - start.getTime();
   if (ms <= 0) {
-return '—';
-}
+    return '—';
+  }
 
   const totalMinutes = Math.floor(ms / 60_000);
   const days = Math.floor(totalMinutes / (24 * 60));
