@@ -5,7 +5,7 @@ Status van de 3 punten uit `Planning_PRD.md`, gecheckt tegen de huidige codebase
 | Feature | Status |
 |---|---|
 | Notities per dienst | ✅ Al gebouwd (domain, DTOs, frontend tooltip/sidebar) — alleen nog verifiëren of UX goed genoeg is |
-| Open diensten | ❌ Nog niet mogelijk |
+| Open diensten | ✅ Gebouwd 22 aug 2026 (branch `feature/open-shifts`) |
 | Planning delen (tekst + WhatsApp) | ❌ Nog niet gebouwd |
 
 ---
@@ -37,8 +37,9 @@ bijdraagt aan sneller plannen."
 *later*). Dat is een aparte actie/endpoint en hoort bij een volgende fase, niet bij het
 mogelijk maken van open diensten zelf.
 
-**Open vraag voor jou:** wil je dat een open dienst een aparte kleur/stijl krijgt in de
-tijdlijn, of gewoon grijs/leeg?
+**Beslist (22 aug 2026):** gestreepte rand in de omtrek-stijl, label "Open dienst" in het
+blok, en een rij "Open diensten" bovenaan de medewerker-modus waar je naartoe kunt slepen om
+iemand van een dienst af te halen. Zie `DECISIONS.md`.
 
 ---
 

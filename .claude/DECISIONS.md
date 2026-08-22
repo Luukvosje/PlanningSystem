@@ -23,6 +23,43 @@ plan-document (bv. `MVP_GAPS_PLAN.md`) totdat er een keuze is, en verhuizen dan 
 
 ## Log
 
+### 2026-08-22 — Geen AI-companion in de planning
+Besluit: het niet-doel "AI-planning" uit 2026-08-16 blijft staan. Geen chat-companion, geen
+LLM in de planningsflow. Conflictsignalering en "wie kan deze open dienst doen" blijven
+deterministische regels over `AvailabilityRule` + overlap-detectie.
+Waarom: die vragen zijn regels, niet taalmodellen — deterministisch, gratis, uitlegbaar aan
+de planner. Een LLM zou personeelsdata (namen, roosters, afwezigheid) naar een derde partij
+sturen (verwerkersovereenkomst per klant), kost per request terwijl er nog geen verdienmodel
+is, en een chatvenster erbij is precies wat de logge concurrenten doen.
+Alternatief overwogen: smalle natural-language invoer ("Kevin ma 8-16" → dienst). Niet
+verworpen, wel uitgesteld tot ná de eerste betalende klant — één endpoint, geen laag.
+Status: definitief voor de MVP.
+
+### 2026-08-22 — Hosting: VPS met Docker Compose
+Besluit: MVP-punt 4 (live met echte data) wordt een VPS met Docker Compose — API, SQL Server
+en Nuxt als containers op één machine.
+Waarom: goedkoop en portabel, geen lock-in bij één cloud.
+Alternatief overwogen: Azure App Service + Azure SQL — minder eigen beheer en managed
+backups, maar duurder per maand.
+Status: voorlopig — backups, TLS en OS-updates zijn hiermee eigen werk en moeten expliciet
+ingepland worden voordat er een klant op staat. Nog niets van gebouwd (geen Dockerfile, geen
+CI, `.github/workflows` is leeg).
+
+### 2026-08-22 — Open diensten: vormgeving en unassign-flow
+Besluit: een open dienst krijgt geen eigen kleur maar de omtrek-stijl met een gestreepte rand
+(de kleur van de dienst blijft de rand), plus het label "Open dienst" in het blok. In
+medewerker-modus staat er bovenaan een rij "Open diensten" zodra er minstens één is; een
+dienst naar die rij slepen haalt de medewerker eraf, eruit slepen wijst iemand toe. In het
+formulier is "Open dienst" de eerste optie in de medewerker-keuzelijst. De API stuurt
+`assignedUserName: null` in plaats van de tekst "Open dienst" (afwijking van
+`MVP_GAPS_PLAN.md` §1): het label komt uit i18n, zodat de backend geen UI-tekst bevat.
+Waarom: de gestreepte rand leest als "nog niet ingevuld" zonder een kleur te claimen die ook
+een echte dienstkleur kan zijn; de rij spiegelt de bestaande "Zonder klant"-rij, dus geen
+nieuw patroon om uit te leggen.
+Alternatief overwogen: grijs vlak — verworpen, grijs is al in gebruik voor concept-diensten
+(`CONCEPT_BLOCK_STYLE`).
+Status: definitief, gebouwd op branch `feature/open-shifts`.
+
 ### 2026-08-16 — Pricing-model
 Besluit: hybride model — planner-seats zijn de kernprijs, medewerker-seats gratis tot een
 grens (daarna klein bedrag per stuk), plus een totaalpakket (Starter/Groei/Premium) als
