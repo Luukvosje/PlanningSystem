@@ -1,9 +1,9 @@
-import type { PlanningRecord, TimelineBlockLayout, TimelineZoom } from '~/types/planning'
-import { BASE_ROW_HEIGHT, BLOCK_PADDING, LANE_HEIGHT, getLaneHeight } from './timelineMath'
-import type { PlanningLayoutMode } from './timelineMath'
+import type { PlanningRecord, TimelineBlockLayout, TimelineZoom } from '~/types/planning';
+import { BLOCK_PADDING, LANE_HEIGHT, getLaneHeight } from './timelineMath';
+import type { PlanningLayoutMode } from './timelineMath';
 
 function durationMs(record: PlanningRecord): number {
-  return new Date(record.endUtc).getTime() - new Date(record.startUtc).getTime()
+  return new Date(record.endUtc).getTime() - new Date(record.startUtc).getTime();
 }
 
 export function layoutOverlappingBlocks(
@@ -12,38 +12,42 @@ export function layoutOverlappingBlocks(
   zoom?: TimelineZoom,
   layout: PlanningLayoutMode = 'default',
 ): Map<string, TimelineBlockLayout> {
-  if (records.length === 0) return new Map()
-
-  const laneHeight = zoom ? getLaneHeight(zoom, layout) : LANE_HEIGHT
-
-  const sorted = [...records].sort((a, b) => {
-    const startDiff = new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime()
-    if (startDiff !== 0) return startDiff
-    return durationMs(b) - durationMs(a)
-  })
-
-  const lanes: number[] = []
-  const assignments = new Map<string, number>()
-
-  for (const record of sorted) {
-    const startMs = new Date(record.startUtc).getTime()
-    let lane = lanes.findIndex(endMs => endMs <= startMs)
-    if (lane === -1) {
-      lane = lanes.length
-      lanes.push(0)
-    }
-    lanes[lane] = new Date(record.endUtc).getTime()
-    assignments.set(record.id, lane)
+  if (records.length === 0) {
+    return new Map();
   }
 
-  const laneCount = Math.max(lanes.length, 1)
-  const layouts = new Map<string, TimelineBlockLayout>()
+  const laneHeight = zoom ? getLaneHeight(zoom, layout) : LANE_HEIGHT;
+
+  const sorted = [...records].sort((a, b) => {
+    const startDiff = new Date(a.startUtc).getTime() - new Date(b.startUtc).getTime();
+    if (startDiff !== 0) {
+      return startDiff;
+    }
+    return durationMs(b) - durationMs(a);
+  });
+
+  const lanes: number[] = [];
+  const assignments = new Map<string, number>();
 
   for (const record of sorted) {
-    const lane = assignments.get(record.id) ?? 0
-    const leftPx = timeToPx(record.startUtc)
-    const rightPx = timeToPx(record.endUtc)
-    const widthPx = Math.max(rightPx - leftPx, 4)
+    const startMs = new Date(record.startUtc).getTime();
+    let lane = lanes.findIndex((endMs) => endMs <= startMs);
+    if (lane === -1) {
+      lane = lanes.length;
+      lanes.push(0);
+    }
+    lanes[lane] = new Date(record.endUtc).getTime();
+    assignments.set(record.id, lane);
+  }
+
+  const laneCount = Math.max(lanes.length, 1);
+  const layouts = new Map<string, TimelineBlockLayout>();
+
+  for (const record of sorted) {
+    const lane = assignments.get(record.id) ?? 0;
+    const leftPx = timeToPx(record.startUtc);
+    const rightPx = timeToPx(record.endUtc);
+    const widthPx = Math.max(rightPx - leftPx, 4);
 
     layouts.set(record.id, {
       recordId: record.id,
@@ -53,14 +57,14 @@ export function layoutOverlappingBlocks(
       widthPx,
       topPx: lane * laneHeight + BLOCK_PADDING,
       heightPx: laneHeight - BLOCK_PADDING * 2,
-    })
+    });
   }
 
-  return layouts
+  return layouts;
 }
 
 export function getRowHeight(laneCount: number, zoom?: TimelineZoom, layout: PlanningLayoutMode = 'default'): number {
-  const laneHeight = zoom ? getLaneHeight(zoom, layout) : LANE_HEIGHT
-  const lanes = Math.max(laneCount, 1)
-  return Math.max(laneHeight + BLOCK_PADDING * 2, lanes * laneHeight + BLOCK_PADDING * 2)
+  const laneHeight = zoom ? getLaneHeight(zoom, layout) : LANE_HEIGHT;
+  const lanes = Math.max(laneCount, 1);
+  return Math.max(laneHeight + BLOCK_PADDING * 2, lanes * laneHeight + BLOCK_PADDING * 2);
 }

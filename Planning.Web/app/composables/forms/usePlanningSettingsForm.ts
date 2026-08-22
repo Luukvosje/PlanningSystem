@@ -28,16 +28,16 @@ export function usePlanningSettingsForm() {
     },
     controls: computed(() => [
       {
-        name: 'importantWorkTimes',
-        label: t('organizations.planningSettings.importantTimes'),
-        description: t('organizations.planningSettings.importantTimesDescription'),
-        component: OrganizationsImportantWorkTimesInput,
-      },
-      {
         name: 'openingHours',
         label: t('organizations.planningSettings.openingHours'),
         description: t('organizations.planningSettings.openingHoursDescription'),
         component: OrganizationsOpeningHoursInput,
+      },
+      {
+        name: 'importantWorkTimes',
+        label: t('organizations.planningSettings.importantTimes'),
+        description: t('organizations.planningSettings.importantTimesDescription'),
+        component: OrganizationsImportantWorkTimesInput,
       },
     ]),
     grid: true,

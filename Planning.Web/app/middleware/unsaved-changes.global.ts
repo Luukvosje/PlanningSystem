@@ -21,6 +21,12 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     return false;
   }
 
+  if (choice === 'discard') {
+    for (const form of dirtyForms) {
+      form.discard();
+    }
+  }
+
   if (choice === 'save') {
     const results = await Promise.all(dirtyForms.map((form) => form.submit()));
     if (results.some((succeeded) => !succeeded)) {

@@ -3,17 +3,20 @@ import type { AppModule } from '~/generated/models';
 import { getModuleLabel, visibleModulesFromToggleStates } from '~/utils/modules';
 import type { ModuleToggleState } from '~/utils/modules';
 
+/**
+ * The module switches, as an input: it owns no save button, so it works both as a form control
+ * (`FormControl.component`) and inside a card that saves on its own.
+ */
 const props = defineProps<{
   modelValue: Record<AppModule, boolean>
   toggleStates: Record<AppModule, ModuleToggleState>
-  saving?: boolean
+  disabled?: boolean
 }>();
 
 const { t } = useI18n();
 
 const emit = defineEmits<{
   'update:modelValue': [value: Record<AppModule, boolean>]
-  save: []
 }>();
 
 const visibleModules = computed(() => visibleModulesFromToggleStates(props.toggleStates));
@@ -48,20 +51,10 @@ function updateModule(module: AppModule, enabled: boolean) {
 			>
 				<USwitch
 					:model-value="toggleStates[module].disabled ? toggleStates[module].checked : modelValue[module]"
-					:disabled="toggleStates[module].disabled || saving"
+					:disabled="toggleStates[module].disabled || disabled"
 					@update:model-value="(value) => updateModule(module, value)"
 				/>
 			</UTooltip>
-		</div>
-
-		<div class="flex justify-end pt-2">
-			<UButton
-				size="sm"
-				:loading="saving"
-				@click="emit('save')"
-			>
-				{{ t('common.actions.save') }}
-			</UButton>
 		</div>
 	</div>
 </template>

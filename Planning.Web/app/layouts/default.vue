@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
-import { useQueryClient } from '@tanstack/vue-query';
 import { useLocalStorage, useMediaQuery } from '@vueuse/core';
 
 const auth = useAuthStore();
-const toast = useToast();
-const queryClient = useQueryClient();
 const route = useRoute();
 const { t, locale, setLocale } = useI18n();
 
@@ -18,30 +15,60 @@ const currentLanguageIcon = computed(() =>
   languageOptions.find((option) => option.code === locale.value)?.icon ?? languageOptions[0].icon,
 );
 
-const sidebarOpen = useLocalStorage('sidebar-open', true);
+type SidebarMode = 'open' | 'auto' | 'closed'
+
+const SIDEBAR_MODE_ICONS: Record<SidebarMode, string> = {
+  open: 'i-lucide-panel-left-close',
+  auto: 'i-lucide-panel-left-dashed',
+  closed: 'i-lucide-panel-left',
+};
+
+const sidebarMode = useLocalStorage<SidebarMode>('sidebar-mode', 'open');
+const mobileSidebarOpen = ref(false);
 const isDesktop = useMediaQuery('(min-width: 1024px)');
 
+/** Hovering anywhere over the rail (or the panel hanging off it) reveals the panel in auto mode. */
+const sidebarHovered = ref(false);
+const floatingPanelOpen = computed(() => sidebarMode.value === 'auto' && sidebarHovered.value);
+
+/** The keyboard shortcut stays a plain on/off: auto is a choice you make in the menu, not one you toggle into. */
 function toggleSidebar() {
-  sidebarOpen.value = !sidebarOpen.value;
+  if (!isDesktop.value) {
+    mobileSidebarOpen.value = !mobileSidebarOpen.value;
+    return;
+  }
+
+  sidebarMode.value = sidebarMode.value === 'open' ? 'closed' : 'open';
 }
 
 defineShortcuts({
   h: toggleSidebar,
 });
 
-const sidebarToggleLabel = computed(() =>
-  sidebarOpen.value ? t('layout.toggleSidebarHide') : t('layout.toggleSidebarShow'),
-);
+const sidebarModeItems = computed<DropdownMenuItem[][]>(() => [
+  (['open', 'auto', 'closed'] as const).map((mode) => ({
+    label: t(`layout.sidebarMode.${mode}`),
+    icon: SIDEBAR_MODE_ICONS[mode],
+    type: 'checkbox' as const,
+    checked: sidebarMode.value === mode,
+    onSelect: () => {
+      sidebarMode.value = mode;
+    },
+  })),
+]);
 
 function closeMobileSidebar() {
   if (!isDesktop.value) {
-    sidebarOpen.value = false;
+    mobileSidebarOpen.value = false;
   }
 }
 
 const { data: currentUser } = useCurrentUser();
-const { data: organizations } = useMyOrganizations();
-const { navigationItems, pageTitle } = useAppNavigation();
+const { navigationModules, activeModule, navigationItems, pageTitle } = useAppNavigation();
+
+// The panel already sits under its module's name in the rail, so the items don't repeat the icons.
+const panelItems = computed(() =>
+  (activeModule.value?.items ?? []).map((item) => ({ label: item.label, to: item.to })));
 
 const mobileNavigationItems = computed(() =>
   navigationItems.value.map((group) =>
@@ -67,35 +94,6 @@ watch(currentUser, (user) => {
     auth.currentUser = user;
   }
 }, { immediate: true });
-
-const organizationOptions = computed(() =>
-  (organizations.value ?? []).map((org) => ({
-    label: org.organizationName ?? t('common.unknown'),
-    value: org.organizationId ?? '',
-  })),
-);
-
-const selectedOrganizationId = computed({
-  get: () => auth.organizationId ?? '',
-  set: (orgId: string) => {
-    void switchOrganization(orgId);
-  },
-});
-
-async function switchOrganization(orgId: string) {
-  if (!orgId || orgId === auth.organizationId) {
-    return;
-  }
-
-  try {
-    auth.selectOrganization(orgId);
-    await invalidateOrgScopedQueries(queryClient);
-    toast.add({ title: t('layout.organizationSwitched'), color: 'success' });
-  } catch (error) {
-    const { message } = useApiError(error);
-    toast.add({ title: message.value, color: 'error' });
-  }
-}
 
 const userLabel = computed(() => {
   const user = auth.currentUser;
@@ -159,7 +157,7 @@ const pageIcon = computed(() => {
     '/beschikbaarheid': 'i-lucide-calendar-clock',
     '/customers': 'i-lucide-contact',
     '/users': 'i-lucide-users',
-    '/organizations': 'i-lucide-building-2',
+    '/organization': 'i-lucide-building-2',
     '/settings': 'i-lucide-settings',
   };
 
@@ -189,105 +187,124 @@ const userMenuContent = computed(() => ({
 </script>
 
 <template>
-	<div class="flex h-svh flex-1 gap-4 overflow-hidden bg-muted p-4 max-lg:gap-2 max-lg:p-2">
-		<div class="hidden h-full max-h-full shrink-0 overflow-hidden rounded-xl bg-default shadow-sm ring ring-default lg:flex">
-			<aside class="flex w-14 shrink-0 flex-col items-center">
-				<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
-					<NuxtLink
-						to="/dashboard"
-						class="flex size-8 items-center justify-center rounded-lg text-highlighted"
-						aria-label="Planning"
-					>
-						<UIcon
-							name="i-lucide-calendar-days"
-							class="size-5 text-brand"
-						/>
-					</NuxtLink>
-				</div>
-
-				<div class="flex flex-1 items-center justify-center">
-					<UTooltip
-						:text="sidebarToggleLabel"
-						:kbds="['H']"
-						:content="{ side: 'right' }"
-					>
-						<UButton
-							:icon="sidebarOpen ? 'i-lucide-panel-left-close' : 'i-lucide-panel-left'"
-							color="neutral"
-							variant="ghost"
-							square
-							size="md"
-							:aria-label="sidebarToggleLabel"
-							@click="toggleSidebar"
-						/>
-					</UTooltip>
-				</div>
-
-				<div class="flex shrink-0 items-center justify-center p-4">
-					<UDropdownMenu
-						:items="userItems"
-						:content="userMenuContent"
-						:ui="{ content: 'w-48' }"
-					>
-						<UButton
-							icon="i-lucide-user"
-							color="neutral"
-							variant="ghost"
-							square
-							size="md"
-							class="data-[state=open]:bg-elevated"
-							:aria-label="t('common.account')"
-						/>
-					</UDropdownMenu>
-				</div>
-			</aside>
-
-			<aside
-				class="flex flex-col overflow-hidden transition-[width,border-color] duration-200 ease-out motion-reduce:transition-none"
-				:class="sidebarOpen ? 'w-48 border-s border-default' : 'w-0 border-s-0'"
+	<div class="flex h-svh flex-1 gap-2 overflow-hidden bg-muted p-2 max-lg:gap-2 max-lg:p-2 bg-linear-to-r from-neutral-50 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800">
+		<div
+			class="relative hidden h-full max-h-full shrink-0 lg:block"
+			@mouseenter="sidebarHovered = true"
+			@mouseleave="sidebarHovered = false"
+		>
+			<!-- The floating panel butts straight against this card, so the seam between them loses its corners. -->
+			<div
+				class="flex h-full overflow-hidden bg-default shadow-sm ring ring-default transition-[border-radius] duration-150 ease-out motion-reduce:transition-none"
+				:class="floatingPanelOpen ? 'rounded-s-xl' : 'rounded-xl'"
 			>
-				<div class="flex h-full w-48 min-h-0 flex-col">
-					<div class="flex min-h-(--ui-header-height) shrink-0 items-center px-4">
+				<aside class="flex w-14 shrink-0 flex-col items-center">
+					<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
 						<NuxtLink
 							to="/dashboard"
-							class="truncate font-semibold text-highlighted"
+							class="flex size-8 items-center justify-center rounded-lg text-highlighted"
+							aria-label="Planning"
 						>
-							Planning
+							<UIcon
+								name="i-lucide-calendar-days"
+								class="size-5 text-brand"
+							/>
 						</NuxtLink>
 					</div>
 
-					<div class="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2">
-						<UNavigationMenu
-							:items="navigationItems"
-							orientation="vertical"
-							highlight
-							highlight-color="brand"
-							class="w-full"
-							:ui="{ link: 'p-1.5 overflow-hidden', separator: 'hidden' }"
-						/>
+					<div class="flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto py-2">
+						<UTooltip
+							v-for="module in navigationModules"
+							:key="module.key"
+							:text="module.label"
+							:content="{ side: 'right' }"
+						>
+							<UButton
+								:icon="module.icon"
+								:color="module.key === activeModule?.key ? 'brand' : 'neutral'"
+								:variant="module.key === activeModule?.key ? 'soft' : 'ghost'"
+								:to="module.items[0]?.to"
+								square
+								size="md"
+								:aria-label="module.label"
+								:aria-current="module.key === activeModule?.key ? 'page' : undefined"
+							/>
+						</UTooltip>
 					</div>
 
-					<div class="flex shrink-0 flex-col gap-3 p-4">
-						<ControlsColorModeSwitch />
+					<div class="flex shrink-0 flex-col items-center gap-1 p-4">
+						<UDropdownMenu
+							:items="sidebarModeItems"
+							:content="{ side: 'right', align: 'end', sideOffset: 12 }"
+							:ui="{ content: 'w-44' }"
+						>
+							<UTooltip
+								:text="t('layout.sidebarMode.label')"
+								:kbds="['H']"
+								:content="{ side: 'right' }"
+							>
+								<UButton
+									:icon="SIDEBAR_MODE_ICONS[sidebarMode]"
+									color="neutral"
+									variant="ghost"
+									square
+									size="md"
+									class="data-[state=open]:bg-elevated"
+									:aria-label="t('layout.sidebarMode.label')"
+								/>
+							</UTooltip>
+						</UDropdownMenu>
 
-						<USelect
-							v-if="organizationOptions.length > 0"
-							v-model="selectedOrganizationId"
-							:items="organizationOptions"
-							icon="i-lucide-building-2"
-							:placeholder="t('nav.organization')"
-							class="w-full"
-							size="sm"
-						/>
+						<UDropdownMenu
+							:items="userItems"
+							:content="userMenuContent"
+							:ui="{ content: 'w-48' }"
+						>
+							<UButton
+								icon="i-lucide-user"
+								color="neutral"
+								variant="ghost"
+								square
+								size="md"
+								class="data-[state=open]:bg-elevated"
+								:aria-label="t('common.account')"
+							/>
+						</UDropdownMenu>
 					</div>
-				</div>
-			</aside>
+				</aside>
+
+				<aside
+					class="flex flex-col overflow-hidden transition-[width,border-color] duration-200 ease-out motion-reduce:transition-none"
+					:class="sidebarMode === 'open' ? 'w-48 border-s border-default' : 'w-0 border-s-0'"
+				>
+					<LayoutNavPanel
+						:label="activeModule?.label"
+						:items="panelItems"
+					/>
+				</aside>
+			</div>
+
+			<Transition
+				enter-active-class="transition duration-150 ease-out"
+				enter-from-class="-translate-x-2 opacity-0"
+				enter-to-class="translate-x-0 opacity-100"
+				leave-active-class="transition duration-100 ease-in"
+				leave-from-class="translate-x-0 opacity-100"
+				leave-to-class="-translate-x-2 opacity-0"
+			>
+				<LayoutNavPanel
+					v-if="floatingPanelOpen"
+					:label="activeModule?.label"
+					:items="panelItems"
+					class="absolute inset-y-0 start-14 z-40 overflow-hidden rounded-e-xl shadow-lg ring ring-default"
+				/>
+			</Transition>
 		</div>
 
 		<!-- Mobile slideover -->
 		<USidebar
 			v-if="!isDesktop"
-			v-model:open="sidebarOpen"
+			v-model:open="mobileSidebarOpen"
 			variant="inset"
 			collapsible="offcanvas"
 			:menu="{
@@ -329,15 +346,7 @@ const userMenuContent = computed(() => ({
 			<template #footer>
 				<ControlsColorModeSwitch />
 
-				<USelect
-					v-if="organizationOptions.length > 0"
-					v-model="selectedOrganizationId"
-					:items="organizationOptions"
-					icon="i-lucide-building-2"
-					:placeholder="t('nav.organization')"
-					class="w-full"
-					size="sm"
-				/>
+				<ControlsOrganizationSwitch />
 
 				<UDropdownMenu
 					:items="userItems"
@@ -386,6 +395,13 @@ const userMenuContent = computed(() => ({
 			</div>
 
 			<div
+				v-if="$slots.tabs"
+				class="flex shrink-0 items-center border-b border-default px-4 max-lg:px-3"
+			>
+				<slot name="tabs" />
+			</div>
+
+			<div
 				class="flex min-h-0 flex-1 flex-col overflow-hidden"
 				:class="isEdgeAlignedPage ? 'p-0' : 'p-4 max-lg:p-3'"
 			>
@@ -396,7 +412,7 @@ const userMenuContent = computed(() => ({
 					:title="t('layout.noOrganizationAlert.title')"
 					:description="t('layout.noOrganizationAlert.description')"
 					:actions="[
-						{ label: t('layout.noOrganizationAlert.createOrganization'), to: '/organizations/new' },
+						{ label: t('layout.noOrganizationAlert.createOrganization'), to: '/organization/new' },
 						{ label: t('layout.noOrganizationAlert.enterCode'), to: '/join', variant: 'outline' },
 					]"
 					class="mb-4 shrink-0 max-lg:mb-3"

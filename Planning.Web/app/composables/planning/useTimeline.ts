@@ -382,8 +382,8 @@ function createTimeline(sources: TimelineSources = {}) {
       const dayLeft = dayLeftMap.value.get(dayKey) ?? 0;
       const isWeekend = isWeekendDate(day);
       if (isWeekend) {
-return dayLeft;
-}
+        return dayLeft;
+      }
       const fracMs = new Date(utcIso).getTime() - day.getTime();
       const fracPx = (fracMs / (24 * 60 * 60 * 1000)) * dayWidth.value;
       return dayLeft + fracPx;
@@ -410,8 +410,8 @@ return dayLeft;
         const date = new Date(key);
         const isWeekend = isWeekendDate(date);
         if (isWeekend) {
-continue;
-}
+          continue;
+        }
         if (left <= px) {
 bestKey = key;
 }

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ImportantWorkTimeRow } from '~/utils/planning/planningSettings';
-import { toTimeStrings } from '~/utils/planning/planningSettings';
 
 withDefaults(defineProps<{
   disabled?: boolean
@@ -10,8 +9,6 @@ withDefaults(defineProps<{
 
 const model = defineModel<ImportantWorkTimeRow[]>({ required: true });
 const { t } = useI18n();
-
-const previewTimes = computed(() => toTimeStrings(model.value));
 
 function addRow() {
   model.value.push({ label: '', startTime: '09:00' });
@@ -61,7 +58,5 @@ function removeRow(index: number) {
 			:disabled="disabled"
 			@click="addRow"
 		/>
-
-		<OrganizationsImportantWorkTimesPreview :important-work-times="previewTimes" />
 	</div>
 </template>

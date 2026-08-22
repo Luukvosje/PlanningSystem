@@ -1,16 +1,16 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery } from '@tanstack/vue-query';
 
-import { getApiCustomersId } from '~/generated/api/customers/customers'
+import { getApiCustomersId } from '~/generated/api/customers/customers';
 
-import { queryKeys } from '~/utils/queryKeys'
+import { queryKeys } from '~/utils/queryKeys';
 
 
 
 export function useCustomer(id: Ref<string> | string) {
 
-  const customerId = isRef(id) ? id : ref(id)
+  const customerId = isRef(id) ? id : ref(id);
 
-  const auth = useAuthStore()
+  const auth = useAuthStore();
 
 
 
@@ -22,7 +22,7 @@ export function useCustomer(id: Ref<string> | string) {
 
     enabled: computed(() => !!customerId.value && auth.isAuthenticated && auth.hasOrganization),
 
-  })
+  });
 
 }
 

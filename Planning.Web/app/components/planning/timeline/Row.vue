@@ -46,8 +46,8 @@ const layouts = computed(() =>
 const visibleRecords = computed(() => {
   const { scrollLeft, clientWidth } = store.timelineViewport;
   if (clientWidth <= 0) {
-return props.records;
-}
+    return props.records;
+  }
   const viewLeft = scrollLeft - rowLabelWidth;
   const viewRight = viewLeft + clientWidth;
   // Add generous buffer (2 screens) so blocks near the edge are already mounted when
@@ -56,8 +56,8 @@ return props.records;
   return props.records.filter((record) => {
     const layout = layouts.value.get(record.id);
     if (!layout) {
-return true;
-}
+      return true;
+    }
     return layout.leftPx + layout.widthPx >= viewLeft - buffer &&
       layout.leftPx <= viewRight + buffer;
   });
@@ -86,8 +86,8 @@ const availabilityOverlays = computed(() => {
 
 const selectionPreview = computed(() => {
   if (!selection.value) {
-return null;
-}
+    return null;
+  }
   const left = Math.min(selection.value.startPx, selection.value.endPx);
   const right = Math.max(selection.value.startPx, selection.value.endPx);
   const width = Math.max(right - left, minDurationPx.value);
@@ -123,8 +123,8 @@ function pxFromEvent(event: PointerEvent, target: HTMLElement): number {
 
 function resolveAssignedUserId(): string | null {
   if (store.rowMode === 'resource') {
-return props.rowId;
-}
+    return props.rowId;
+  }
   const filteredUserIds = store.filters.userIds;
   const activeUsers = (users.value ?? []).filter((u) => u.isActive !== false);
   if (filteredUserIds.length > 0) {
@@ -135,15 +135,15 @@ return props.rowId;
 
 function resolveCustomerId(): string | null {
   if (props.rowCustomerId) {
-return props.rowCustomerId;
-}
+    return props.rowCustomerId;
+  }
   if (store.rowMode === 'customer' && props.rowId !== '__unassigned__') {
-return props.rowId;
-}
+    return props.rowId;
+  }
   const filteredCustomerIds = store.filters.customerIds;
   if (filteredCustomerIds.length === 1) {
-return filteredCustomerIds[0]!;
-}
+    return filteredCustomerIds[0]!;
+  }
   return null;
 }
 
@@ -170,8 +170,8 @@ function openCreate(startPx: number, endPx: number) {
 
   const assignedUserId = resolveAssignedUserId();
   if (!assignedUserId) {
-return;
-}
+    return;
+  }
 
   store.openCreateSidebar({
     assignedUserId,
@@ -184,11 +184,11 @@ return;
 
 function onRowPointerDown(event: PointerEvent) {
   if (!canManage.value || event.button !== 0) {
-return;
-}
+    return;
+  }
   if ((event.target as HTMLElement).closest('[data-timeline-block]')) {
-return;
-}
+    return;
+  }
 
   event.preventDefault();
 

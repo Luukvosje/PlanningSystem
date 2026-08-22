@@ -112,6 +112,11 @@ export class Form<TSchema extends z.ZodType> {
     }
   };
 
+  /** Template ref binding for `<UForm>`; owned by the class so the view never writes to its prop. */
+  bindFormRef = (instance: unknown) => {
+    this.formRef.value = (instance ?? null) as UFormInstance<z.infer<TSchema>> | null;
+  };
+
   applyServerErrors = (err: unknown) => {
     if (isApiError(err) && err.validationErrors) {
       this.formRef.value?.setErrors(this.translateFieldErrors(err.validationErrors));
