@@ -453,6 +453,10 @@
     "validationFailed": "Er zijn een of meer validatiefouten opgetreden.",
     "unknown": "Onbekende fout",
     "genericFormError": "Er is iets misgegaan. Probeer het later opnieuw.",
+    "plannerOnly": {
+      "title": "Geen toegang",
+      "description": "De tijdlijn is alleen voor planners."
+    },
     "moduleDisabled": {
       "title": "Geen toegang",
       "description": "Deze module is uitgeschakeld voor jouw account."

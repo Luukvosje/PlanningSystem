@@ -453,6 +453,10 @@
     "validationFailed": "One or more validation errors occurred.",
     "unknown": "Unknown error",
     "genericFormError": "Something went wrong. Please try again later.",
+    "plannerOnly": {
+      "title": "No access",
+      "description": "The timeline is for planners only."
+    },
     "moduleDisabled": {
       "title": "No access",
       "description": "This module is disabled for your account."

@@ -49,6 +49,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
     }
   }
 
+  if (isPlannerOnlyRoute(to.path) && !canManagePlanning(auth.currentUser?.role)) {
+    toast.add({
+      title: t('errors.plannerOnly.title'),
+      description: t('errors.plannerOnly.description'),
+      color: 'warning',
+    });
+    return navigateTo('/planning');
+  }
+
   const requiredModule = getRequiredModuleForPath(to.path);
 
   if (!requiredModule) {
