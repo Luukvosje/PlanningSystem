@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { PlanningFormData } from '~/types/planning';
 import { DEFAULT_PLANNING_COLOR } from '~/types/planning';
+import { OPEN_SHIFT_SELECT_VALUE } from '~/utils/planning/constants';
 
 const { t } = useI18n();
 const store = usePlanningStore();
@@ -15,7 +16,7 @@ const form = reactive<PlanningFormData>({
   title: '',
   description: '',
   notes: '',
-  assignedUserId: '',
+  assignedUserId: OPEN_SHIFT_SELECT_VALUE,
   customerId: null,
   status: 'Confirmed',
   color: DEFAULT_PLANNING_COLOR,
@@ -47,7 +48,7 @@ return;
   form.title = record.title;
   form.description = record.description ?? '';
   form.notes = record.notes ?? '';
-  form.assignedUserId = record.assignedUserId ?? '';
+  form.assignedUserId = record.assignedUserId ?? OPEN_SHIFT_SELECT_VALUE;
   form.customerId = record.customerId ?? null;
   form.status = record.status;
   form.color = record.color;
@@ -62,7 +63,7 @@ watch(() => store.createDraft, (draft) => {
   form.title = '';
   form.description = '';
   form.notes = '';
-  form.assignedUserId = draft.assignedUserId ?? '';
+  form.assignedUserId = draft.assignedUserId ?? OPEN_SHIFT_SELECT_VALUE;
   form.customerId = draft.customerId ?? null;
   form.status = draft.status ?? store.filters.statuses[0] ?? 'Confirmed';
   form.color = DEFAULT_PLANNING_COLOR;
@@ -76,7 +77,7 @@ const userOptions = computed(() => {
     list = list.filter((u) => u.id && store.filters.userIds.includes(u.id));
   }
   return [
-    { label: t('planning.openShift'), value: '' },
+    { label: t('planning.openShift'), value: OPEN_SHIFT_SELECT_VALUE },
     ...list.map((u) => ({
       label: `${u.firstName} ${u.lastName}`.trim(),
       value: u.id!,
@@ -113,8 +114,12 @@ const isSaving = ref(false);
 const errorMessage = ref<string | null>(null);
 const fieldErrors = ref<Record<string, string[]>>({});
 
+const assignedEmployeeId = computed(() =>
+  form.assignedUserId === OPEN_SHIFT_SELECT_VALUE ? null : form.assignedUserId || null,
+);
+
 const { data: availabilityRules } = useAvailabilityRules({
-  employeeId: computed(() => form.assignedUserId || null),
+  employeeId: assignedEmployeeId,
 });
 
 const { checkAssignment } = useAvailabilityWarning(users, {
@@ -122,10 +127,10 @@ const { checkAssignment } = useAvailabilityWarning(users, {
 });
 
 const assignmentWarning = computed(() => {
-  if (!form.assignedUserId || !form.startUtc || !form.endUtc) {
+  if (!assignedEmployeeId.value || !form.startUtc || !form.endUtc) {
     return null;
   }
-  const result = checkAssignment(form.assignedUserId, form.startUtc, form.endUtc);
+  const result = checkAssignment(assignedEmployeeId.value, form.startUtc, form.endUtc);
   return result.hasConflict ? result.message : null;
 });
 
@@ -169,7 +174,7 @@ async function save() {
         title: form.title,
         description: form.description || null,
         notes: form.notes || null,
-        assignedUserId: form.assignedUserId || null,
+        assignedUserId: assignedEmployeeId.value,
         customerId: form.customerId,
         startUtc: form.startUtc,
         endUtc: form.endUtc,
@@ -187,7 +192,7 @@ return;
       title: form.title,
       description: form.description || null,
       notes: form.notes || null,
-      assignedUserId: form.assignedUserId || null,
+      assignedUserId: assignedEmployeeId.value,
       customerId: form.customerId,
       status: form.status,
       color: form.color,

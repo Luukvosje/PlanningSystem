@@ -60,7 +60,7 @@ export interface PlanningFormData {
   title: string
   description: string
   notes: string
-  /** Empty string is the open-shift option in the employee select; it is sent as null. */
+  /** Holds OPEN_SHIFT_SELECT_VALUE for an open shift; that is sent to the API as null. */
   assignedUserId: string
   customerId: string | null
   status: PlanningStatus
