@@ -21,8 +21,9 @@ public class PlanningRecordConfiguration : IEntityTypeConfiguration<PlanningReco
         builder.Property(x => x.CustomerId)
             .IsRequired(false);
 
+        // Nullable: a shift without an employee is an open shift (PlanningRecord.IsOpenShift).
         builder.Property(x => x.AssignedUserId)
-            .IsRequired();
+            .IsRequired(false);
 
         builder.Property(x => x.Title)
             .IsRequired()

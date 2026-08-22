@@ -13,7 +13,6 @@ public abstract class PlanningRequestValidator<T> : AbstractValidator<T>
 {
     protected PlanningRequestValidator()
     {
-        RuleFor(x => x.AssignedUserId).NotEmpty();
         RuleFor(x => x.Title).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Description).MaximumLength(4000);
         RuleFor(x => x.Notes).MaximumLength(4000);
@@ -31,7 +30,6 @@ public class MovePlanningRequestValidator : AbstractValidator<MovePlanningReques
 {
     public MovePlanningRequestValidator()
     {
-        RuleFor(x => x.AssignedUserId).NotEmpty();
         RuleFor(x => x.EndUtc).GreaterThan(x => x.StartUtc);
     }
 }

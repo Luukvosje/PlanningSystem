@@ -6,7 +6,7 @@ internal static class PlanningMapper
 {
     public static PlanningResponse ToResponse(
         PlanningRecord planningRecord,
-        string assignedUserName,
+        string? assignedUserName,
         string? customerName,
         bool hasOverlap) =>
         new(

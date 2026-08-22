@@ -302,7 +302,9 @@ public class PlanningService : TenantServiceBase, IPlanningService
         return records
             .Select(record => PlanningMapper.ToResponse(
                 record,
-                userNames.GetValueOrDefault(record.AssignedUserId, "Onbekend"),
+                record.AssignedUserId.HasValue
+                    ? userNames.GetValueOrDefault(record.AssignedUserId.Value, "Onbekend")
+                    : null,
                 record.CustomerId.HasValue
                     ? customerNames.GetValueOrDefault(record.CustomerId.Value)
                     : null,
@@ -316,9 +318,11 @@ public class PlanningService : TenantServiceBase, IPlanningService
 
         // A cancelled booking no longer occupies the employee, so it neither overlaps nor causes
         // one. Same rule as AvailabilityRuleService.HasSchedulingConflictAsync.
+        // Open shifts are excluded as well: with no employee attached they cannot occupy anyone,
+        // so two open shifts at the same time are not a conflict.
         var byUser = records
-            .Where(x => x.Status != PlanningStatus.Cancelled)
-            .GroupBy(x => x.AssignedUserId);
+            .Where(x => x.Status != PlanningStatus.Cancelled && x.AssignedUserId.HasValue)
+            .GroupBy(x => x.AssignedUserId!.Value);
 
         foreach (var group in byUser)
         {
@@ -345,7 +349,7 @@ public class PlanningService : TenantServiceBase, IPlanningService
     private async Task<Result<PlanningResponse>?> ValidateReferencesAsync(
         Guid organizationId,
         Guid? customerId,
-        Guid assignedUserId,
+        Guid? assignedUserId,
         CancellationToken cancellationToken)
     {
         if (customerId.HasValue)
@@ -360,12 +364,21 @@ public class PlanningService : TenantServiceBase, IPlanningService
         return await ValidateUserReferenceAsync(organizationId, assignedUserId, cancellationToken);
     }
 
+    /// <summary>
+    /// Returns null when the reference is fine. An unassigned shift is an open shift, so there is
+    /// nothing to check — only a supplied user has to exist inside the same organization.
+    /// </summary>
     private async Task<Result<PlanningResponse>?> ValidateUserReferenceAsync(
         Guid organizationId,
-        Guid assignedUserId,
+        Guid? assignedUserId,
         CancellationToken cancellationToken)
     {
-        var user = await _userRepository.GetByIdAsync(assignedUserId, cancellationToken);
+        if (!assignedUserId.HasValue)
+        {
+            return null;
+        }
+
+        var user = await _userRepository.GetByIdAsync(assignedUserId.Value, cancellationToken);
         if (user is null || user.OrganizationId != organizationId)
         {
             return Result<PlanningResponse>.Failure("Assigned user not found for organization.", Failures.NotFound);
