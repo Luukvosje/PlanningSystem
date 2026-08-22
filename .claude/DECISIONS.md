@@ -23,6 +23,22 @@ plan-document (bv. `MVP_GAPS_PLAN.md`) totdat er een keuze is, en verhuizen dan 
 
 ## Log
 
+### 2026-08-22 — Tijdlijn is een plannertool, medewerker ziet alleen eigen week
+Besluit: `/timeline` (de organisatiebrede planning) vereist nu een plannerrol — weg uit het
+menu voor medewerkers én geblokkeerd in `module.global.ts`, met redirect naar `/planning`.
+De medewerker houdt zijn eigen weekoverzicht. Open diensten kunnen dus alleen door een
+planner gevuld worden; de "medewerker claimt open dienst"-flow blijft uitgesteld.
+Waarom: een medewerker had geen reden om te zien wanneer collega's werken, en het menu-item
+weghalen alleen is beveiliging via het menu — de URL bleef open. `/timeline` stond ook
+helemaal niet in `ROUTE_MODULE_MAP`, dus zelfs zonder de Planning-module was de pagina
+bereikbaar; dat is meteen rechtgezet.
+Alternatief overwogen: open diensten wél tonen in het persoonlijke weekoverzicht met "meld je
+bij je planner". Bewaard voor later; communicatie loopt tot die tijd via de gedeelde
+weekplanning (WhatsApp).
+Status: definitief voor de MVP. De claim-flow kost een nieuw endpoint, een eerste
+mutatie-recht voor medewerkers, een race-regel én notificaties (SMTP = hangt aan hosting) —
+pas zinvol als een betalende klant erom vraagt.
+
 ### 2026-08-22 — Geen AI-companion in de planning
 Besluit: het niet-doel "AI-planning" uit 2026-08-16 blijft staan. Geen chat-companion, geen
 LLM in de planningsflow. Conflictsignalering en "wie kan deze open dienst doen" blijven
