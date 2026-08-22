@@ -53,12 +53,19 @@ const isDirty = computed(() => unref(props.form.isDirty));
 						v-if="form.grid"
 						class="grid grid-cols-1 items-start gap-x-4 gap-y-1 py-3 sm:grid-cols-[200px_1fr]"
 					>
-						<p class="text-muted text-sm sm:pt-2">
-							{{ control.label }}<span v-if="control.required"> *</span>
-						</p>
+						<div class="sm:pt-1.5">
+							<p class="text-muted text-sm">
+								{{ control.label }}<span v-if="control.required"> *</span>
+							</p>
+							<p
+								v-if="control.description"
+								class="text-dimmed mt-1 text-xs"
+							>
+								{{ control.description }}
+							</p>
+						</div>
 						<UFormField
 							:name="control.name"
-							:description="control.description"
 							v-bind="control.fieldProps"
 						>
 							<FormControl
@@ -124,7 +131,7 @@ const isDirty = computed(() => unref(props.form.isDirty));
 		<div
 			v-if="$slots.footer"
 			class="border-t border-default pt-4"
-			:class="isDirty ? 'sticky bottom-0 z-10 bg-default' : undefined"
+			:class="isDirty ? 'sticky bottom-0 z-10 bg-default pb-3 -mb-3 sm:pb-4 sm:-mb-4' : undefined"
 		>
 			<slot
 				name="footer"

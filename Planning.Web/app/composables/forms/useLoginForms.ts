@@ -19,7 +19,7 @@ export function useLoginForms() {
       return '/dashboard';
     }
 
-    return inviteCode ? '/join' : '/organizations/new';
+    return inviteCode ? '/join' : '/organization/new';
   }
 
   async function navigateAfterLogin() {

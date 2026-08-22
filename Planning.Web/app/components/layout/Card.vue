@@ -26,17 +26,21 @@ function mergeSlotClasses(...classes: Array<string | undefined>): string[] | und
   return filtered.length ? filtered : undefined;
 }
 
+/**
+ * UCard klipt zijn root standaard (`overflow-hidden`). Dat maakt de kaart zelf een scrollport, met
+ * twee gevolgen: als flex-item krijgt hij een automatische minimumhoogte van 0 en krimpt hij in de
+ * `h-full` kolom van LayoutPageContainer tot vensterhoogte - inhoud afgesneden, niets om te
+ * scrollen - en een `sticky bottom-0` footer plakt aan de kaart in plaats van aan de pagina.
+ */
 const cardUi = computed(() => {
+  const root = mergeSlotClasses('overflow-visible', props.ui?.root);
   const header = mergeSlotClasses(props.fill ? 'shrink-0' : undefined, props.ui?.header);
   const body = mergeSlotClasses(props.fill ? 'flex min-h-0 flex-1 flex-col overflow-visible' : undefined, props.ui?.body);
   const footer = mergeSlotClasses(props.fill ? 'shrink-0' : undefined, props.ui?.footer);
 
-  if (!props.ui && !header && !body && !footer) {
-    return undefined;
-  }
-
   return {
     ...props.ui,
+    root,
     ...(header ? { header } : {}),
     ...(body ? { body } : {}),
     ...(footer ? { footer } : {}),
@@ -47,7 +51,7 @@ const cardUi = computed(() => {
 <template>
 	<UCard
 		:variant="variant"
-		:class="fill ? 'flex h-full min-h-0 flex-1 flex-col overflow-visible' : undefined"
+		:class="fill ? 'flex h-full min-h-0 flex-1 flex-col' : undefined"
 		:ui="cardUi"
 	>
 		<template

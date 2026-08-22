@@ -2,9 +2,14 @@
 import type { EditInstance } from '~/lib/form/useEdit';
 
 /**
- * A section showing one entity's fields: the live form when you may edit them, the read-only view
- * when you may not. No Edit button and no mode switch — being allowed to change something is not a
+ * A card showing one entity's fields: the live form when you may edit them, the read-only view when
+ * you may not. No Edit button and no mode switch — being allowed to change something is not a
  * reason to make you ask for it first.
+ *
+ * This is the standard for every entity's editable fields (customer, employee, organisation,
+ * profile): a `LayoutCard`, not a plain `LayoutSection`, so the form reads as one thing you are
+ * filling in rather than as loose fields on the page. Add a field to the edit composable's
+ * `controls` and both the form and the read-only view pick it up.
  *
  * `entity` must already be loaded; render this behind a `v-if`.
  */
@@ -30,7 +35,7 @@ const values = computed(() => props.edit.toState(props.entity));
 </script>
 
 <template>
-	<LayoutSection
+	<LayoutCard
 		:title="title"
 		:description="description"
 	>
@@ -48,5 +53,5 @@ const values = computed(() => props.edit.toState(props.entity));
 			:controls="controls"
 			:values="values"
 		/>
-	</LayoutSection>
+	</LayoutCard>
 </template>

@@ -5,7 +5,7 @@ const auth = useAuthStore();
 const { t } = useI18n();
 
 if (auth.isAuthenticated) {
-  await navigateTo(auth.hasOrganization ? '/dashboard' : '/organizations/new');
+  await navigateTo(auth.hasOrganization ? '/dashboard' : '/organization/new');
 }
 </script>
 

@@ -26,11 +26,11 @@ export async function resolveOrganizationTarget(
       queryFn: () => getApiOrganizationsMine(),
     });
   } catch {
-    return '/organizations/new';
+    return '/organization/new';
   }
 
   if (!memberships.length) {
-    return '/organizations/new';
+    return '/organization/new';
   }
 
   if (memberships.length === 1 && memberships[0]?.organizationId) {
@@ -39,5 +39,5 @@ export async function resolveOrganizationTarget(
     return intendedPath;
   }
 
-  return '/organizations/select';
+  return '/organization/select';
 }

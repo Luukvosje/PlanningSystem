@@ -265,6 +265,15 @@
       "title": "Modules",
       "description": "Decide which modules this user can use."
     },
+    "updated": "Team member updated",
+    "fields": {
+      "role": "Role",
+      "modules": "Modules"
+    },
+    "access": {
+      "title": "Role and modules",
+      "description": "Decide what this team member may do and see."
+    },
     "tabs": {
       "details": "Details",
       "planning": "Planning"
@@ -361,6 +370,11 @@
     "loading": "Loading organization...",
     "details": "Details",
     "manageDescription": "Manage your organization's details.",
+    "tabs": {
+      "details": "Details",
+      "planning": "Planning",
+      "modules": "Modules"
+    },
     "created": "Organization created",
     "invited": "Invited?",
     "fields": {
@@ -389,7 +403,7 @@
     },
     "planningSettings": {
       "title": "Planning settings",
-      "description": "Important working times and opening hours for the planning view.",
+      "description": "Opening hours and important working times for the planning view.",
       "loading": "Loading planning settings...",
       "importantTimes": "Important working times",
       "importantTimesDescription": "These times are highlighted on the planning, used for smart snap on new shifts, and can be applied with one click when scheduling.",
@@ -403,7 +417,6 @@
     },
     "toast": {
       "modulesUpdated": "Organization modules updated",
-      "userModulesUpdated": "User modules updated",
       "updated": "Organization updated",
       "planningSettingsSaved": "Planning settings saved",
       "logoSaved": "Logo saved"
@@ -443,9 +456,13 @@
     }
   },
   "layout": {
-    "toggleSidebarShow": "Show navigation",
-    "toggleSidebarHide": "Hide navigation",
     "toggleSidebarMobile": "Toggle sidebar",
+    "sidebarMode": {
+      "label": "Navigation",
+      "open": "Always open",
+      "auto": "Automatic",
+      "closed": "Closed"
+    },
     "headerActions": {
       "open": "Actions"
     },

@@ -1,9 +1,9 @@
 import type { FormControl } from '~/lib/form/control-types';
 
 /**
- * The employee fields for a read-only view. Shaped like an edit composable's `controls` so it can
- * swap over to `useEdit` unchanged once the API grows a `PUT /api/users/{id}` — today it only
- * exposes role and modules, so there is nothing to edit here yet.
+ * The employee fields that are read-only for an administrator: the API only lets you change your
+ * own name and e-mail (profile endpoint). Shaped like an edit composable's `controls` so it can
+ * move to `useUserEdit` unchanged once the API grows a `PUT /api/users/{id}`.
  */
 export function useUserFields() {
   const { t } = useI18n();

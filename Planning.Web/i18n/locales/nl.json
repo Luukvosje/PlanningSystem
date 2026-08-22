@@ -265,6 +265,15 @@
       "title": "Modules",
       "description": "Bepaal welke modules deze gebruiker mag gebruiken."
     },
+    "updated": "Teamlid bijgewerkt",
+    "fields": {
+      "role": "Rol",
+      "modules": "Modules"
+    },
+    "access": {
+      "title": "Rol en modules",
+      "description": "Bepaal wat dit teamlid mag doen en zien."
+    },
     "tabs": {
       "details": "Gegevens",
       "planning": "Planning"
@@ -361,6 +370,11 @@
     "loading": "Organisatie laden...",
     "details": "Gegevens",
     "manageDescription": "Beheer de gegevens van je organisatie.",
+    "tabs": {
+      "details": "Gegevens",
+      "planning": "Planning",
+      "modules": "Modules"
+    },
     "created": "Organisatie aangemaakt",
     "invited": "Uitgenodigd?",
     "fields": {
@@ -389,7 +403,7 @@
     },
     "planningSettings": {
       "title": "Planninginstellingen",
-      "description": "Belangrijke werktijden en openingstijden voor de planningweergave.",
+      "description": "Openingstijden en belangrijke werktijden voor de planningweergave.",
       "loading": "Planninginstellingen laden...",
       "importantTimes": "Belangrijke werktijden",
       "importantTimesDescription": "Deze tijden worden benadrukt op de planning, gebruikt voor smart snap bij nieuwe diensten, en zijn met één klik toepasbaar bij het inplannen.",
@@ -403,7 +417,6 @@
     },
     "toast": {
       "modulesUpdated": "Organisatiemodules bijgewerkt",
-      "userModulesUpdated": "Gebruikersmodules bijgewerkt",
       "updated": "Organisatie bijgewerkt",
       "planningSettingsSaved": "Planninginstellingen opgeslagen",
       "logoSaved": "Logo opgeslagen"
@@ -443,9 +456,13 @@
     }
   },
   "layout": {
-    "toggleSidebarShow": "Navigatie tonen",
-    "toggleSidebarHide": "Navigatie verbergen",
     "toggleSidebarMobile": "Zijbalk in-/uitschakelen",
+    "sidebarMode": {
+      "label": "Navigatie",
+      "open": "Altijd open",
+      "auto": "Automatisch",
+      "closed": "Dicht"
+    },
     "headerActions": {
       "open": "Acties"
     },

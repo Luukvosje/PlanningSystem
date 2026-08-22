@@ -11,18 +11,9 @@ const { t, locale } = useI18n();
 const intlLocale = computed(() => getIntlLocale(locale.value));
 
 const PREVIEW_DAY_WIDTH = 640;
-const hourSlotWidth = PREVIEW_DAY_WIDTH / 24;
 
 const importantLines = computed(() =>
   getImportantGridLines(PREVIEW_DAY_WIDTH, uniqueImportantTimes(props.importantWorkTimes), intlLocale.value),
-);
-
-const _hourLines = computed(() =>
-  Array.from({ length: 24 }, (_, hour) => ({
-    leftPx: hour * hourSlotWidth,
-    showLabel: hour % 6 === 0,
-    label: `${String(hour).padStart(2, '0')}:00`,
-  })),
 );
 </script>
 

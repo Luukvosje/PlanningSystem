@@ -79,6 +79,15 @@ skips the ownership check, treat it as a bug, not a style nit.
   of an API contract mismatch, not something to imitate — don't copy this pattern into
   new modules. If you touch planning API code, prefer migrating toward the generated
   client over extending the manual normalizer.
+- **Editable entity fields always live in a form inside a card.** Declare the fields once in
+  a `composables/edit/use*Edit.ts` (`useEdit` + a zod schema), then render them with
+  `FormEditableSection`: it wraps the form in a `LayoutCard` and falls back to `FormDisplay`
+  for users without edit rights. No read-only-then-click-Edit step and no edit modal. Fields
+  the API can't update stay read-only (`FormDisplay`, e.g. `useUserFields`) — but anything
+  that *is* editable belongs in the form, one Save for the whole card, not per-field widgets
+  that save on change.
+- `LayoutSection` is for read-only blocks (lists, charts, empty states); `LayoutCard` for
+  anything you can type into.
 - TypeScript `strict: true`, and ESLint enforces `no-explicit-any: 'error'` — don't use
   `any` or `as any` to route around a type error; fix the type.
 - Respect the existing ESLint config (`eslint.config.mjs`) instead of reformatting around
