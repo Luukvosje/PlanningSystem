@@ -8,7 +8,8 @@
 import type { PlanningStatus } from './planningStatus';
 
 export interface UpdatePlanningRequest {
-  assignedUserId: string;
+  /** @nullable */
+  assignedUserId?: string | null;
   /** @nullable */
   customerId?: string | null;
   title: string;

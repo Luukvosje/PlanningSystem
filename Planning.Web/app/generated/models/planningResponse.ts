@@ -10,8 +10,10 @@ import type { PlanningStatus } from './planningStatus';
 export interface PlanningResponse {
   id: string;
   organizationId: string;
-  assignedUserId: string;
-  assignedUserName: string;
+  /** @nullable */
+  assignedUserId?: string | null;
+  /** @nullable */
+  assignedUserName?: string | null;
   /** @nullable */
   customerId?: string | null;
   /** @nullable */
