@@ -12,6 +12,7 @@ import {
   snapPxToTimeline,
 } from '~/utils/planning/blockSnap';
 import { getUnavailableOverlaysForMatrix } from '~/utils/planning/availabilityMath';
+import { OPEN_SHIFT_ROW_ID, UNASSIGNED_CUSTOMER_ROW_ID } from '~/utils/planning/constants';
 
 const props = defineProps<{
   rowId: string
@@ -123,7 +124,7 @@ function pxFromEvent(event: PointerEvent, target: HTMLElement): number {
 
 function resolveAssignedUserId(): string | null {
   if (store.rowMode === 'resource') {
-return props.rowId;
+return props.rowId === OPEN_SHIFT_ROW_ID ? null : props.rowId;
 }
   const filteredUserIds = store.filters.userIds;
   const activeUsers = (users.value ?? []).filter((u) => u.isActive !== false);
@@ -137,7 +138,7 @@ function resolveCustomerId(): string | null {
   if (props.rowCustomerId) {
 return props.rowCustomerId;
 }
-  if (store.rowMode === 'customer' && props.rowId !== '__unassigned__') {
+  if (store.rowMode === 'customer' && props.rowId !== UNASSIGNED_CUSTOMER_ROW_ID) {
 return props.rowId;
 }
   const filteredCustomerIds = store.filters.customerIds;
@@ -168,13 +169,9 @@ function openCreate(startPx: number, endPx: number) {
     endUtc = new Date(new Date(startUtc).getTime() + minDurationMs).toISOString();
   }
 
-  const assignedUserId = resolveAssignedUserId();
-  if (!assignedUserId) {
-return;
-}
-
+  // A null employee is valid: that is an open shift.
   store.openCreateSidebar({
-    assignedUserId,
+    assignedUserId: resolveAssignedUserId(),
     customerId: resolveCustomerId(),
     status: store.filters.statuses[0],
     startUtc,

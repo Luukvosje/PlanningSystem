@@ -20,7 +20,7 @@ const project = computed(() => props.record.description?.trim() || null);
 	<div class="max-w-56 space-y-2 py-0.5 text-xs">
 		<div class="space-y-0.5">
 			<p class="font-semibold text-highlighted">
-				{{ record.assignedUserName }}
+				{{ record.assignedUserName || t('planning.openShift') }}
 			</p>
 			<p class="text-muted">
 				{{ formatTimeRange(record.startUtc, record.endUtc, intlLocale) }}

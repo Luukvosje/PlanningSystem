@@ -218,6 +218,7 @@
   "dashboard": {
     "overview": "Overview of {organization}",
     "teamMembers": "Team members",
+    "openShiftsThisWeek": "Open shifts this week",
     "yourRole": "Your role",
     "quickLinks": "Quick links",
     "viewPlanning": "View planning",
@@ -264,6 +265,8 @@
       "week": "Week"
     },
     "withoutCustomer": "Without customer",
+    "openShift": "Open shift",
+    "openShifts": "Open shifts",
     "duplicate": "Duplicate",
     "previousPeriod": "Previous period",
     "nextPeriod": "Next period",

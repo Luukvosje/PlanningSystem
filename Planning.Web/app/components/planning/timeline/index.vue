@@ -9,6 +9,7 @@ import {
   BLOCK_PADDING,
 } from '~/utils/planning/timelineMath';
 import { addDays, startOfMonth } from '~/utils/planning/dateUtils';
+import { UNASSIGNED_CUSTOMER_ROW_ID } from '~/utils/planning/constants';
 
 const props = defineProps<{
   rows: TimelineRow[]
@@ -338,7 +339,7 @@ watch(
 					:row-id="row.id"
 					:label="row.label"
 					:records="row.records"
-					:row-customer-id="store.rowMode === 'customer' && row.id !== '__unassigned__' ? row.id : null"
+					:row-customer-id="store.rowMode === 'customer' && row.id !== UNASSIGNED_CUSTOMER_ROW_ID ? row.id : null"
 					:availability-periods="availabilityPeriods"
 				/>
 				<!-- Bottom spacer for virtualised rows below viewport -->

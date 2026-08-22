@@ -47,7 +47,7 @@ return;
   form.title = record.title;
   form.description = record.description ?? '';
   form.notes = record.notes ?? '';
-  form.assignedUserId = record.assignedUserId;
+  form.assignedUserId = record.assignedUserId ?? '';
   form.customerId = record.customerId ?? null;
   form.status = record.status;
   form.color = record.color;
@@ -62,7 +62,7 @@ watch(() => store.createDraft, (draft) => {
   form.title = '';
   form.description = '';
   form.notes = '';
-  form.assignedUserId = draft.assignedUserId;
+  form.assignedUserId = draft.assignedUserId ?? '';
   form.customerId = draft.customerId ?? null;
   form.status = draft.status ?? store.filters.statuses[0] ?? 'Confirmed';
   form.color = DEFAULT_PLANNING_COLOR;
@@ -75,10 +75,13 @@ const userOptions = computed(() => {
   if (isCreateMode.value && store.filters.userIds.length > 0) {
     list = list.filter((u) => u.id && store.filters.userIds.includes(u.id));
   }
-  return list.map((u) => ({
-    label: `${u.firstName} ${u.lastName}`.trim(),
-    value: u.id!,
-  }));
+  return [
+    { label: t('planning.openShift'), value: '' },
+    ...list.map((u) => ({
+      label: `${u.firstName} ${u.lastName}`.trim(),
+      value: u.id!,
+    })),
+  ];
 });
 
 const customerOptions = computed(() => {
@@ -166,7 +169,7 @@ async function save() {
         title: form.title,
         description: form.description || null,
         notes: form.notes || null,
-        assignedUserId: form.assignedUserId,
+        assignedUserId: form.assignedUserId || null,
         customerId: form.customerId,
         startUtc: form.startUtc,
         endUtc: form.endUtc,
@@ -184,7 +187,7 @@ return;
       title: form.title,
       description: form.description || null,
       notes: form.notes || null,
-      assignedUserId: form.assignedUserId,
+      assignedUserId: form.assignedUserId || null,
       customerId: form.customerId,
       status: form.status,
       color: form.color,
@@ -301,7 +304,6 @@ return;
 				<UFormField
 					:label="t('planning.fields.employee')"
 					name="assignedUserId"
-					required
 					:error="fieldError('AssignedUserId')"
 				>
 					<USelect

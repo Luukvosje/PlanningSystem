@@ -20,6 +20,11 @@ return t('planning.fields.employee');
   }
 
   function checkRecord(record: Pick<PlanningRecord, 'assignedUserId' | 'startUtc' | 'endUtc'>) {
+    // An open shift has nobody assigned, so there is no availability to conflict with.
+    if (!record.assignedUserId) {
+      return { hasConflict: false };
+    }
+
     return hasAvailabilityConflict(
       record.assignedUserId,
       record.startUtc,

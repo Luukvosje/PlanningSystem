@@ -42,7 +42,8 @@ export interface TimelineRow {
 }
 
 export interface CreatePlanningDraft {
-  assignedUserId: string
+  /** null creates an open shift: a shift nobody is assigned to yet. */
+  assignedUserId: string | null
   customerId?: string | null
   status?: PlanningStatus
   startUtc: string
@@ -59,6 +60,7 @@ export interface PlanningFormData {
   title: string
   description: string
   notes: string
+  /** Empty string is the open-shift option in the employee select; it is sent as null. */
   assignedUserId: string
   customerId: string | null
   status: PlanningStatus

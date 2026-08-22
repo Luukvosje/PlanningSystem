@@ -218,6 +218,7 @@
   "dashboard": {
     "overview": "Overzicht van {organization}",
     "teamMembers": "Teamleden",
+    "openShiftsThisWeek": "Open diensten deze week",
     "yourRole": "Jouw rol",
     "quickLinks": "Snel naar",
     "viewPlanning": "Bekijk planning",
@@ -264,6 +265,8 @@
       "week": "Week"
     },
     "withoutCustomer": "Zonder klant",
+    "openShift": "Open dienst",
+    "openShifts": "Open diensten",
     "duplicate": "Dupliceren",
     "previousPeriod": "Vorige periode",
     "nextPeriod": "Volgende periode",

@@ -19,7 +19,7 @@ type ResizeState = {
   edge: 'start' | 'end'
   leftPx: number
   widthPx: number
-  assignedUserId: string
+  assignedUserId: string | null
   customerId: string | null
 }
 
@@ -131,7 +131,7 @@ export function useResizePlanning() {
       edge,
       leftPx: layout.leftPx,
       widthPx: layout.widthPx,
-      assignedUserId: record.assignedUserId,
+      assignedUserId: record.assignedUserId ?? null,
       customerId: record.customerId ?? null,
     }
 
