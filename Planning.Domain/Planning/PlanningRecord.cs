@@ -127,6 +127,12 @@ public class PlanningRecord : TenantEntity
         Touch(utcNow);
     }
 
+    /// <summary>
+    /// The copy keeps a concept status so a draft stays a draft, but anything else - including a
+    /// completed or cancelled original - copies as a confirmed booking. Copying to Planned across
+    /// the board hid the duplicate on a board with concepts turned off, and copying a terminal
+    /// status produced a booking that could never change status again.
+    /// </summary>
     public PlanningRecord Duplicate(
         Guid? assignedUserId,
         DateTime startUtc,
@@ -145,7 +151,7 @@ public class PlanningRecord : TenantEntity
             Notes,
             startUtc,
             endUtc,
-            PlanningStatus.Planned,
+            Status == PlanningStatus.Planned ? PlanningStatus.Planned : PlanningStatus.Confirmed,
             Color,
             utcNow);
     }

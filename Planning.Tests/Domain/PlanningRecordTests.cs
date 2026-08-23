@@ -128,16 +128,26 @@ public class PlanningRecordTests
     }
 
     [Fact]
-    public void Duplicate_always_lands_as_planned_and_belongs_to_the_same_organization()
+    public void Duplicate_confirms_a_non_concept_copy_and_belongs_to_the_same_organization()
     {
         var original = Create(status: PlanningStatus.Completed);
 
         var copy = original.Duplicate(null, Now.AddDays(1), Now.AddDays(1).AddHours(1), Now);
 
-        Assert.Equal(PlanningStatus.Planned, copy.Status);
+        Assert.Equal(PlanningStatus.Confirmed, copy.Status);
         Assert.Equal(OrganizationId, copy.OrganizationId);
         Assert.Equal(original.AssignedUserId, copy.AssignedUserId);
         Assert.NotEqual(original.Id, copy.Id);
+    }
+
+    [Fact]
+    public void Duplicate_keeps_a_concept_a_concept()
+    {
+        var original = Create(status: PlanningStatus.Planned);
+
+        var copy = original.Duplicate(null, Now.AddDays(1), Now.AddDays(1).AddHours(1), Now);
+
+        Assert.Equal(PlanningStatus.Planned, copy.Status);
     }
 
     [Fact]
