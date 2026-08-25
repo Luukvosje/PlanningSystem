@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AvailabilityRule } from '~/types/availability';
 import { formatOneTimeRuleLabel, formatWeeklyRuleLabel } from '~/utils/planning/availabilityMath';
-import { getIntlLocale } from '~/utils/planning/dateUtils';
+import { getIntlLocale, toDateKey } from '~/utils/planning/dateUtils';
 
 const props = defineProps<{
   employeeId: string
@@ -32,6 +32,24 @@ const oneTimeRules = computed(() =>
     .filter((rule) => rule.type === 'OneTime')
     .sort((a, b) => (a.date ?? '').localeCompare(b.date ?? '')),
 );
+
+/**
+ * Today is the line between an exception you still have to plan around and one that is only
+ * history. Read once at setup: a planner who leaves this page open past midnight is not worth a
+ * ticking clock.
+ */
+const todayKey = toDateKey(new Date());
+
+const upcomingOneTimeRules = computed(() =>
+  oneTimeRules.value.filter((rule) => (rule.date ?? '') >= todayKey),
+);
+
+/** Most recent first - the further back, the less anyone cares. */
+const pastOneTimeRules = computed(() =>
+  oneTimeRules.value.filter((rule) => (rule.date ?? '') < todayKey).reverse(),
+);
+
+const showPastExceptions = ref(false);
 
 const employeeOptions = computed(() =>
   (users.value ?? [])
@@ -99,6 +117,75 @@ async function removeRule(rule: AvailabilityRule) {
 		/>
 
 		<template v-else>
+			<!--
+				Exceptions come first: the weekly pattern is configuration you set once, an exception is
+				the daily operation ("Jan is off tomorrow"). What you do often belongs at the top.
+			-->
+			<section class="flex flex-col gap-3">
+				<div class="flex items-center justify-between gap-3">
+					<div>
+						<h2 class="text-lg font-medium">
+							{{ t('availability.oneTimeExceptions') }}
+						</h2>
+						<p class="text-sm text-muted">
+							{{ t('availability.oneTimeExceptionsDescription') }}
+						</p>
+					</div>
+					<UButton
+						icon="i-lucide-plus"
+						:label="t('common.actions.add')"
+						@click="openOneTimeCreate"
+					/>
+				</div>
+
+				<UiEmptyState
+					v-if="upcomingOneTimeRules.length === 0"
+					:title="t('availability.noOneTimeExceptions')"
+				/>
+
+				<div
+					v-else
+					class="flex flex-col gap-2"
+				>
+					<AvailabilityRuleRow
+						v-for="rule in upcomingOneTimeRules"
+						:key="rule.id"
+						:label="formatOneTimeRuleLabel(rule.date!, rule.startTime, rule.endTime, t, intlLocale, rule.reason)"
+						:removing="api.remove.isPending.value"
+						@edit="openOneTimeEdit(rule)"
+						@remove="removeRule(rule)"
+					/>
+				</div>
+
+				<div v-if="pastOneTimeRules.length > 0">
+					<UButton
+						:icon="showPastExceptions ? 'i-lucide-chevron-up' : 'i-lucide-history'"
+						variant="link"
+						color="neutral"
+						size="sm"
+						class="px-0"
+						:label="showPastExceptions
+							? t('availability.hidePastExceptions')
+							: t('availability.showPastExceptions', { count: pastOneTimeRules.length })"
+						@click="showPastExceptions = !showPastExceptions"
+					/>
+
+					<div
+						v-if="showPastExceptions"
+						class="mt-2 flex flex-col gap-2 opacity-70"
+					>
+						<AvailabilityRuleRow
+							v-for="rule in pastOneTimeRules"
+							:key="rule.id"
+							:label="formatOneTimeRuleLabel(rule.date!, rule.startTime, rule.endTime, t, intlLocale, rule.reason)"
+							:removing="api.remove.isPending.value"
+							@edit="openOneTimeEdit(rule)"
+							@remove="removeRule(rule)"
+						/>
+					</div>
+				</div>
+			</section>
+
 			<section class="flex flex-col gap-3">
 				<div class="flex items-center justify-between gap-3">
 					<div>
@@ -132,43 +219,6 @@ async function removeRule(rule: AvailabilityRule) {
 						:description="rule.reason"
 						:removing="api.remove.isPending.value"
 						@edit="openWeeklyEdit(rule)"
-						@remove="removeRule(rule)"
-					/>
-				</div>
-			</section>
-
-			<section class="flex flex-col gap-3">
-				<div class="flex items-center justify-between gap-3">
-					<div>
-						<h2 class="text-lg font-medium">
-							{{ t('availability.oneTimeExceptions') }}
-						</h2>
-						<p class="text-sm text-muted">
-							{{ t('availability.oneTimeExceptionsDescription') }}
-						</p>
-					</div>
-					<UButton
-						icon="i-lucide-plus"
-						:label="t('common.actions.add')"
-						@click="openOneTimeCreate"
-					/>
-				</div>
-
-				<UiEmptyState
-					v-if="oneTimeRules.length === 0"
-					:title="t('availability.noOneTimeExceptions')"
-				/>
-
-				<div
-					v-else
-					class="flex flex-col gap-2"
-				>
-					<AvailabilityRuleRow
-						v-for="rule in oneTimeRules"
-						:key="rule.id"
-						:label="formatOneTimeRuleLabel(rule.date!, rule.startTime, rule.endTime, t, intlLocale, rule.reason)"
-						:removing="api.remove.isPending.value"
-						@edit="openOneTimeEdit(rule)"
 						@remove="removeRule(rule)"
 					/>
 				</div>

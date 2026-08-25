@@ -147,6 +147,8 @@
     "oneTimeExceptions": "One-time exceptions",
     "oneTimeExceptionsDescription": "Vacation, appointments, or other exceptions on a date.",
     "noOneTimeExceptions": "No one-time exceptions.",
+    "showPastExceptions": "Show past exceptions ({count})",
+    "hidePastExceptions": "Hide past exceptions",
     "conflictWarningTitle": "Note: shift already scheduled",
     "conflictWarningDescription": "A shift is already scheduled on this date. You may want to check with the planner.",
     "toast": {

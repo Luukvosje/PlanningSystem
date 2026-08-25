@@ -147,6 +147,8 @@
     "oneTimeExceptions": "Eenmalige uitzonderingen",
     "oneTimeExceptionsDescription": "Vakantie, afspraken of andere uitzonderingen op een datum.",
     "noOneTimeExceptions": "Geen eenmalige uitzonderingen.",
+    "showPastExceptions": "Verlopen uitzonderingen tonen ({count})",
+    "hidePastExceptions": "Verlopen uitzonderingen verbergen",
     "conflictWarningTitle": "Let op: dienst al ingepland",
     "conflictWarningDescription": "Er staat al een dienst gepland op deze datum. Overleg eventueel met de planner.",
     "toast": {
