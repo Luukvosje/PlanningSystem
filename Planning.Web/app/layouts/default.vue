@@ -66,6 +66,8 @@ function closeMobileSidebar() {
 const { data: currentUser } = useCurrentUser();
 const { navigationModules, activeModule, navigationItems, pageTitle } = useAppNavigation();
 
+useHead({ title: pageTitle });
+
 // The panel already sits under its module's name in the rail, so the items don't repeat the icons.
 const panelItems = computed(() =>
   (activeModule.value?.items ?? []).map((item) => ({ label: item.label, to: item.to })));

@@ -4,6 +4,8 @@ definePageMeta({ layout: 'auth' });
 const FormView = resolveComponent('FormView');
 const { t } = useI18n();
 const { credentialsForm, orgForm, showOrgPicker } = useLoginForms();
+
+useHead({ title: computed(() => t('auth.login')) });
 </script>
 
 <template>

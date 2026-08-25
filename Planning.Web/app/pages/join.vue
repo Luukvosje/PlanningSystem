@@ -8,6 +8,8 @@ const { t } = useI18n();
 
 const joinForm = useJoinForm();
 
+useHead({ title: computed(() => t('invites.acceptTitle')) });
+
 const canPreview = computed(() => auth.isAuthenticated && joinForm.state.code.length >= 4);
 const previewCode = computed(() => canPreview.value ? joinForm.state.code : '');
 const { data: preview, isLoading: previewLoading } = useInvitePreview(previewCode);

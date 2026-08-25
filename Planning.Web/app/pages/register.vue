@@ -4,6 +4,8 @@ definePageMeta({ layout: 'auth' });
 const FormView = resolveComponent('FormView');
 const { t } = useI18n();
 const registerForm = useRegisterForm();
+
+useHead({ title: computed(() => t('auth.createAccount')) });
 </script>
 
 <template>
