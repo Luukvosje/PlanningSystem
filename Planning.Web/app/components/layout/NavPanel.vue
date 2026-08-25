@@ -4,6 +4,10 @@
  * Rendered inline in the sidebar when the panel stays open, and as a floating panel over the page
  * while you hover the rail in automatic mode.
  */
+const emit = defineEmits<{
+  controlActive: [active: boolean]
+}>();
+
 withDefaults(defineProps<{
   label?: string
   items: Array<{ label: string, to: string }>
@@ -31,7 +35,7 @@ withDefaults(defineProps<{
 
 		<div class="flex shrink-0 flex-col gap-3 p-4">
 			<ControlsColorModeSwitch />
-			<ControlsOrganizationSwitch />
+			<ControlsOrganizationSwitch @active-change="(active: boolean) => emit('controlActive', active)" />
 		</div>
 	</div>
 </template>

@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { useQueryClient } from '@tanstack/vue-query';
 
+/**
+ * Whether the list is open, for a parent that has to stay mounted while it is.
+ *
+ * Reported from `focus`/`blur` rather than `update:open`: Nuxt UI declares that event but
+ * catches Reka's version of it to turn it into exactly these two, and never re-emits it.
+ */
+const emit = defineEmits<{
+  activeChange: [active: boolean]
+}>();
+
 const auth = useAuthStore();
 const toast = useToast();
 const queryClient = useQueryClient();
@@ -45,5 +55,7 @@ async function switchOrganization(orgId: string) {
 		:placeholder="t('nav.organization')"
 		class="w-full"
 		size="sm"
+		@focus="() => emit('activeChange', true)"
+		@blur="() => emit('activeChange', false)"
 	/>
 </template>

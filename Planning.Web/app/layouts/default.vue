@@ -29,7 +29,14 @@ const isDesktop = useMediaQuery('(min-width: 1024px)');
 
 /** Hovering anywhere over the rail (or the panel hanging off it) reveals the panel in auto mode. */
 const sidebarHovered = ref(false);
-const floatingPanelOpen = computed(() => sidebarMode.value === 'auto' && sidebarHovered.value);
+/**
+ * Reka sets `pointer-events: none` on the body while a select in the panel is open, so the
+ * pointer leaves the sidebar without the user moving it. Closing on that mouseleave would
+ * unmount the open list together with the panel, hence the second condition.
+ */
+const panelControlActive = ref(false);
+const floatingPanelOpen = computed(() =>
+  sidebarMode.value === 'auto' && (sidebarHovered.value || panelControlActive.value));
 
 /** The keyboard shortcut stays a plain on/off: auto is a choice you make in the menu, not one you toggle into. */
 function toggleSidebar() {
@@ -299,6 +306,7 @@ const userMenuContent = computed(() => ({
 					:label="activeModule?.label"
 					:items="panelItems"
 					class="absolute inset-y-0 start-14 z-40 overflow-hidden rounded-e-xl shadow-lg ring ring-default"
+					@control-active="panelControlActive = $event"
 				/>
 			</Transition>
 		</div>
