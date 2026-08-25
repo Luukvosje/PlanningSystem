@@ -370,7 +370,13 @@ const userMenuContent = computed(() => ({
 			</template>
 		</USidebar>
 
-		<div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-default shadow-sm ring ring-default max-lg:rounded-lg">
+		<!--
+			Its own stacking context. The timeline stacks its sticky resource column at z-1000 to keep
+			it above a block being dragged, and without isolation that number is measured against the
+			floating nav panel and wins - the resource names paint straight over it. Contained here,
+			page-level z-indexes stay a page concern and the panel keeps the layer it asked for.
+		-->
+		<div class="isolate flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-default shadow-sm ring ring-default max-lg:rounded-lg">
 			<div class="flex h-(--ui-header-height) shrink-0 items-center gap-2 border-b border-default px-4 max-lg:sticky max-lg:top-0 max-lg:z-10 max-lg:h-11 max-lg:gap-1.5 max-lg:bg-default max-lg:px-3">
 				<UButton
 					icon="i-lucide-panel-left"
