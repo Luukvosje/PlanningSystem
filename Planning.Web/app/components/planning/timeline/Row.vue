@@ -216,7 +216,7 @@ function onRowPointerDown(event: PointerEvent) {
 
 <template>
 	<div
-		class="flex border-b border-default/60"
+		class="flex border-b border-default/25"
 		:style="{ height: `${rowHeight}px` }"
 	>
 		<div
