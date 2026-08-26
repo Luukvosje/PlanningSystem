@@ -53,6 +53,12 @@ export async function ensureSession(
       return;
     }
 
-    authStore.logout();
+    // customFetch already spent a silent refresh before a 401 could reach this
+    // far, and it clears the session itself when the refresh token was the
+    // thing rejected. Everything else — the API being down or restarting, a
+    // 5xx, a dropped connection — says nothing about whether the session is
+    // still good, so the tokens stay and the next attempt can recover. Throwing
+    // a valid refresh token away over one failed call is how a user ends up on
+    // /login with the cookie they were just looking at gone.
   }
 }

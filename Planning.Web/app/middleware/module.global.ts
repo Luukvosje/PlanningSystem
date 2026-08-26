@@ -38,13 +38,20 @@ export default defineNuxtRouteMiddleware(async (to) => {
         if (target !== to.fullPath) {
           return navigateTo(target);
         }
-      } else {
+      } else if (isApiError(error) && error.status === 401) {
         // customFetch already tried a silent token refresh before this
-        // rejected; a redirect here (real middleware, not a nested ofetch
-        // hook) is the safe, supported way to send the user back to login
-        // instead of letting the rejection surface as an SSR error page.
+        // rejected, so a 401 that still gets here really is a dead session. A
+        // redirect from here (real middleware, not a nested ofetch hook) is
+        // the safe, supported way to send the user back to login instead of
+        // letting the rejection surface as an SSR error page.
         auth.logout();
         return navigateTo('/login');
+      } else {
+        // The API is unreachable or erroring: the session is not known to be
+        // invalid, so keep it and let the page render its own error state
+        // rather than running the module checks with no modules loaded and
+        // bouncing the user somewhere they didn't ask to go.
+        return;
       }
     }
   }
