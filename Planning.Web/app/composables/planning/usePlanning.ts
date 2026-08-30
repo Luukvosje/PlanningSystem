@@ -18,15 +18,12 @@ export function usePlanning() {
   );
 
   async function createRecord(request: Parameters<typeof api.create>[0]) {
-    try {
-      const created = await api.create(request);
-      api.invalidatePlanning();
-      toast.add({ title: 'Planning aangemaakt', color: 'success' });
-      return created;
-    } catch {
-      toast.add({ title: 'Aanmaken mislukt', color: 'error' });
-      throw new Error('create failed');
-    }
+    // The original error travels on: the sidebar form maps its validation errors onto the
+    // fields, which a replacement Error (or a toast) would throw away.
+    const created = await api.create(request);
+    api.invalidatePlanning();
+    toast.add({ title: 'Planning aangemaakt', color: 'success' });
+    return created;
   }
 
   async function deleteRecord(id: string) {

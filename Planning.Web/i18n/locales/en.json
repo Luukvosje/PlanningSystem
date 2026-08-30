@@ -103,6 +103,16 @@
     "address": {
       "tooLong": "Address is too long"
     },
+    "title": {
+      "required": "Title is required",
+      "tooLong": "Title is too long"
+    },
+    "description": {
+      "tooLong": "Description is too long"
+    },
+    "notes": {
+      "tooLong": "Notes are too long"
+    },
     "time": {
       "invalid": "Invalid time"
     }
@@ -451,7 +461,6 @@
     "minutes": "{count} min",
     "lessThanOneMinute": "< 1 min",
     "endAfterStart": "End must be after the start",
-    "multipleDays": "Multiple days",
     "start": "Start",
     "end": "End",
     "time": "Time",

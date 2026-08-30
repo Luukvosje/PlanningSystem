@@ -40,22 +40,6 @@ export function toTimeStrings(entries: Pick<ImportantWorkTimeRow, 'startTime'>[]
   return entries.map((entry) => entry.startTime);
 }
 
-/**
- * Resolves the new start for a planning record when an important work time is applied as a
- * quick pick. Only the start moves (matching the entry's existing role as a snap-point on the
- * grid); the end is left untouched for the planner to adjust.
- */
-export function applyImportantWorkTime(
-  entry: Pick<ImportantWorkTimeRow, 'startTime'>,
-  anchorStart: Date,
-  anchorEnd: Date,
-): { start: Date, end: Date } {
-  const totalMinutes = parseTimeToMinutes(entry.startTime);
-  const start = new Date(anchorStart);
-  start.setHours(Math.floor(totalMinutes / 60), totalMinutes % 60, 0, 0);
-  return { start, end: anchorEnd };
-}
-
 export function getOutsideOpeningOverlays(
   date: Date,
   dayWidth: number,

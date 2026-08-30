@@ -103,6 +103,16 @@
     "address": {
       "tooLong": "Adres is te lang"
     },
+    "title": {
+      "required": "Titel is verplicht",
+      "tooLong": "Titel is te lang"
+    },
+    "description": {
+      "tooLong": "Beschrijving is te lang"
+    },
+    "notes": {
+      "tooLong": "Notities zijn te lang"
+    },
     "time": {
       "invalid": "Ongeldige tijd"
     }
@@ -451,7 +461,6 @@
     "minutes": "{count} min",
     "lessThanOneMinute": "< 1 min",
     "endAfterStart": "Einde moet na de start liggen",
-    "multipleDays": "Meerdere dagen",
     "start": "Start",
     "end": "Einde",
     "time": "Tijd",
