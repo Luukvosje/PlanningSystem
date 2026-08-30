@@ -58,6 +58,18 @@ export function canEditUserRole(
   return targetRole !== UserRole.Owner;
 }
 
+/**
+ * Deactivating is a lockout - the account cannot log in and loses its organization context - so
+ * the two cases you could not undo from the UI are excluded here as well as on the API: the
+ * owner, and yourself.
+ */
+export function canEditUserStatus(
+  manager?: { id?: string | null, role?: UserRole | string | null },
+  target?: { id?: string | null, role?: UserRole | string | null },
+): boolean {
+  return canEditUserRole(manager?.role, target?.role) && manager?.id !== target?.id;
+}
+
 export function getAssignableRoleOptions(
   t: Translate,
   currentUserId?: string | null,

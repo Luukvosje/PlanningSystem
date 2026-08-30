@@ -23,12 +23,7 @@ const values = computed(() => ({
 	<LayoutCard :title="`${user.firstName} ${user.lastName}`">
 		<template #actions>
 			<div class="flex flex-wrap items-center gap-2">
-				<UBadge
-					:color="user.isActive ? 'success' : 'neutral'"
-					variant="subtle"
-				>
-					{{ user.isActive ? t('users.active') : t('users.inactive') }}
-				</UBadge>
+				<UsersStatusToggle :user="user" />
 				<UButton
 					v-if="canEditAvailability"
 					size="sm"

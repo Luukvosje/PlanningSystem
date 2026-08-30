@@ -270,6 +270,8 @@
   },
   "users": {
     "roleUpdated": "Rol bijgewerkt",
+    "activated": "Teamlid geactiveerd",
+    "deactivated": "Teamlid gedeactiveerd",
     "loading": "Team laden...",
     "searchPlaceholder": "Zoeken op naam, e-mail, rol of status...",
     "empty": "Nog geen teamleden.",

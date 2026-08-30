@@ -270,6 +270,8 @@
   },
   "users": {
     "roleUpdated": "Role updated",
+    "activated": "Team member activated",
+    "deactivated": "Team member deactivated",
     "loading": "Loading team...",
     "searchPlaceholder": "Search by name, email, role or status...",
     "empty": "No team members yet.",
