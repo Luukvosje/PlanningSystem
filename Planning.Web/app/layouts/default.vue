@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
 import { useLocalStorage, useMediaQuery } from '@vueuse/core';
+import { unlessEditing } from '~/utils/shortcuts';
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -49,7 +50,7 @@ function toggleSidebar() {
 }
 
 defineShortcuts({
-  h: toggleSidebar,
+  h: unlessEditing(toggleSidebar),
 });
 
 const sidebarModeItems = computed<DropdownMenuItem[][]>(() => [
