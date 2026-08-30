@@ -150,6 +150,7 @@
     "editException": "Edit exception",
     "newWeeklyRule": "Weekly block",
     "newException": "One-time exception",
+    "exception": "Exception",
     "day": "Day",
     "date": "Date",
     "until": "Until",

@@ -2,12 +2,15 @@
 import type { MyPlanningDay } from '~/composables/planning/useMyPlanningView';
 import type { AvailabilityRule } from '~/types/availability';
 import { formatAgendaDayHeader, getIntlLocale } from '~/utils/planning/dateUtils';
-import { formatOneTimeRuleLabel } from '~/utils/planning/availabilityMath';
 
 const { t, locale } = useI18n();
 const intlLocale = computed(() => getIntlLocale(locale.value));
-const auth = useAuthStore();
 const api = useAvailabilityApi();
+
+const emit = defineEmits<{
+  createException: [dateKey: string]
+  editException: [rule: AvailabilityRule]
+}>();
 
 const props = withDefaults(defineProps<{
   day?: MyPlanningDay | null
@@ -34,20 +37,6 @@ const shiftCountLabel = computed(() => {
     t('planning.shiftCountSingular', { count: props.day.shifts.length }) :
     t('planning.shiftCountPlural', { count: props.day.shifts.length });
 });
-
-const employeeId = computed(() => auth.currentUser?.userId ?? '');
-const sheetOpen = ref(false);
-const editingRule = ref<AvailabilityRule | null>(null);
-
-function openCreateException() {
-  editingRule.value = null;
-  sheetOpen.value = true;
-}
-
-function openEditException(rule: AvailabilityRule) {
-  editingRule.value = rule;
-  sheetOpen.value = true;
-}
 
 async function removeException(rule: AvailabilityRule) {
   await api.remove.mutateAsync(rule.id);
@@ -108,14 +97,23 @@ async function removeException(rule: AvailabilityRule) {
 			<!-- Week column header -->
 			<div
 				v-if="compact"
-				class="flex shrink-0 items-center justify-between gap-2 px-3 pb-2 pt-3"
+				class="group flex shrink-0 items-center gap-1 px-3 pb-2 pt-3"
 			>
 				<p
-					class="w-full truncate text-center text-xs font-semibold uppercase tracking-wide text-muted"
+					class="min-w-0 flex-1 truncate text-center text-xs font-semibold uppercase tracking-wide text-muted"
 					:class="day.isToday ? 'text-brand' : ''"
 				>
 					{{ formatAgendaDayHeader(day.date, intlLocale) }}
 				</p>
+				<UButton
+					icon="i-lucide-plus"
+					variant="ghost"
+					color="neutral"
+					size="xs"
+					class="shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+					:aria-label="t('availability.exception')"
+					@click="emit('createException', day.dateKey)"
+				/>
 			</div>
 
 			<!-- Day view header -->
@@ -146,9 +144,10 @@ async function removeException(rule: AvailabilityRule) {
 				/>
 			</div>
 
-			<div class="min-h-0 flex-1 overflow-auto bg-accented/40">
+			<div class="flex min-h-0 flex-1 flex-col overflow-auto bg-accented/40">
 				<div
 					v-if="day.hasShifts"
+					class="shrink-0"
 					:class="compact
 						? 'flex flex-col gap-2 px-2 pb-3'
 						: 'divide-y divide-accented'"
@@ -164,7 +163,7 @@ async function removeException(rule: AvailabilityRule) {
 
 				<div
 					v-else-if="!compact"
-					class="flex h-full min-h-32 flex-col items-center justify-center gap-2.5 px-4 py-8 text-center"
+					class="flex min-h-32 flex-1 flex-col items-center justify-center gap-2.5 px-4 py-8 text-center"
 				>
 					<UIcon
 						name="i-lucide-calendar-off"
@@ -176,71 +175,33 @@ async function removeException(rule: AvailabilityRule) {
 				</div>
 
 				<div
-					v-if="!compact"
-					class="space-y-2 border-t border-default px-4 py-3.5"
+					v-if="compact && day.exceptions.length > 0"
+					class="mt-auto flex shrink-0 flex-col gap-1 border-t border-default px-2 pb-3 pt-2"
 				>
-					<div class="flex items-center justify-between gap-3">
-						<p class="text-xs font-semibold uppercase tracking-wide text-muted">
-							{{ t('availability.oneTimeExceptions') }}
-						</p>
-						<UButton
-							icon="i-lucide-plus"
-							:label="t('common.actions.add')"
-							variant="ghost"
-							size="xs"
-							@click="openCreateException"
-						/>
-					</div>
+					<PlanningExceptionItem
+						v-for="rule in day.exceptions"
+						:key="rule.id"
+						:rule="rule"
+						variant="block"
+						@edit="emit('editException', rule)"
+					/>
+				</div>
 
-					<p
-						v-if="!day.exceptions.length"
-						class="text-sm text-muted"
-					>
-						{{ t('availability.noOneTimeExceptions') }}
-					</p>
-
-					<div
-						v-else
-						class="space-y-1.5"
-					>
-						<div
-							v-for="rule in day.exceptions"
-							:key="rule.id"
-							class="flex items-start justify-between gap-2 rounded-md border border-default px-2.5 py-1.5"
-						>
-							<p class="min-w-0 truncate text-sm">
-								{{ formatOneTimeRuleLabel(rule.date!, rule.startTime, rule.endTime, t, intlLocale, rule.reason) }}
-							</p>
-							<div class="flex shrink-0 gap-0.5">
-								<UButton
-									icon="i-lucide-pencil"
-									variant="ghost"
-									color="neutral"
-									size="xs"
-									@click="openEditException(rule)"
-								/>
-								<UButton
-									icon="i-lucide-trash-2"
-									variant="ghost"
-									color="error"
-									size="xs"
-									:loading="api.remove.isPending.value"
-									@click="removeException(rule)"
-								/>
-							</div>
-						</div>
-					</div>
+				<div
+					v-if="!compact && day.exceptions.length"
+					class="mt-auto shrink-0 divide-y divide-accented border-t border-default"
+				>
+					<PlanningExceptionItem
+						v-for="rule in day.exceptions"
+						:key="rule.id"
+						:rule="rule"
+						:removing="api.remove.isPending.value"
+						flush
+						@edit="emit('editException', rule)"
+						@remove="removeException(rule)"
+					/>
 				</div>
 			</div>
 		</template>
-
-		<AvailabilityRuleSheet
-			v-if="day"
-			v-model:open="sheetOpen"
-			:employee-id="employeeId"
-			type="OneTime"
-			:rule="editingRule"
-			:default-date="day.dateKey"
-		/>
 	</div>
 </template>

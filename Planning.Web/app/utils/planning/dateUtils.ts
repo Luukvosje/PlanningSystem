@@ -26,6 +26,32 @@ export const CONCEPT_BLOCK_STYLE = {
   backgroundImage: 'repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(255,255,255,0.28) 4px, rgba(255,255,255,0.28) 8px)',
 } as const;
 
+/**
+ * Unavailable time is slate everywhere in the app. Written as a raw colour rather than a theme
+ * token because the stripes need one too, and a gradient cannot take a Tailwind class.
+ */
+const UNAVAILABLE_RGB = '148, 163, 184';
+
+/** The diagonal stripes that mark unavailable time in the timeline. */
+const UNAVAILABLE_HATCH_IMAGE =
+  `repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(${UNAVAILABLE_RGB}, 0.35) 4px, rgba(${UNAVAILABLE_RGB}, 0.35) 8px)`;
+
+/** Sits behind planning blocks in the timeline, so it stays nearly transparent. */
+export const UNAVAILABLE_OVERLAY_STYLE = {
+  backgroundColor: `rgba(${UNAVAILABLE_RGB}, 0.15)`,
+  backgroundImage: UNAVAILABLE_HATCH_IMAGE,
+} as const;
+
+/** The edge of a blocked item, where a line does the work a fill would otherwise do. */
+export const UNAVAILABLE_EDGE_STYLE = {
+  borderColor: `rgba(${UNAVAILABLE_RGB}, 0.7)`,
+} as const;
+
+/** The bar that stands where a shift carries its colour. */
+export const UNAVAILABLE_BAR_STYLE = {
+  backgroundColor: `rgba(${UNAVAILABLE_RGB}, 0.6)`,
+} as const;
+
 export function getStatusLabel(status: PlanningStatus, t: Translate): string {
   const labels: Record<PlanningStatus, string> = {
     Planned: t('planning.status.planned'),

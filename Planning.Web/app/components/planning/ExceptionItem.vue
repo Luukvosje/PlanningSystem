@@ -1,0 +1,119 @@
+<script setup lang="ts">
+import type { AvailabilityRule } from '~/types/availability';
+import { formatRuleTimeRange } from '~/utils/planning/availabilityMath';
+import { UNAVAILABLE_BAR_STYLE, UNAVAILABLE_EDGE_STYLE } from '~/utils/planning/dateUtils';
+
+/**
+ * An exception inside a day, built on PlanningShiftItem's footprints so a day reads as one list.
+ * It carries no fill of its own: the slate is down to a dashed edge and the bar that stands where
+ * a shift carries its colour, which is enough to say "not work" without another surface competing
+ * with the shifts above it.
+ */
+const props = withDefaults(defineProps<{
+  rule: AvailabilityRule
+  /** Hatched block (week column) vs list row with a hatched surface and a grey bar. */
+  variant?: 'block' | 'list'
+  flush?: boolean
+  removing?: boolean
+}>(), {
+  variant: 'list',
+  flush: false,
+  removing: false,
+});
+
+const emit = defineEmits<{
+  edit: []
+  remove: []
+}>();
+
+const { t } = useI18n();
+const timeLabel = computed(() => formatRuleTimeRange(props.rule.startTime, props.rule.endTime, t));
+</script>
+
+<template>
+	<button
+		v-if="variant === 'block'"
+		type="button"
+		class="w-full overflow-hidden rounded-md border border-dashed px-2.5 py-1.5 text-left"
+		:style="UNAVAILABLE_EDGE_STYLE"
+		@click="emit('edit')"
+	>
+		<p class="flex items-center gap-1 truncate text-xs font-semibold leading-tight tabular-nums">
+			<UIcon
+				name="i-lucide-calendar-off"
+				class="size-3 shrink-0"
+			/>
+			{{ timeLabel }}
+		</p>
+		<p class="mt-0.5 truncate text-[11px] font-medium uppercase leading-tight tracking-wide text-muted">
+			{{ t('availability.unavailable') }}
+		</p>
+		<p
+			v-if="rule.reason"
+			class="mt-0.5 truncate text-[11px] leading-tight text-muted"
+		>
+			{{ rule.reason }}
+		</p>
+	</button>
+
+	<div
+		v-else
+		class="overflow-hidden"
+		:class="flush
+			? ''
+			: 'rounded-lg border border-dashed'"
+		:style="UNAVAILABLE_EDGE_STYLE"
+	>
+		<div class="flex min-w-0 items-start">
+			<div
+				class="w-1.5 shrink-0 self-stretch"
+				:style="UNAVAILABLE_BAR_STYLE"
+			/>
+
+			<div
+				class="min-w-0 flex-1 space-y-1.5"
+				:class="flush ? 'px-4 py-3.5' : 'px-3 py-2.5'"
+			>
+				<p class="flex items-center gap-1.5 text-sm font-semibold tabular-nums leading-tight">
+					<UIcon
+						name="i-lucide-calendar-off"
+						class="size-4 shrink-0 text-muted"
+					/>
+					{{ timeLabel }}
+				</p>
+				<p class="truncate text-xs font-medium uppercase leading-tight tracking-wide text-muted">
+					{{ t('availability.unavailable') }}
+				</p>
+				<p
+					v-if="rule.reason"
+					class="truncate text-sm leading-tight"
+				>
+					{{ rule.reason }}
+				</p>
+			</div>
+
+			<div
+				class="flex shrink-0 gap-0.5"
+				:class="flush ? 'px-3 py-3' : 'px-2 py-2'"
+			>
+				<UButton
+					icon="i-lucide-pencil"
+					variant="ghost"
+					color="neutral"
+					size="sm"
+					:aria-label="t('common.actions.edit')"
+					@click="emit('edit')"
+				/>
+				<UButton
+					icon="i-lucide-trash-2"
+					variant="ghost"
+					color="error"
+					size="sm"
+					:loading="removing"
+					:aria-label="t('common.actions.delete')"
+					@click="emit('remove')"
+				/>
+			</div>
+		</div>
+	</div>
+</template>

@@ -150,6 +150,7 @@
     "editException": "Uitzondering bewerken",
     "newWeeklyRule": "Wekelijkse blokkade",
     "newException": "Eenmalige uitzondering",
+    "exception": "Uitzondering",
     "day": "Dag",
     "date": "Datum",
     "until": "Tot",
