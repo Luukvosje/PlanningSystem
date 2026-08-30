@@ -103,7 +103,13 @@ export default defineAppConfig({
     table: {
       slots: {
         base: 'h-full',
-        tbody: 'h-full [&_tr:has([data-slot=empty])]:h-full',
+        /**
+         * The table is stretched to the container so the empty state can sit centred in it.
+         * A table that is taller than its rows hands the leftover height to those rows, which
+         * turned a one-row list into one row as tall as the table - hence the filler row after
+         * the data, dropped again while the empty state is the thing that has to fill.
+         */
+        tbody: 'h-full [&_tr:has([data-slot=empty])]:h-full after:table-row after:h-full [&:has([data-slot=empty])]:after:hidden',
         thead: 'rounded-lg',
         empty: 'h-full align-middle',
         // Denser than the Nuxt UI default (th px-4 py-3.5 / td p-4): ~44px rows instead of ~56.
