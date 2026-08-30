@@ -12,4 +12,5 @@ export interface OrganizationMembershipResponse {
   organizationName: string;
   userId: string;
   role: UserRole;
+  isActive: boolean;
 }

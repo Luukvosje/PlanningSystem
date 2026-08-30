@@ -16,8 +16,11 @@ export function useSelectOrganizationForm() {
 
   const { data: memberships, isLoading } = useMyOrganizations();
 
+  const activeMemberships = computed(() =>
+    (memberships.value ?? []).filter((m) => m.isActive));
+
   const orgOptions = computed(() =>
-    (memberships.value ?? []).map((m) => ({
+    activeMemberships.value.map((m) => ({
       label: m.organizationName ?? t('common.unknown'),
       value: m.organizationId ?? '',
     })),
@@ -35,10 +38,12 @@ export function useSelectOrganizationForm() {
       return;
     }
 
-    if (list.length === 0) {
-      await router.replace('/organization/new');
-    } else if (list.length === 1 && list[0]?.organizationId) {
-      await selectAndContinue(list[0].organizationId);
+    const active = activeMemberships.value;
+
+    if (active.length === 0) {
+      await router.replace(list.length ? '/account/inactive' : '/organization/new');
+    } else if (active.length === 1 && active[0]?.organizationId) {
+      await selectAndContinue(active[0].organizationId);
     }
   }, { immediate: true });
 

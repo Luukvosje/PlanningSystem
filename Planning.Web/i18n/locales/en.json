@@ -70,6 +70,14 @@
     "alreadyHaveAccount": "Already have an account?",
     "landingTagline": "Plan your team simply and clearly."
   },
+  "account": {
+    "inactive": {
+      "title": "Your access has been revoked",
+      "description": "An administrator of {organizations} deactivated your account.",
+      "descriptionUnknown": "An administrator deactivated your account.",
+      "contactAdmin": "Contact your administrator to get your access back."
+    }
+  },
   "validation": {
     "email": {
       "required": "Email is required",
@@ -487,12 +495,6 @@
   },
   "layout": {
     "toggleSidebarMobile": "Toggle sidebar",
-    "sidebarMode": {
-      "label": "Navigation",
-      "open": "Always open",
-      "auto": "Automatic",
-      "closed": "Closed"
-    },
     "headerActions": {
       "open": "Actions"
     },

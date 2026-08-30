@@ -18,7 +18,7 @@ const { t } = useI18n();
 const { data: organizations } = useMyOrganizations();
 
 const options = computed(() =>
-  (organizations.value ?? []).map((org) => ({
+  (organizations.value ?? []).filter((org) => org.isActive).map((org) => ({
     label: org.organizationName ?? t('common.unknown'),
     value: org.organizationId ?? '',
   })));

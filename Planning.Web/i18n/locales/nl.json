@@ -70,6 +70,14 @@
     "alreadyHaveAccount": "Al een account?",
     "landingTagline": "Plan je team eenvoudig en overzichtelijk."
   },
+  "account": {
+    "inactive": {
+      "title": "Je toegang is ingetrokken",
+      "description": "Een beheerder van {organizations} heeft je account gedeactiveerd.",
+      "descriptionUnknown": "Een beheerder heeft je account gedeactiveerd.",
+      "contactAdmin": "Neem contact op met je beheerder om weer toegang te krijgen."
+    }
+  },
   "validation": {
     "email": {
       "required": "E-mail is verplicht",
@@ -487,12 +495,6 @@
   },
   "layout": {
     "toggleSidebarMobile": "Zijbalk in-/uitschakelen",
-    "sidebarMode": {
-      "label": "Navigatie",
-      "open": "Altijd open",
-      "auto": "Automatisch",
-      "closed": "Dicht"
-    },
     "headerActions": {
       "open": "Acties"
     },
