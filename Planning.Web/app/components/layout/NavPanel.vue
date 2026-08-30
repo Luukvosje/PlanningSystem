@@ -34,7 +34,6 @@ withDefaults(defineProps<{
 		</div>
 
 		<div class="flex shrink-0 flex-col gap-3 p-4">
-			<ControlsColorModeSwitch />
 			<ControlsOrganizationSwitch @active-change="(active: boolean) => emit('controlActive', active)" />
 		</div>
 	</div>

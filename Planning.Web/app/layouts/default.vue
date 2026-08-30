@@ -24,6 +24,13 @@ const SIDEBAR_MODE_ICONS: Record<SidebarMode, string> = {
   closed: 'i-lucide-panel-left',
 };
 
+const colorMode = useColorMode();
+
+const COLOR_MODE_ICONS: Record<'light' | 'dark', string> = {
+  light: 'i-lucide-sun',
+  dark: 'i-lucide-moon',
+};
+
 const sidebarMode = useLocalStorage<SidebarMode>('sidebar-mode', 'open');
 const mobileSidebarOpen = ref(false);
 const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -132,6 +139,19 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
     },
   ],
   [
+    {
+      label: t('common.colorMode.group'),
+      icon: colorMode.value === 'dark' ? COLOR_MODE_ICONS.dark : COLOR_MODE_ICONS.light,
+      children: (['light', 'dark'] as const).map((mode) => ({
+        label: t(`common.colorMode.${mode}`),
+        icon: COLOR_MODE_ICONS[mode],
+        type: 'checkbox' as const,
+        checked: colorMode.value === mode,
+        onSelect: () => {
+          colorMode.preference = mode;
+        },
+      })),
+    },
     {
       label: t('layout.userMenu.language'),
       icon: currentLanguageIcon.value,
@@ -355,8 +375,6 @@ const userMenuContent = computed(() => ({
 			</template>
 
 			<template #footer>
-				<ControlsColorModeSwitch />
-
 				<ControlsOrganizationSwitch />
 
 				<UDropdownMenu
