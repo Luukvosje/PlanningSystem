@@ -310,6 +310,7 @@ const userMenuContent = computed(() => ({
 					<LayoutNavPanel
 						:label="activeModule?.label"
 						:items="panelItems"
+						class="bg-default"
 					/>
 				</aside>
 			</div>
@@ -326,7 +327,7 @@ const userMenuContent = computed(() => ({
 					v-if="floatingPanelOpen"
 					:label="activeModule?.label"
 					:items="panelItems"
-					class="absolute inset-y-0 start-14 z-40 overflow-hidden rounded-e-xl shadow-lg ring ring-default"
+					class="glass absolute inset-y-0 start-14 z-[40] overflow-hidden rounded-e-xl shadow-lg ring ring-default"
 					@control-active="panelControlActive = $event"
 				/>
 			</Transition>

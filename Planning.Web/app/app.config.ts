@@ -25,10 +25,18 @@ export default defineAppConfig({
      * carry no radius override - a hardcoded one here would bypass --ui-radius.
      */
     modal: {
+      slots: {
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
       variants: {
         fullscreen: {
           false: {
             content: 'rounded-xl',
+          },
+        },
+        overlay: {
+          true: {
+            overlay: 'bg-elevated/25 backdrop-blur-(--overlay-blur)',
           },
         },
       },
@@ -40,6 +48,52 @@ export default defineAppConfig({
         footer: 'p-3 sm:p-4',
       },
     },
+    /**
+     * Everything that floats over the page is cut from glass. The fill is written as an
+     * arbitrary value rather than the `glass` utility on purpose: tailwind-merge only drops a
+     * component's own `bg-default` for a class it recognises as a background, and a custom
+     * utility is not one - both fills would end up on the element and the cascade would decide.
+     *
+     * The scrims lose most of their dimming and blur instead. At `bg-elevated/75` there is
+     * nothing left behind the panel to see through it, which makes the glass pointless.
+     */
+    slideover: {
+      slots: {
+        overlay: 'bg-elevated/25 backdrop-blur-(--overlay-blur)',
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
+    },
+    popover: {
+      slots: {
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
+    },
+    select: {
+      slots: {
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
+    },
+    selectMenu: {
+      slots: {
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
+    },
+    inputMenu: {
+      slots: {
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
+    },
+    dropdownMenu: {
+      slots: {
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
+    },
+    contextMenu: {
+      slots: {
+        content: 'bg-[var(--glass-bg)] glass-material',
+      },
+    },
+
     /** Pages used to render solid red error blocks while forms used subtle ones. */
     alert: {
       defaultVariants: {

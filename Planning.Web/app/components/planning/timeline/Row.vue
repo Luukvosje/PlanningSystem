@@ -220,7 +220,7 @@ function onRowPointerDown(event: PointerEvent) {
 		:style="{ height: `${rowHeight}px` }"
 	>
 		<div
-			class="sticky left-0 z-1000 shrink-0 border-r border-default bg-default px-3 flex items-center"
+			class="sticky left-0 z-1000 shrink-0 border-r border-default glass px-3 flex items-center"
 			:style="{ width: `${rowLabelWidth}px` }"
 		>
 			<span class="text-sm font-medium truncate">{{ label }}</span>

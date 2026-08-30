@@ -17,7 +17,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-	<div class="flex h-full w-48 min-h-0 flex-col bg-default">
+	<div class="flex h-full w-48 min-h-0 flex-col">
 		<div class="flex min-h-(--ui-header-height) shrink-0 items-center px-4">
 			<p class="truncate text-xs font-semibold tracking-wider text-muted uppercase">
 				{{ label }}
