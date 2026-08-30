@@ -15,3 +15,4 @@ public sealed record UserResponse(
     DateTime UpdatedAtUtc,
     IReadOnlyList<ModuleSettingResponse> Modules);
 public sealed record UpdateUserRoleRequest(UserRole Role);
+public sealed record UpdateUserStatusRequest(bool IsActive);
