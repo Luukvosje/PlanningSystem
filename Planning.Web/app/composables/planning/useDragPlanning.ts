@@ -1,7 +1,7 @@
-import type { UnavailablePeriod } from '~/types/availability'
-import type { PlanningRecord } from '~/types/planning'
-import { pxFromPointerEvent } from '~/utils/planning/timelineMath'
-import { OPEN_SHIFT_ROW_ID, UNASSIGNED_CUSTOMER_ROW_ID } from '~/utils/planning/constants'
+import type { UnavailablePeriod } from '~/types/availability';
+import type { PlanningRecord } from '~/types/planning';
+import { pxFromPointerEvent } from '~/utils/planning/timelineMath';
+import { OPEN_SHIFT_ROW_ID, UNASSIGNED_CUSTOMER_ROW_ID } from '~/utils/planning/constants';
 import {
   collectBlockSnapPoints,
   getRowAvailabilitySnapPoints,
