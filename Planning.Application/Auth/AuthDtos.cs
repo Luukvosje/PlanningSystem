@@ -31,7 +31,8 @@ public sealed record OrganizationMembershipResponse(
     Guid OrganizationId,
     string OrganizationName,
     Guid UserId,
-    UserRole Role);
+    UserRole Role,
+    bool IsActive);
 
 public sealed record CurrentUserResponse(
     Guid UserId,
