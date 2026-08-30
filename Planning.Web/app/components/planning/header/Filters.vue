@@ -2,22 +2,6 @@
 const { t } = useI18n();
 const store = usePlanningStore();
 const { filters: _filters, statusOptions, hasActiveFilters, clearFilters } = usePlanningFilters();
-const { data: users } = useUsers();
-const { data: customers } = useCustomers();
-
-const userOptions = computed(() =>
-  (users.value ?? []).map((u) => ({
-    label: `${u.firstName} ${u.lastName}`.trim(),
-    value: u.id!,
-  })),
-);
-
-const customerOptions = computed(() =>
-  (customers.value ?? []).map((c) => ({
-    label: c.name ?? t('common.unknown'),
-    value: c.id!,
-  })),
-);
 </script>
 
 <template>
@@ -30,22 +14,18 @@ const customerOptions = computed(() =>
 			size="sm"
 		/>
 
-		<USelectMenu
-			v-model="store.filters.userIds"
-			:items="userOptions"
-			value-key="value"
-			label-key="label"
+		<UiEntitySelect
+			v-model:values="store.filters.userIds"
+			kind="user"
 			multiple
 			:placeholder="t('planning.employees')"
 			class="w-44"
 			size="sm"
 		/>
 
-		<USelectMenu
-			v-model="store.filters.customerIds"
-			:items="customerOptions"
-			value-key="value"
-			label-key="label"
+		<UiEntitySelect
+			v-model:values="store.filters.customerIds"
+			kind="customer"
 			multiple
 			:placeholder="t('nav.customers')"
 			class="w-44"

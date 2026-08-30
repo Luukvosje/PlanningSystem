@@ -16,6 +16,15 @@
       "discard": "Wijzigingen negeren"
     },
     "loading": "Laden...",
+    "status": {
+      "active": "Actief",
+      "inactive": "Inactief"
+    },
+    "sort": {
+      "alphabetical": "A-Z",
+      "recent": "Recent"
+    },
+    "showInactive": "Inactieve tonen",
     "colorMode": {
       "group": "Kleurmodus",
       "light": "Licht",

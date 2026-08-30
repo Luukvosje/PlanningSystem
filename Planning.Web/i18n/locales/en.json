@@ -16,6 +16,15 @@
       "discard": "Discard changes"
     },
     "loading": "Loading...",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "sort": {
+      "alphabetical": "A-Z",
+      "recent": "Recent"
+    },
+    "showInactive": "Show inactive",
     "colorMode": {
       "group": "Color mode",
       "light": "Light",
