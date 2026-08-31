@@ -60,9 +60,11 @@ public class AvailabilityController : ApiControllerBase
             return result.ToActionResult(this);
         });
 
+    // No action policy: changing your own absence is self-service too, and whether this caller may
+    // touch this rule depends on the loaded rule - AvailabilityRuleService decides.
     [HttpPut("rules/{id:guid}")]
-    [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(typeof(AvailabilityRuleResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
     public Task<IActionResult> UpdateRule(Guid id, [FromBody] UpdateAvailabilityRuleRequest request) =>

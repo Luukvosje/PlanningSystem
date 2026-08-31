@@ -148,10 +148,22 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
             return Failures.NotFoundFor<AvailabilityRuleResponse>("Availability rule");
         }
 
-        if (!await CanManageAnyEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
+        if (existing.EmployeeId != CurrentUser.UserId && !CanManageAnyEmployee())
         {
             return Failures.ForbiddenFor<AvailabilityRuleResponse>("You are not allowed to update this rule.");
         }
+
+        var employee = await LoadEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken);
+
+        if (employee is null)
+        {
+            return Failures.NotFoundFor<AvailabilityRuleResponse>("Employee");
+        }
+
+        // Changing the values hands the rule back to whoever has to approve them: the earlier
+        // decision was about what it used to say. Same resolution as creating one, so a member who
+        // needs no approval simply keeps their edit.
+        var approvalStatus = ResolveApprovalStatus(employee);
 
         return await TranslateDomainErrorsAsync(async () =>
         {
@@ -170,6 +182,7 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
                     request.EndTime,
                     request.Status,
                     request.Reason,
+                    approvalStatus,
                     utcNow);
             }
             else
@@ -185,6 +198,7 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
                     request.EndTime,
                     request.Status,
                     request.Reason,
+                    approvalStatus,
                     utcNow);
             }
 
@@ -210,14 +224,10 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
             return Failures.NotFoundFor("Availability rule");
         }
 
-        // Withdrawing your own request is allowed even though deleting is otherwise planner-only: a
-        // pending rule was never granted, so removing it is not the end run around delete that
-        // removing an approved one would be.
-        var isOwnPendingRequest = existing.EmployeeId == CurrentUser.UserId
-            && existing.ApprovalStatus == ApprovalStatus.Pending;
-
-        if (!isOwnPendingRequest
-            && !await CanManageAnyEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
+        // Recording an absence is self-service, so removing one is too. Nothing is lost by letting a
+        // member take their own entry back: if it needed approving, the approval was theirs to ask
+        // for, and a planner sees the absence disappear from the board either way.
+        if (existing.EmployeeId != CurrentUser.UserId && !CanManageAnyEmployee())
         {
             return Failures.ForbiddenFor("You are not allowed to delete this rule.");
         }
@@ -291,8 +301,8 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
     }
 
     /// <summary>
-    /// Changing or removing an existing rule is planner-only, including your own: shrinking a rule
-    /// to nothing would otherwise be an end run around not being allowed to delete it.
+    /// Reading the rules of a colleague is planner-only, and only for someone who is actually in
+    /// this organization - the rules carry a free-text reason.
     /// </summary>
     private async Task<bool> CanManageAnyEmployeeAsync(
         Guid employeeId,

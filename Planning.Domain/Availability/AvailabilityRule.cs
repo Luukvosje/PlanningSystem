@@ -116,6 +116,7 @@ public class AvailabilityRule : TenantEntity
         TimeOnly endTime,
         AvailabilityRuleStatus status,
         string? reason,
+        ApprovalStatus approvalStatus,
         DateTime utcNow)
     {
         if (Type != AvailabilityRuleType.Weekly)
@@ -130,6 +131,7 @@ public class AvailabilityRule : TenantEntity
         EndTime = endTime;
         Status = status;
         Reason = reason?.Trim();
+        SetApproval(approvalStatus);
         Touch(utcNow);
     }
 
@@ -139,6 +141,7 @@ public class AvailabilityRule : TenantEntity
         TimeOnly endTime,
         AvailabilityRuleStatus status,
         string? reason,
+        ApprovalStatus approvalStatus,
         DateTime utcNow)
     {
         if (Type != AvailabilityRuleType.OneTime)
@@ -153,7 +156,24 @@ public class AvailabilityRule : TenantEntity
         EndTime = endTime;
         Status = status;
         Reason = reason?.Trim();
+        SetApproval(approvalStatus);
         Touch(utcNow);
+    }
+
+    /// <summary>
+    /// An approval was given on the values the rule had at the time, so an edit that needs
+    /// reviewing again drops the earlier decision instead of keeping a stamp that no longer refers
+    /// to anything. An edit that needs no review keeps the rule in force.
+    /// </summary>
+    private void SetApproval(ApprovalStatus approvalStatus)
+    {
+        if (approvalStatus == ApprovalStatus.Pending)
+        {
+            DecidedByUserId = null;
+            DecidedAtUtc = null;
+        }
+
+        ApprovalStatus = approvalStatus;
     }
 
     public void Approve(Guid decidedByUserId, DateTime utcNow) =>
@@ -163,9 +183,8 @@ public class AvailabilityRule : TenantEntity
         Decide(ApprovalStatus.Rejected, decidedByUserId, utcNow);
 
     /// <summary>
-    /// Both decisions are terminal: an approved or rejected request is not decided a second time,
-    /// the employee submits a new one. Editing a rule (Update*) deliberately leaves the approval
-    /// alone - a planner correcting a time is not deciding on it.
+    /// Both decisions are terminal: an approved or rejected request is not decided a second time.
+    /// Editing the rule is the way back into review - see <see cref="SetApproval"/>.
     /// </summary>
     private void Decide(ApprovalStatus status, Guid decidedByUserId, DateTime utcNow)
     {
