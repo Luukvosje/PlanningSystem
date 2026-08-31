@@ -62,7 +62,7 @@ const statusClass = computed(() => {
 	<button
 		v-if="variant === 'block'"
 		type="button"
-		class="flex w-full items-start gap-1 overflow-hidden rounded-md border border-dashed px-2.5 py-1.5 text-left"
+		class="group flex w-full cursor-pointer items-start gap-1 overflow-hidden rounded-md border border-dashed px-2.5 py-1.5 text-left transition-colors hover:bg-elevated"
 		:style="UNAVAILABLE_EDGE_STYLE"
 		:aria-label="t('common.actions.edit')"
 		@click="emit('edit')"
@@ -91,7 +91,7 @@ const statusClass = computed(() => {
 
 		<UIcon
 			name="i-lucide-pencil"
-			class="mt-0.5 size-3 shrink-0 text-dimmed"
+			class="mt-0.5 size-3 shrink-0 text-dimmed transition-colors group-hover:text-default"
 		/>
 	</button>
 
