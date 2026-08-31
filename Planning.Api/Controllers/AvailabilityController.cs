@@ -72,9 +72,11 @@ public class AvailabilityController : ApiControllerBase
             return result.ToActionResult(this);
         });
 
+    // No action policy either: deleting is planner-only except for withdrawing your own pending
+    // request, which depends on the loaded rule and is enforced in AvailabilityRuleService.
     [HttpDelete("rules/{id:guid}")]
-    [Authorize(Policy = "CanManagePlanning")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status403Forbidden)]
     [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteRule(Guid id)
     {
