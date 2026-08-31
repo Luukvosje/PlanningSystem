@@ -54,32 +54,45 @@ const statusClass = computed(() => {
 </script>
 
 <template>
+	<!--
+		The whole block is the edit button, so the pencil is a plain icon rather than a nested
+		UButton: interactive content inside a <button> is invalid, and it only has to say that this
+		block can be clicked.
+	-->
 	<button
 		v-if="variant === 'block'"
 		type="button"
-		class="w-full overflow-hidden rounded-md border border-dashed px-2.5 py-1.5 text-left"
+		class="flex w-full items-start gap-1 overflow-hidden rounded-md border border-dashed px-2.5 py-1.5 text-left"
 		:style="UNAVAILABLE_EDGE_STYLE"
+		:aria-label="t('common.actions.edit')"
 		@click="emit('edit')"
 	>
-		<p class="flex items-center gap-1 truncate text-xs font-semibold leading-tight tabular-nums">
-			<UIcon
-				name="i-lucide-calendar-off"
-				class="size-3 shrink-0"
-			/>
-			{{ timeLabel }}
-		</p>
-		<p
-			class="mt-0.5 truncate text-[11px] font-medium uppercase leading-tight tracking-wide"
-			:class="statusClass"
-		>
-			{{ statusLabel }}
-		</p>
-		<p
-			v-if="rule.reason"
-			class="mt-0.5 truncate text-[11px] leading-tight text-muted"
-		>
-			{{ rule.reason }}
-		</p>
+		<span class="min-w-0 flex-1">
+			<span class="flex items-center gap-1 truncate text-xs font-semibold leading-tight tabular-nums">
+				<UIcon
+					name="i-lucide-calendar-off"
+					class="size-3 shrink-0"
+				/>
+				{{ timeLabel }}
+			</span>
+			<span
+				class="mt-0.5 block truncate text-[11px] font-medium uppercase leading-tight tracking-wide"
+				:class="statusClass"
+			>
+				{{ statusLabel }}
+			</span>
+			<span
+				v-if="rule.reason"
+				class="mt-0.5 block truncate text-[11px] leading-tight text-muted"
+			>
+				{{ rule.reason }}
+			</span>
+		</span>
+
+		<UIcon
+			name="i-lucide-pencil"
+			class="mt-0.5 size-3 shrink-0 text-dimmed"
+		/>
 	</button>
 
 	<div
