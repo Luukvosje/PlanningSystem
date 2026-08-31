@@ -448,7 +448,9 @@
       "loading": "Diensten laden...",
       "empty": "Geen diensten in deze periode",
       "emptyDescription": "Diensten van de afgelopen maand tot drie maanden vooruit staan hier."
-    }
+    },
+    "deleteTitle": "Dienst verwijderen?",
+    "deleteDescription": "Dit kun je niet terugdraaien."
   },
   "organizations": {
     "loading": "Organisatie laden...",

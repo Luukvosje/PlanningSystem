@@ -5,6 +5,7 @@ import { formatWeeklyRuleLabel } from '~/utils/planning/availabilityMath';
 const { t } = useI18n();
 const auth = useAuthStore();
 const api = useAvailabilityApi();
+const { confirmDelete } = useDeleteConfirm();
 
 const employeeId = computed(() => auth.currentUser?.userId ?? '');
 
@@ -30,6 +31,16 @@ function openEdit(rule: AvailabilityRule) {
 }
 
 async function removeRule(rule: AvailabilityRule) {
+  const confirmed = await confirmDelete({
+    title: t('availability.deleteWeeklyRule'),
+    description: t('availability.deleteConfirmDescription'),
+    confirmLabel: t('common.actions.delete'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
   await api.remove.mutateAsync(rule.id);
 }
 </script>

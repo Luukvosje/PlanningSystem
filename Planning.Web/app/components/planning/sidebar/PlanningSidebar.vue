@@ -9,6 +9,7 @@ import { toFormErrors } from '~/lib/form/types';
 const { t } = useI18n();
 const store = usePlanningStore();
 const { canManage, selectedRecord, createRecord, deleteRecord, duplicateRecord } = usePlanning();
+const { confirmDelete } = useDeleteConfirm();
 const api = usePlanningApi();
 const toast = useToast();
 
@@ -206,7 +207,21 @@ async function onDelete() {
   if (!selectedRecord.value) {
     return;
   }
-  await deleteRecord(selectedRecord.value.id);
+
+  // Read the id up front: what is selected can change while the dialog is open.
+  const { id: recordId } = selectedRecord.value;
+
+  const confirmed = await confirmDelete({
+    title: t('planning.deleteTitle'),
+    description: t('planning.deleteDescription'),
+    confirmLabel: t('common.actions.delete'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  await deleteRecord(recordId);
 }
 
 async function onDuplicate() {

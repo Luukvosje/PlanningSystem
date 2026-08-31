@@ -3,6 +3,7 @@ const { t } = useI18n();
 const store = usePlanningStore();
 const { canManage, records } = usePlanning();
 const { duplicateRecord, deleteRecord } = usePlanning();
+const { confirmDelete } = useDeleteConfirm();
 
 const menu = computed(() => store.contextMenu);
 const _record = computed(() =>
@@ -25,8 +26,24 @@ async function onDelete() {
   if (!menu.value) {
     return;
   }
-  await deleteRecord(menu.value.recordId);
+
+  // Read the id and close the menu before asking: this menu closes itself on the next click
+  // anywhere, the dialog's own button included, so by the time the answer comes back `menu` is
+  // already empty.
+  const { recordId } = menu.value;
   close();
+
+  const confirmed = await confirmDelete({
+    title: t('planning.deleteTitle'),
+    description: t('planning.deleteDescription'),
+    confirmLabel: t('common.actions.delete'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
+  await deleteRecord(recordId);
 }
 
 function onEdit() {

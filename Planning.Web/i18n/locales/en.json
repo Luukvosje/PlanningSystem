@@ -448,7 +448,9 @@
       "loading": "Loading shifts...",
       "empty": "No shifts in this period",
       "emptyDescription": "Shifts from the past month up to three months ahead appear here."
-    }
+    },
+    "deleteTitle": "Delete this shift?",
+    "deleteDescription": "This cannot be undone."
   },
   "organizations": {
     "loading": "Loading organization...",

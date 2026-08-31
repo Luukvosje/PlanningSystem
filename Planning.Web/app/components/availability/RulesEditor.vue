@@ -12,6 +12,7 @@ const { t, locale } = useI18n();
 const intlLocale = computed(() => getIntlLocale(locale.value));
 const { data: users } = useUsers();
 const api = useAvailabilityApi();
+const { confirmDelete } = useDeleteConfirm();
 
 const selectedEmployeeId = ref(props.employeeId);
 
@@ -85,6 +86,18 @@ function openOneTimeEdit(rule: AvailabilityRule) {
 }
 
 async function removeRule(rule: AvailabilityRule) {
+  const confirmed = await confirmDelete({
+    title: rule.type === 'Weekly' ?
+      t('availability.deleteWeeklyRule') :
+      t('availability.deleteException'),
+    description: t('availability.deleteConfirmDescription'),
+    confirmLabel: t('common.actions.delete'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
   await api.remove.mutateAsync(rule.id);
 }
 </script>

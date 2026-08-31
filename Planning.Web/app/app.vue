@@ -15,5 +15,8 @@ useHead({
 		<NuxtLayout>
 			<NuxtPage />
 		</NuxtLayout>
+
+		<!-- One dialog for every delete in the app; see useDeleteConfirm. -->
+		<UiDeleteConfirm />
 	</UApp>
 </template>

@@ -6,6 +6,7 @@ import { formatAgendaDayHeader, getIntlLocale } from '~/utils/planning/dateUtils
 const { t, locale } = useI18n();
 const intlLocale = computed(() => getIntlLocale(locale.value));
 const api = useAvailabilityApi();
+const { confirmDelete } = useDeleteConfirm();
 
 const emit = defineEmits<{
   createException: [dateKey: string]
@@ -39,6 +40,16 @@ const shiftCountLabel = computed(() => {
 });
 
 async function removeException(rule: AvailabilityRule) {
+  const confirmed = await confirmDelete({
+    title: t('availability.deleteException'),
+    description: t('availability.deleteConfirmDescription'),
+    confirmLabel: t('common.actions.delete'),
+  });
+
+  if (!confirmed) {
+    return;
+  }
+
   await api.remove.mutateAsync(rule.id);
 }
 </script>
