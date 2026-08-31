@@ -196,8 +196,7 @@
     "emptySwaps": "No swap requests.",
     "emptySwapsDescription": "Swapping shifts between employees will show up here.",
     "noDecided": "Nothing decided yet.",
-    "showDecided": "Show decided requests",
-    "hideDecided": "Hide decided requests",
+    "decided": "Decided",
     "tabs": {
       "all": "All",
       "swaps": "Swaps",

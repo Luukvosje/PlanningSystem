@@ -3,8 +3,8 @@ import { getApiRequests } from '~/generated/api/requests/requests';
 import { queryKeys } from '~/utils/queryKeys';
 
 /**
- * The request inbox. Decided requests are only fetched once someone asks for them: the pending list
- * is short and stays short, the decided one grows for as long as the organization exists.
+ * The request inbox. `includeDecided` also returns everything already approved or rejected, which
+ * grows for as long as the organization exists - the caller decides whether it wants that.
  */
 export function useRequests(options?: {
   includeDecided?: Ref<boolean>

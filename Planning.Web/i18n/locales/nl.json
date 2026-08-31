@@ -196,8 +196,7 @@
     "emptySwaps": "Geen wisselverzoeken.",
     "emptySwapsDescription": "Diensten ruilen tussen medewerkers komt hier te staan.",
     "noDecided": "Nog niets afgehandeld.",
-    "showDecided": "Afgehandelde aanvragen tonen",
-    "hideDecided": "Afgehandelde aanvragen verbergen",
+    "decided": "Afgehandeld",
     "tabs": {
       "all": "Alles",
       "swaps": "Wissels",

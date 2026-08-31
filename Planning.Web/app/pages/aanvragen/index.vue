@@ -36,20 +36,15 @@ function inTab(request: PlanningRequest, tab: TabValue) {
 	return kinds === null || kinds.includes(request.kind);
 }
 
-const pendingQuery = useRequests();
-
-// Decided requests are history and grow forever, so they are only fetched once asked for.
-const showDecided = ref(false);
-const decidedQuery = useRequests({
-	includeDecided: ref(true),
-	enabled: showDecided,
-});
+// One query for both lists: what was decided stays on screen under the open requests, so the
+// planner can see their own last calls without asking for them.
+const query = useRequests({ includeDecided: ref(true) });
 
 const api = useRequestsApi();
 
-const pending = computed(() => pendingQuery.data.value?.items ?? []);
-const decided = computed(() =>
-	(decidedQuery.data.value?.items ?? []).filter((request) => request.status !== ApprovalStatus.Pending));
+const items = computed(() => query.data.value?.items ?? []);
+const pending = computed(() => items.value.filter((request) => request.status === ApprovalStatus.Pending));
+const decided = computed(() => items.value.filter((request) => request.status !== ApprovalStatus.Pending));
 
 const { tab, items: tabItems } = useEntityTabs(computed<EntityTab[]>(() =>
 	TAB_VALUES.map((value) => ({
@@ -116,8 +111,8 @@ async function approveAll() {
 
 		<LayoutPageContainer>
 			<UiQueryState
-				:error="pendingQuery.error.value"
-				:loading="pendingQuery.isLoading.value"
+				:error="query.error.value"
+				:loading="query.isLoading.value"
 				:loading-label="t('requests.loading')"
 			>
 				<div class="flex flex-col gap-6">
@@ -143,40 +138,26 @@ async function approveAll() {
 						:description="activeTab === 'swaps' ? t('requests.emptySwapsDescription') : undefined"
 					/>
 
-					<section class="flex flex-col gap-2">
-						<UButton
-							:icon="showDecided ? 'i-lucide-chevron-up' : 'i-lucide-history'"
-							variant="link"
-							color="neutral"
-							size="sm"
-							class="self-start px-0"
-							:label="showDecided ? t('requests.hideDecided') : t('requests.showDecided')"
-							@click="showDecided = !showDecided"
+					<section class="flex flex-col gap-2 border-t border-default pt-5">
+						<h2 class="text-sm font-semibold uppercase tracking-wide text-muted">
+							{{ t('requests.decided') }}
+						</h2>
+
+						<div
+							v-if="visibleDecided.length"
+							class="flex flex-col gap-2 opacity-70"
+						>
+							<RequestsRow
+								v-for="request in visibleDecided"
+								:key="request.id"
+								:request="request"
+							/>
+						</div>
+
+						<UiEmptyState
+							v-else
+							:title="t('requests.noDecided')"
 						/>
-
-						<template v-if="showDecided">
-							<UiQueryState
-								:error="decidedQuery.error.value"
-								:loading="decidedQuery.isLoading.value"
-								:loading-label="t('requests.loading')"
-							>
-								<div
-									v-if="visibleDecided.length"
-									class="flex flex-col gap-2 opacity-70"
-								>
-									<RequestsRow
-										v-for="request in visibleDecided"
-										:key="request.id"
-										:request="request"
-									/>
-								</div>
-
-								<UiEmptyState
-									v-else
-									:title="t('requests.noDecided')"
-								/>
-							</UiQueryState>
-						</template>
 					</section>
 				</div>
 			</UiQueryState>
