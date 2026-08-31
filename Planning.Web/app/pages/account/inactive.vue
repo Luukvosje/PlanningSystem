@@ -7,13 +7,13 @@ const { data: memberships } = useMyOrganizations();
 
 /**
  * You only land here with memberships that are all inactive, so naming them tells you who to
- * chase. It stays a fallback though: the list is a cached query and may not have arrived.
+ * chase. Client-only: the query is not awaited during SSR, and rendering the names on both sides
+ * would be a hydration mismatch every time.
  */
 const organizations = computed(() =>
   (memberships.value ?? [])
     .filter((membership) => !membership.isActive)
-    .map((membership) => membership.organizationName)
-    .join(', '));
+    .map((membership) => membership.organizationName));
 
 async function onLogout() {
   auth.logout();
@@ -34,17 +34,34 @@ async function onLogout() {
 						{{ t('account.inactive.title') }}
 					</h1>
 					<p class="mt-1 text-sm text-muted">
-						{{ organizations
-							? t('account.inactive.description', { organizations })
-							: t('account.inactive.descriptionUnknown') }}
+						{{ t('account.inactive.description') }}
 					</p>
 				</div>
 			</div>
 		</template>
 
-		<p class="text-sm text-muted">
-			{{ t('account.inactive.contactAdmin') }}
-		</p>
+		<div class="space-y-3">
+			<p class="text-sm text-muted">
+				{{ t('account.inactive.contactAdmin') }}
+			</p>
+
+			<ClientOnly>
+				<div
+					v-if="organizations.length"
+					class="flex flex-wrap gap-1.5"
+				>
+					<UBadge
+						v-for="name in organizations"
+						:key="name"
+						color="neutral"
+						variant="subtle"
+						icon="i-lucide-building-2"
+					>
+						{{ name }}
+					</UBadge>
+				</div>
+			</ClientOnly>
+		</div>
 
 		<template #footer>
 			<UButton

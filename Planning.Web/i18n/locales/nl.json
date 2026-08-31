@@ -73,8 +73,7 @@
   "account": {
     "inactive": {
       "title": "Je toegang is ingetrokken",
-      "description": "Een beheerder van {organizations} heeft je account gedeactiveerd.",
-      "descriptionUnknown": "Een beheerder heeft je account gedeactiveerd.",
+      "description": "Een beheerder heeft je account gedeactiveerd.",
       "contactAdmin": "Neem contact op met je beheerder om weer toegang te krijgen."
     }
   },

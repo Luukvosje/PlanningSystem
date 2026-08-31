@@ -73,8 +73,7 @@
   "account": {
     "inactive": {
       "title": "Your access has been revoked",
-      "description": "An administrator of {organizations} deactivated your account.",
-      "descriptionUnknown": "An administrator deactivated your account.",
+      "description": "An administrator deactivated your account.",
       "contactAdmin": "Contact your administrator to get your access back."
     }
   },
