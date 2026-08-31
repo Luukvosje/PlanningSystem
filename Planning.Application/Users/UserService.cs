@@ -172,6 +172,42 @@ public class UserService : TenantServiceBase, IUserService
         return Result<UserResponse>.Success(UserMapper.ToResponse(user, userModules));
     }
 
+    public async Task<Result<UserResponse>> UpdateApprovalAsync(
+        Guid id,
+        UpdateUserApprovalRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!CurrentUser.HasOrganization || CurrentUser.UserId is null)
+        {
+            return Failures.NoOrganizationContext<UserResponse>();
+        }
+
+        if (CurrentUser.Role is not (UserRole.Owner or UserRole.Admin))
+        {
+            return Failures.ForbiddenFor<UserResponse>(
+                "Only owners and admins can change who has to request their availability.");
+        }
+
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+
+        if (user is null || !Owns(user))
+        {
+            return Failures.NotFoundFor<UserResponse>("User");
+        }
+
+        return await TranslateDomainErrorsAsync(async () =>
+        {
+            if (user.RequiresApproval != request.RequiresApproval)
+            {
+                user.SetRequiresApproval(request.RequiresApproval, DateTime.UtcNow);
+                await _userRepository.UpdateAsync(user, cancellationToken);
+            }
+
+            var modules = await _moduleService.GetUserModulesAsync(user.Id, cancellationToken);
+            return Result<UserResponse>.Success(UserMapper.ToResponse(user, modules));
+        });
+    }
+
     public async Task<Result<IReadOnlyList<ModuleSettingResponse>>> UpdateModulesAsync(
         Guid id,
         UpdateModulesRequest request,

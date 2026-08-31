@@ -203,6 +203,7 @@ public class AuthService : IAuthService
             user.LastName,
             user.Role,
             organization.Name,
+            user.RequiresApproval,
             modules));
     }
 

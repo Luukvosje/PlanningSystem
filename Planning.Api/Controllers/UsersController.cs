@@ -17,17 +17,20 @@ public class UsersController : ApiControllerBase
     private readonly IUserService _userService;
     private readonly IValidator<UpdateUserRoleRequest> _updateRoleValidator;
     private readonly IValidator<UpdateUserStatusRequest> _updateStatusValidator;
+    private readonly IValidator<UpdateUserApprovalRequest> _updateApprovalValidator;
     private readonly IValidator<UpdateModulesRequest> _updateModulesValidator;
 
     public UsersController(
         IUserService userService,
         IValidator<UpdateUserRoleRequest> updateRoleValidator,
         IValidator<UpdateUserStatusRequest> updateStatusValidator,
+        IValidator<UpdateUserApprovalRequest> updateApprovalValidator,
         IValidator<UpdateModulesRequest> updateModulesValidator)
     {
         _userService = userService;
         _updateRoleValidator = updateRoleValidator;
         _updateStatusValidator = updateStatusValidator;
+        _updateApprovalValidator = updateApprovalValidator;
         _updateModulesValidator = updateModulesValidator;
     }
 
@@ -71,6 +74,19 @@ public class UsersController : ApiControllerBase
         ValidateAndExecuteAsync(request, _updateStatusValidator, async () =>
         {
             var result = await _userService.UpdateStatusAsync(id, request, HttpContext.RequestAborted);
+            return result.ToActionResult(this);
+        });
+
+    [HttpPut("{id:guid}/approval")]
+    [Authorize(Policy = "RequireOwnerOrAdmin")]
+    [Authorize(Policy = "RequireBeheerModule")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+    public Task<IActionResult> UpdateApproval(Guid id, [FromBody] UpdateUserApprovalRequest request) =>
+        ValidateAndExecuteAsync(request, _updateApprovalValidator, async () =>
+        {
+            var result = await _userService.UpdateApprovalAsync(id, request, HttpContext.RequestAborted);
             return result.ToActionResult(this);
         });
 

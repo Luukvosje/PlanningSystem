@@ -19,3 +19,11 @@ public class UpdateUserRoleRequestValidator : AbstractValidator<UpdateUserRoleRe
 public class UpdateUserStatusRequestValidator : AbstractValidator<UpdateUserStatusRequest>
 {
 }
+
+/// <summary>
+/// Same as the status validator: the request is a single bool, and whether the caller may set it
+/// is an authorization decision that needs the loaded user, so it lives in the service.
+/// </summary>
+public class UpdateUserApprovalRequestValidator : AbstractValidator<UpdateUserApprovalRequest>
+{
+}

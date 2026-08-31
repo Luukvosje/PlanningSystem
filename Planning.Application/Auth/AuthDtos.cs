@@ -43,6 +43,7 @@ public sealed record CurrentUserResponse(
     string LastName,
     UserRole Role,
     string OrganizationName,
+    bool RequiresApproval,
     IReadOnlyList<ModuleSettingResponse> Modules);
 
 public sealed record UpdateProfileRequest(
