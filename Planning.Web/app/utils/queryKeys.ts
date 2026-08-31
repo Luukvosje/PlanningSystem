@@ -26,6 +26,9 @@ export const queryKeys = {
     forEntity: (kind: 'customer' | 'user', id: string, start?: string, end?: string) =>
       ['planning', 'entity', kind, id, start, end] as const,
   },
+  requests: {
+    list: (includeDecided: boolean) => ['requests', 'list', includeDecided] as const,
+  },
   availability: {
     rules: (employeeId?: string) => ['availability', 'rules', employeeId] as const,
     planning: (start?: string, end?: string, employeeIds?: string) =>

@@ -158,6 +158,33 @@ export function formatRelativePlanningDate(dateUtc: string, locale: string, t: T
   }).format(date);
 }
 
+/**
+ * "2 uur geleden", "gisteren". The counterpart of formatRelativePlanningDate, which looks ahead at
+ * a shift; this one looks back at when something was submitted. The unit is the largest one that
+ * still gives a whole number, so a request from this morning does not read as "180 minuten geleden".
+ */
+export function formatTimeAgo(iso: string, locale: string): string {
+  const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+  const units: [Intl.RelativeTimeFormatUnit, number][] = [
+    ['year', 60 * 60 * 24 * 365],
+    ['month', 60 * 60 * 24 * 30],
+    ['week', 60 * 60 * 24 * 7],
+    ['day', 60 * 60 * 24],
+    ['hour', 60 * 60],
+    ['minute', 60],
+  ];
+
+  for (const [unit, secondsPerUnit] of units) {
+    if (Math.abs(seconds) >= secondsPerUnit) {
+      return formatter.format(Math.round(seconds / secondsPerUnit), unit);
+    }
+  }
+
+  return formatter.format(seconds, 'second');
+}
+
 export function formatDayHeader(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, {
     weekday: 'short',

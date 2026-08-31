@@ -39,7 +39,9 @@
       "save": "Save and leave",
       "discard": "Discard and leave",
       "cancel": "Stay on page"
-    }
+    },
+    "yes": "Yes",
+    "no": "No"
   },
   "nav": {
     "menu": "Menu",
@@ -53,7 +55,8 @@
     "team": "Team",
     "organization": "Organization",
     "invites": "Invite",
-    "settings": "Settings"
+    "settings": "Settings",
+    "requests": "Requests"
   },
   "auth": {
     "email": "Email",
@@ -187,6 +190,47 @@
       "deleteFailed": "Could not delete rule"
     }
   },
+  "requests": {
+    "loading": "Loading requests...",
+    "empty": "No open requests.",
+    "emptySwaps": "No swap requests.",
+    "emptySwapsDescription": "Swapping shifts between employees will show up here.",
+    "noDecided": "Nothing decided yet.",
+    "showDecided": "Show decided requests",
+    "hideDecided": "Hide decided requests",
+    "tabs": {
+      "all": "All",
+      "swaps": "Swaps",
+      "leave": "Leave"
+    },
+    "kind": {
+      "leave": "Leave",
+      "availability": "Availability"
+    },
+    "status": {
+      "pending": "Requested",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveAll": "Approve all"
+    },
+    "approveAll": {
+      "title": "Approve everything?",
+      "description": "You are approving {count} requests at once. An approval cannot be undone."
+    },
+    "toast": {
+      "approved": "Request approved",
+      "approvedMany": "{count} requests approved",
+      "rejected": "Request rejected",
+      "rejectedMany": "{count} requests rejected",
+      "skipped": "{count} requests had already been decided.",
+      "approveFailed": "Could not approve",
+      "rejectFailed": "Could not reject"
+    }
+  },
   "customers": {
     "loading": "Loading customers...",
     "loadingOne": "Loading customer...",
@@ -300,7 +344,8 @@
     "updated": "Team member updated",
     "fields": {
       "role": "Role",
-      "modules": "Modules"
+      "modules": "Modules",
+      "requiresApproval": "Must request"
     },
     "access": {
       "title": "Role and modules",
@@ -309,6 +354,9 @@
     "tabs": {
       "details": "Details",
       "planning": "Planning"
+    },
+    "requiresApproval": {
+      "description": "This member's availability and leave wait for a planner's approval."
     }
   },
   "planning": {
@@ -383,7 +431,6 @@
     "noResourcesToDisplay": "No resources to display.",
     "clickToEdit": "Click to edit",
     "clickToOpen": "Click to open",
-    "openShift": "Open shift",
     "noShifts": "No shifts",
     "shiftCountSingular": "{count} shift",
     "shiftCountPlural": "{count} shifts",

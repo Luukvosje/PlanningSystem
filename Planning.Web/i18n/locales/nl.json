@@ -39,7 +39,9 @@
       "save": "Opslaan en doorgaan",
       "discard": "Wijzigingen negeren en doorgaan",
       "cancel": "Op pagina blijven"
-    }
+    },
+    "yes": "Ja",
+    "no": "Nee"
   },
   "nav": {
     "menu": "Menu",
@@ -53,7 +55,8 @@
     "team": "Team",
     "organization": "Organisatie",
     "invites": "Uitnodigen",
-    "settings": "Instellingen"
+    "settings": "Instellingen",
+    "requests": "Aanvragen"
   },
   "auth": {
     "email": "E-mail",
@@ -187,6 +190,47 @@
       "deleteFailed": "Regel verwijderen mislukt"
     }
   },
+  "requests": {
+    "loading": "Aanvragen laden...",
+    "empty": "Geen openstaande aanvragen.",
+    "emptySwaps": "Geen wisselverzoeken.",
+    "emptySwapsDescription": "Diensten ruilen tussen medewerkers komt hier te staan.",
+    "noDecided": "Nog niets afgehandeld.",
+    "showDecided": "Afgehandelde aanvragen tonen",
+    "hideDecided": "Afgehandelde aanvragen verbergen",
+    "tabs": {
+      "all": "Alles",
+      "swaps": "Wissels",
+      "leave": "Verlof"
+    },
+    "kind": {
+      "leave": "Verlof",
+      "availability": "Beschikbaarheid"
+    },
+    "status": {
+      "pending": "Aangevraagd",
+      "approved": "Goedgekeurd",
+      "rejected": "Afgewezen"
+    },
+    "actions": {
+      "approve": "Goedkeuren",
+      "reject": "Afwijzen",
+      "approveAll": "Alles goedkeuren"
+    },
+    "approveAll": {
+      "title": "Alles goedkeuren?",
+      "description": "Je keurt {count} aanvragen in één keer goed. Een goedkeuring kun je niet terugdraaien."
+    },
+    "toast": {
+      "approved": "Aanvraag goedgekeurd",
+      "approvedMany": "{count} aanvragen goedgekeurd",
+      "rejected": "Aanvraag afgewezen",
+      "rejectedMany": "{count} aanvragen afgewezen",
+      "skipped": "{count} aanvragen waren al afgehandeld.",
+      "approveFailed": "Goedkeuren mislukt",
+      "rejectFailed": "Afwijzen mislukt"
+    }
+  },
   "customers": {
     "loading": "Klanten laden...",
     "loadingOne": "Klant laden...",
@@ -300,7 +344,8 @@
     "updated": "Teamlid bijgewerkt",
     "fields": {
       "role": "Rol",
-      "modules": "Modules"
+      "modules": "Modules",
+      "requiresApproval": "Moet aanvragen"
     },
     "access": {
       "title": "Rol en modules",
@@ -309,6 +354,9 @@
     "tabs": {
       "details": "Gegevens",
       "planning": "Planning"
+    },
+    "requiresApproval": {
+      "description": "Beschikbaarheid en verlof van deze medewerker wachten op goedkeuring van een planner."
     }
   },
   "planning": {
@@ -383,7 +431,6 @@
     "noResourcesToDisplay": "Geen resources om weer te geven.",
     "clickToEdit": "Klik om te bewerken",
     "clickToOpen": "Klik om te openen",
-    "openShift": "Open dienst",
     "noShifts": "Geen diensten",
     "shiftCountSingular": "{count} dienst",
     "shiftCountPlural": "{count} diensten",

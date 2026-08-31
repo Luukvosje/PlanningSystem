@@ -1,10 +1,17 @@
 <script setup lang="ts">
-defineProps<{
+withDefaults(defineProps<{
   title: string
   description?: string
   confirmLabel?: string
+  /** Deleting is red; confirming something that is merely irreversible is not. */
+  confirmColor?: 'error' | 'brand'
   loading?: boolean
-}>();
+}>(), {
+  description: undefined,
+  confirmLabel: undefined,
+  confirmColor: 'error',
+  loading: false,
+});
 
 const open = defineModel<boolean>('open', { required: true });
 
@@ -31,7 +38,7 @@ const { t } = useI18n();
 					{{ t('common.actions.cancel') }}
 				</UButton>
 				<UButton
-					color="error"
+					:color="confirmColor"
 					:loading="loading"
 					@click="() => { emit('confirm') }"
 				>
