@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { ApprovalStatus } from '~/generated/models';
 import type { AvailabilityRule } from '~/types/availability';
+import { getRequestStatusLabel } from '~/types/requests';
 import { formatRuleTimeRange } from '~/utils/planning/availabilityMath';
 import { UNAVAILABLE_BAR_STYLE, UNAVAILABLE_EDGE_STYLE } from '~/utils/planning/dateUtils';
 
@@ -28,6 +30,27 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const timeLabel = computed(() => formatRuleTimeRange(props.rule.startTime, props.rule.endTime, t));
+
+/**
+ * An approved blockade needs no words - it simply is not available. A requested or refused one does,
+ * and it takes the place of that line rather than adding a second one: this row is two lines wide in
+ * a week column.
+ */
+const statusLabel = computed(() =>
+  props.rule.approvalStatus === ApprovalStatus.Approved ?
+    t('availability.unavailable') :
+    getRequestStatusLabel(props.rule.approvalStatus, t));
+
+const statusClass = computed(() => {
+  switch (props.rule.approvalStatus) {
+    case ApprovalStatus.Pending:
+      return 'text-warning';
+    case ApprovalStatus.Rejected:
+      return 'text-error';
+    default:
+      return 'text-muted';
+  }
+});
 </script>
 
 <template>
@@ -45,8 +68,11 @@ const timeLabel = computed(() => formatRuleTimeRange(props.rule.startTime, props
 			/>
 			{{ timeLabel }}
 		</p>
-		<p class="mt-0.5 truncate text-[11px] font-medium uppercase leading-tight tracking-wide text-muted">
-			{{ t('availability.unavailable') }}
+		<p
+			class="mt-0.5 truncate text-[11px] font-medium uppercase leading-tight tracking-wide"
+			:class="statusClass"
+		>
+			{{ statusLabel }}
 		</p>
 		<p
 			v-if="rule.reason"
@@ -81,8 +107,11 @@ const timeLabel = computed(() => formatRuleTimeRange(props.rule.startTime, props
 					/>
 					{{ timeLabel }}
 				</p>
-				<p class="truncate text-xs font-medium uppercase leading-tight tracking-wide text-muted">
-					{{ t('availability.unavailable') }}
+				<p
+					class="truncate text-xs font-medium uppercase leading-tight tracking-wide"
+					:class="statusClass"
+				>
+					{{ statusLabel }}
 				</p>
 				<p
 					v-if="rule.reason"
