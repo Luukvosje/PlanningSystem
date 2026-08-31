@@ -8,6 +8,7 @@ import { AppModule, UserRole } from '~/generated/models';
 export function createUpdateUserSchema() {
   return z.object({
     role: z.enum(UserRole),
+    requiresApproval: z.boolean(),
     modules: z.object({
       [AppModule.Planning]: z.boolean(),
       [AppModule.Klant]: z.boolean(),

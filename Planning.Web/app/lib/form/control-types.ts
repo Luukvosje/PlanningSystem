@@ -3,7 +3,7 @@ import { toValue } from 'vue';
 import type { z } from 'zod';
 import type { Form } from './Form';
 
-export type BuiltInControlType = 'input' | 'email' | 'password' | 'textarea' | 'select'
+export type BuiltInControlType = 'input' | 'email' | 'password' | 'textarea' | 'select' | 'switch'
 
 export interface ControlRenderContext<TSchema extends z.ZodType = z.ZodType> {
   form: Form<TSchema>

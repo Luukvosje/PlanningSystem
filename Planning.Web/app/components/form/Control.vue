@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { FormControl } from '~/lib/form/control-types';
+import type { BuiltInControlType, FormControl } from '~/lib/form/control-types';
 import { isBuiltInControl, isCustomControl, resolveControlProps } from '~/lib/form/control-types';
 import type { Form } from '~/lib/form/Form';
 
@@ -35,6 +35,13 @@ const selectModel = computed<string | number | undefined>({
   },
 });
 
+const booleanModel = computed<boolean>({
+  get: () => model.value === true,
+  set: (value) => {
+    model.value = value;
+  },
+});
+
 const renderContext = computed(() => ({
   form: props.form,
   control: props.control,
@@ -44,7 +51,7 @@ const controlProps = computed(() => resolveControlProps(props.control, renderCon
 
 const disabled = computed(() => unref(props.form.isSubmitting));
 
-function builtInType(control: FormControl): 'input' | 'email' | 'password' | 'textarea' | 'select' {
+function builtInType(control: FormControl): BuiltInControlType {
   if (!isBuiltInControl(control)) {
     return 'input';
   }
@@ -100,6 +107,13 @@ function builtInType(control: FormControl): 'input' | 'email' | 'password' | 'te
 		v-model="selectModel"
 		:disabled="disabled"
 		class="w-full"
+		v-bind="controlProps"
+	/>
+
+	<USwitch
+		v-else-if="builtInType(control) === 'switch'"
+		v-model="booleanModel"
+		:disabled="disabled"
 		v-bind="controlProps"
 	/>
 </template>
