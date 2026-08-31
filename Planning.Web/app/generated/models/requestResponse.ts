@@ -5,27 +5,25 @@
  * Multi-tenant Planning SaaS foundation
  * OpenAPI spec version: v1
  */
-import type { AvailabilityRuleType } from './availabilityRuleType';
-import type { Weekday } from './weekday';
-import type { AvailabilityRuleStatus } from './availabilityRuleStatus';
+import type { RequestKind } from './requestKind';
 import type { ApprovalStatus } from './approvalStatus';
+import type { Weekday } from './weekday';
 
-export interface AvailabilityRuleResponse {
+export interface RequestResponse {
   id: string;
+  kind: RequestKind;
   employeeId: string;
-  type: AvailabilityRuleType;
-  weekday?: Weekday;
+  employeeFirstName: string;
+  employeeLastName: string;
+  status: ApprovalStatus;
   /** @nullable */
   date?: string | null;
+  weekday?: Weekday;
   startTime: string;
   endTime: string;
-  status: AvailabilityRuleStatus;
   /** @nullable */
   reason?: string | null;
-  approvalStatus: ApprovalStatus;
+  createdAtUtc: string;
   /** @nullable */
   decidedAtUtc?: string | null;
-  createdAtUtc: string;
-  updatedAtUtc: string;
-  schedulingConflict?: boolean;
 }

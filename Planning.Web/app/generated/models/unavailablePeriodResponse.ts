@@ -6,6 +6,7 @@
  * OpenAPI spec version: v1
  */
 import type { AvailabilityRuleStatus } from './availabilityRuleStatus';
+import type { ApprovalStatus } from './approvalStatus';
 
 export interface UnavailablePeriodResponse {
   employeeId: string;
@@ -13,6 +14,7 @@ export interface UnavailablePeriodResponse {
   startTime: string;
   endTime: string;
   status: AvailabilityRuleStatus;
+  approvalStatus: ApprovalStatus;
   /** @nullable */
   reason?: string | null;
   ruleId: string;

@@ -16,6 +16,7 @@ export interface UserResponse {
   email: string;
   role: UserRole;
   isActive: boolean;
+  requiresApproval: boolean;
   createdAtUtc: string;
   updatedAtUtc: string;
   modules: ModuleSettingResponse[];
