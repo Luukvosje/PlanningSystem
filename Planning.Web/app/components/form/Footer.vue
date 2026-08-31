@@ -41,11 +41,17 @@ const submitConfig = computed(() => unref(props.form.submitConfig));
 				>
 					{{ t('common.actions.cancel') }}
 				</UButton>
+				<!--
+					Submits through the form instance, not through type="submit": this footer is rendered
+					into LayoutCard's footer slot, which sits outside the <form> element, and a submit
+					button outside its form does nothing at all.
+				-->
 				<UButton
-					type="submit"
+					type="button"
 					:disabled="!isDirty"
 					:loading="isSubmitting"
 					v-bind="submitConfig.props"
+					@click="form.submit()"
 				>
 					{{ submitConfig.label ?? t('common.actions.save') }}
 				</UButton>
