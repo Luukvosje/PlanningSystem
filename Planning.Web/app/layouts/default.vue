@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
-import { useLocalStorage, useMediaQuery } from '@vueuse/core';
+import { useMediaQuery } from '@vueuse/core';
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -15,47 +15,33 @@ const currentLanguageIcon = computed(() =>
   languageOptions.find((option) => option.code === locale.value)?.icon ?? languageOptions[0].icon,
 );
 
-type SidebarMode = 'open' | 'auto' | 'closed'
+const colorMode = useColorMode();
 
-const SIDEBAR_MODE_ICONS: Record<SidebarMode, string> = {
-  open: 'i-lucide-panel-left-close',
-  auto: 'i-lucide-panel-left-dashed',
-  closed: 'i-lucide-panel-left',
+const COLOR_MODE_ICONS: Record<'light' | 'dark', string> = {
+  light: 'i-lucide-sun',
+  dark: 'i-lucide-moon',
 };
 
-const sidebarMode = useLocalStorage<SidebarMode>('sidebar-mode', 'open');
 const mobileSidebarOpen = ref(false);
 const isDesktop = useMediaQuery('(min-width: 1024px)');
 
-/** Hovering anywhere over the rail (or the panel hanging off it) reveals the panel in auto mode. */
+/**
+ * The desktop sidebar is always automatic: only the icon rail takes up layout space and hovering
+ * anywhere over it (or over the panel hanging off it) floats the panel out over the page.
+ */
 const sidebarHovered = ref(false);
-const floatingPanelOpen = computed(() => sidebarMode.value === 'auto' && sidebarHovered.value);
+/**
+ * Reka sets `pointer-events: none` on the body while a select in the panel is open, so the
+ * pointer leaves the sidebar without the user moving it. Closing on that mouseleave would
+ * unmount the open list together with the panel, hence the second condition.
+ */
+const panelControlActive = ref(false);
+const floatingPanelOpen = computed(() => (sidebarHovered.value || panelControlActive.value));
 
-/** The keyboard shortcut stays a plain on/off: auto is a choice you make in the menu, not one you toggle into. */
+/** Only mobile has a sidebar to toggle; on desktop the rail is permanent and the panel follows the pointer. */
 function toggleSidebar() {
-  if (!isDesktop.value) {
-    mobileSidebarOpen.value = !mobileSidebarOpen.value;
-    return;
-  }
-
-  sidebarMode.value = sidebarMode.value === 'open' ? 'closed' : 'open';
+  mobileSidebarOpen.value = !mobileSidebarOpen.value;
 }
-
-defineShortcuts({
-  h: toggleSidebar,
-});
-
-const sidebarModeItems = computed<DropdownMenuItem[][]>(() => [
-  (['open', 'auto', 'closed'] as const).map((mode) => ({
-    label: t(`layout.sidebarMode.${mode}`),
-    icon: SIDEBAR_MODE_ICONS[mode],
-    type: 'checkbox' as const,
-    checked: sidebarMode.value === mode,
-    onSelect: () => {
-      sidebarMode.value = mode;
-    },
-  })),
-]);
 
 function closeMobileSidebar() {
   if (!isDesktop.value) {
@@ -65,6 +51,8 @@ function closeMobileSidebar() {
 
 const { data: currentUser } = useCurrentUser();
 const { navigationModules, activeModule, navigationItems, pageTitle } = useAppNavigation();
+
+useHead({ title: pageTitle });
 
 // The panel already sits under its module's name in the rail, so the items don't repeat the icons.
 const panelItems = computed(() =>
@@ -123,6 +111,19 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
+      label: t('common.colorMode.group'),
+      icon: colorMode.value === 'dark' ? COLOR_MODE_ICONS.dark : COLOR_MODE_ICONS.light,
+      children: (['light', 'dark'] as const).map((mode) => ({
+        label: t(`common.colorMode.${mode}`),
+        icon: COLOR_MODE_ICONS[mode],
+        type: 'checkbox' as const,
+        checked: colorMode.value === mode,
+        onSelect: () => {
+          colorMode.preference = mode;
+        },
+      })),
+    },
+    {
       label: t('layout.userMenu.language'),
       icon: currentLanguageIcon.value,
       children: languageOptions.map((option) => ({
@@ -154,6 +155,7 @@ const pageIcon = computed(() => {
     '/dashboard': 'i-lucide-layout-dashboard',
     '/planning': 'i-lucide-calendar-check',
     '/timeline': 'i-lucide-gantt-chart',
+    '/aanvragen': 'i-lucide-inbox',
     '/beschikbaarheid': 'i-lucide-calendar-clock',
     '/customers': 'i-lucide-contact',
     '/users': 'i-lucide-users',
@@ -193,96 +195,57 @@ const userMenuContent = computed(() => ({
 			@mouseenter="sidebarHovered = true"
 			@mouseleave="sidebarHovered = false"
 		>
-			<!-- The floating panel butts straight against this card, so the seam between them loses its corners. -->
-			<div
-				class="flex h-full overflow-hidden bg-default shadow-sm ring ring-default transition-[border-radius] duration-150 ease-out motion-reduce:transition-none"
+			<!-- The floating panel butts straight against this rail, so the seam between them loses its corners. -->
+			<aside
+				class="flex h-full w-14 shrink-0 flex-col items-center overflow-hidden bg-default shadow-sm ring ring-default transition-[border-radius] duration-150 ease-out motion-reduce:transition-none"
 				:class="floatingPanelOpen ? 'rounded-s-xl' : 'rounded-xl'"
 			>
-				<aside class="flex w-14 shrink-0 flex-col items-center">
-					<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
-						<NuxtLink
-							to="/dashboard"
-							class="flex size-8 items-center justify-center rounded-lg text-highlighted"
-							aria-label="Planning"
-						>
-							<UIcon
-								name="i-lucide-calendar-days"
-								class="size-5 text-brand"
-							/>
-						</NuxtLink>
-					</div>
+				<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
+					<NuxtLink
+						to="/dashboard"
+						class="flex size-8 items-center justify-center rounded-lg text-highlighted"
+						aria-label="Planning"
+					>
+						<UIcon
+							name="i-lucide-calendar-days"
+							class="size-5 text-brand"
+						/>
+					</NuxtLink>
+				</div>
 
-					<div class="flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto py-2">
-						<UTooltip
-							v-for="module in navigationModules"
-							:key="module.key"
-							:text="module.label"
-							:content="{ side: 'right' }"
-						>
-							<UButton
-								:icon="module.icon"
-								:color="module.key === activeModule?.key ? 'brand' : 'neutral'"
-								:variant="module.key === activeModule?.key ? 'soft' : 'ghost'"
-								:to="module.items[0]?.to"
-								square
-								size="md"
-								:aria-label="module.label"
-								:aria-current="module.key === activeModule?.key ? 'page' : undefined"
-							/>
-						</UTooltip>
-					</div>
-
-					<div class="flex shrink-0 flex-col items-center gap-1 p-4">
-						<UDropdownMenu
-							:items="sidebarModeItems"
-							:content="{ side: 'right', align: 'end', sideOffset: 12 }"
-							:ui="{ content: 'w-44' }"
-						>
-							<UTooltip
-								:text="t('layout.sidebarMode.label')"
-								:kbds="['H']"
-								:content="{ side: 'right' }"
-							>
-								<UButton
-									:icon="SIDEBAR_MODE_ICONS[sidebarMode]"
-									color="neutral"
-									variant="ghost"
-									square
-									size="md"
-									class="data-[state=open]:bg-elevated"
-									:aria-label="t('layout.sidebarMode.label')"
-								/>
-							</UTooltip>
-						</UDropdownMenu>
-
-						<UDropdownMenu
-							:items="userItems"
-							:content="userMenuContent"
-							:ui="{ content: 'w-48' }"
-						>
-							<UButton
-								icon="i-lucide-user"
-								color="neutral"
-								variant="ghost"
-								square
-								size="md"
-								class="data-[state=open]:bg-elevated"
-								:aria-label="t('common.account')"
-							/>
-						</UDropdownMenu>
-					</div>
-				</aside>
-
-				<aside
-					class="flex flex-col overflow-hidden transition-[width,border-color] duration-200 ease-out motion-reduce:transition-none"
-					:class="sidebarMode === 'open' ? 'w-48 border-s border-default' : 'w-0 border-s-0'"
-				>
-					<LayoutNavPanel
-						:label="activeModule?.label"
-						:items="panelItems"
+				<div class="flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto py-2">
+					<UButton
+						v-for="module in navigationModules"
+						:key="module.key"
+						:icon="module.icon"
+						:color="module.key === activeModule?.key ? 'brand' : 'neutral'"
+						:variant="module.key === activeModule?.key ? 'soft' : 'ghost'"
+						:to="module.items[0]?.to"
+						square
+						size="md"
+						:aria-label="module.label"
+						:aria-current="module.key === activeModule?.key ? 'page' : undefined"
 					/>
-				</aside>
-			</div>
+				</div>
+
+				<div class="flex shrink-0 flex-col items-center gap-1 p-4">
+					<UDropdownMenu
+						:items="userItems"
+						:content="userMenuContent"
+						:ui="{ content: 'w-48' }"
+					>
+						<UButton
+							icon="i-lucide-user"
+							color="neutral"
+							variant="ghost"
+							square
+							size="md"
+							class="data-[state=open]:bg-elevated"
+							:aria-label="t('common.account')"
+						/>
+					</UDropdownMenu>
+				</div>
+			</aside>
 
 			<Transition
 				enter-active-class="transition duration-150 ease-out"
@@ -296,7 +259,8 @@ const userMenuContent = computed(() => ({
 					v-if="floatingPanelOpen"
 					:label="activeModule?.label"
 					:items="panelItems"
-					class="absolute inset-y-0 start-14 z-40 overflow-hidden rounded-e-xl shadow-lg ring ring-default"
+					class="glass absolute inset-y-0 start-14 z-[40] overflow-hidden rounded-e-xl shadow-lg ring ring-default"
+					@control-active="panelControlActive = $event"
 				/>
 			</Transition>
 		</div>
@@ -344,8 +308,6 @@ const userMenuContent = computed(() => ({
 			</template>
 
 			<template #footer>
-				<ControlsColorModeSwitch />
-
 				<ControlsOrganizationSwitch />
 
 				<UDropdownMenu
@@ -368,7 +330,13 @@ const userMenuContent = computed(() => ({
 			</template>
 		</USidebar>
 
-		<div class="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-default shadow-sm ring ring-default max-lg:rounded-lg">
+		<!--
+			Its own stacking context. The timeline stacks its sticky resource column at z-1000 to keep
+			it above a block being dragged, and without isolation that number is measured against the
+			floating nav panel and wins - the resource names paint straight over it. Contained here,
+			page-level z-indexes stay a page concern and the panel keeps the layer it asked for.
+		-->
+		<div class="isolate flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-default shadow-sm ring ring-default max-lg:rounded-lg">
 			<div class="flex h-(--ui-header-height) shrink-0 items-center gap-2 border-b border-default px-4 max-lg:sticky max-lg:top-0 max-lg:z-10 max-lg:h-11 max-lg:gap-1.5 max-lg:bg-default max-lg:px-3">
 				<UButton
 					icon="i-lucide-panel-left"

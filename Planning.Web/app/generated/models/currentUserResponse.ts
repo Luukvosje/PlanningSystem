@@ -17,5 +17,6 @@ export interface CurrentUserResponse {
   lastName: string;
   role: UserRole;
   organizationName: string;
+  requiresApproval: boolean;
   modules: ModuleSettingResponse[];
 }

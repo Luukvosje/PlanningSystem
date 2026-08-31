@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { MyPlanningDay } from '~/composables/planning/useMyPlanningView';
+import type { AvailabilityRule } from '~/types/availability';
 
 export type MyPlanningViewMode = 'day' | 'week';
 
@@ -13,6 +14,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   selectDay: [dateKey: string]
+  createException: [dateKey: string]
+  editException: [rule: AvailabilityRule]
 }>();
 
 const isDayMode = computed(() => props.viewMode === 'day');
@@ -37,6 +40,8 @@ const weekColumnClass = 'min-h-52 border-b border-default sm:min-h-0 sm:h-full s
 				:day="selectedDay"
 				:loading="isLoading"
 				flush
+				@create-exception="emit('createException', $event)"
+				@edit-exception="emit('editException', $event)"
 			/>
 		</template>
 
@@ -64,6 +69,8 @@ const weekColumnClass = 'min-h-52 border-b border-default sm:min-h-0 sm:h-full s
 					:day="day"
 					compact
 					flush
+					@create-exception="emit('createException', $event)"
+					@edit-exception="emit('editException', $event)"
 				/>
 			</template>
 		</div>

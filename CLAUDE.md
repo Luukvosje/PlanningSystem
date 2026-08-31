@@ -88,6 +88,22 @@ skips the ownership check, treat it as a bug, not a style nit.
   that save on change.
 - `LayoutSection` is for read-only blocks (lists, charts, empty states); `LayoutCard` for
   anything you can type into.
+- **Nothing is deleted without asking first.** Every delete in the app confirms - a planning
+  record, an availability rule or exception, a customer, whatever comes next. A bare
+  `await api.remove.mutateAsync(id)` behind a trash icon is a bug, not a shortcut. The default way
+  is the one-line guard from `composables/useDeleteConfirm.ts`, which drives the single dialog
+  mounted in `app.vue` (`UiDeleteConfirm`):
+
+  ```ts
+  if (!await confirmDelete({ title: t('planning.deleteTitle') })) {
+    return;
+  }
+  await deleteRecord(id);
+  ```
+
+  A component that already owns a `UiConfirmModal` of its own is fine too - the customer page needs
+  the dialog to show progress while the delete runs, the availability sheet asks from inside a
+  slideover. The requirement is the confirm; the helper is only the cheapest way to get one.
 - TypeScript `strict: true`, and ESLint enforces `no-explicit-any: 'error'` — don't use
   `any` or `as any` to route around a type error; fix the type.
 - Respect the existing ESLint config (`eslint.config.mjs`) instead of reformatting around

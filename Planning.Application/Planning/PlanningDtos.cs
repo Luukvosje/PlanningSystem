@@ -5,7 +5,7 @@ namespace Planning.Application.Planning;
 /// <summary>Fields shared by the create and update requests, so one validator covers both.</summary>
 public interface IPlanningRequestFields
 {
-    Guid AssignedUserId { get; }
+    Guid? AssignedUserId { get; }
     string Title { get; }
     string? Description { get; }
     string? Notes { get; }
@@ -16,7 +16,7 @@ public interface IPlanningRequestFields
 }
 
 public sealed record CreatePlanningRequest(
-    Guid AssignedUserId,
+    Guid? AssignedUserId,
     Guid? CustomerId,
     string Title,
     string? Description,
@@ -27,7 +27,7 @@ public sealed record CreatePlanningRequest(
     PlanningStatus Status = PlanningStatus.Confirmed) : IPlanningRequestFields;
 
 public sealed record UpdatePlanningRequest(
-    Guid AssignedUserId,
+    Guid? AssignedUserId,
     Guid? CustomerId,
     string Title,
     string? Description,
@@ -38,7 +38,7 @@ public sealed record UpdatePlanningRequest(
     string? Color) : IPlanningRequestFields;
 
 public sealed record MovePlanningRequest(
-    Guid AssignedUserId,
+    Guid? AssignedUserId,
     Guid? CustomerId,
     DateTime StartUtc,
     DateTime EndUtc);
@@ -60,8 +60,8 @@ public sealed record PlanningListRequest(
 public sealed record PlanningResponse(
     Guid Id,
     Guid OrganizationId,
-    Guid AssignedUserId,
-    string AssignedUserName,
+    Guid? AssignedUserId,
+    string? AssignedUserName,
     Guid? CustomerId,
     string? CustomerName,
     string Title,

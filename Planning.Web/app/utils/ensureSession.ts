@@ -33,18 +33,21 @@ export async function ensureSession(
     return;
   }
 
-  // /me resolves a membership from the organization header; without one it can
-  // only answer NO_ORGANIZATION. resolveOrganizationTarget owns that case.
-  if (!authStore.hasOrganization) {
-    return;
-  }
-
+  // Deliberately also runs without an organization cookie: /me resolves the
+  // account's only active membership by itself, so the one case the cookie is
+  // missing but unambiguous heals here instead of bouncing the user through
+  // the chooser. resolveOrganizationTarget still owns the ambiguous ones.
   try {
-    authStore.currentUser = await queryClient.ensureQueryData({
+    const user = await queryClient.ensureQueryData({
       queryKey: [...queryKeys.auth.me, authStore.organizationId],
       queryFn: () => getApiAuthMe(),
       retry: false,
     });
+
+    // Adopt whatever organization the API answered for, so the header on every
+    // later request matches the membership /me was resolved against.
+    authStore.setOrganizationId(user.organizationId);
+    authStore.currentUser = user;
   } catch (error) {
     if (isApiError(error) && error.code === 'NO_ORGANIZATION') {
       // Stale organization cookie (org deleted, membership revoked) rather than
@@ -53,6 +56,12 @@ export async function ensureSession(
       return;
     }
 
-    authStore.logout();
+    // customFetch already spent a silent refresh before a 401 could reach this
+    // far, and it clears the session itself when the refresh token was the
+    // thing rejected. Everything else — the API being down or restarting, a
+    // 5xx, a dropped connection — says nothing about whether the session is
+    // still good, so the tokens stay and the next attempt can recover. Throwing
+    // a valid refresh token away over one failed call is how a user ends up on
+    // /login with the cookie they were just looking at gone.
   }
 }

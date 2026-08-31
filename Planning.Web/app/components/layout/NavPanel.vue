@@ -1,9 +1,12 @@
 <script setup lang="ts">
 /**
  * The navigation panel next to the icon rail: the name of the module you are in plus its pages.
- * Rendered inline in the sidebar when the panel stays open, and as a floating panel over the page
- * while you hover the rail in automatic mode.
+ * Floats out over the page while you hover the rail; the rail itself keeps its width in the layout.
  */
+const emit = defineEmits<{
+  controlActive: [active: boolean]
+}>();
+
 withDefaults(defineProps<{
   label?: string
   items: Array<{ label: string, to: string }>
@@ -13,7 +16,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-	<div class="flex h-full w-48 min-h-0 flex-col bg-default">
+	<div class="flex h-full w-48 min-h-0 flex-col">
 		<div class="flex min-h-(--ui-header-height) shrink-0 items-center px-4">
 			<p class="truncate text-xs font-semibold tracking-wider text-muted uppercase">
 				{{ label }}
@@ -30,8 +33,7 @@ withDefaults(defineProps<{
 		</div>
 
 		<div class="flex shrink-0 flex-col gap-3 p-4">
-			<ControlsColorModeSwitch />
-			<ControlsOrganizationSwitch />
+			<ControlsOrganizationSwitch @active-change="(active: boolean) => emit('controlActive', active)" />
 		</div>
 	</div>
 </template>

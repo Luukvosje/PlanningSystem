@@ -16,6 +16,15 @@
       "discard": "Wijzigingen negeren"
     },
     "loading": "Laden...",
+    "status": {
+      "active": "Actief",
+      "inactive": "Inactief"
+    },
+    "sort": {
+      "alphabetical": "A-Z",
+      "recent": "Recent"
+    },
+    "showInactive": "Inactieve tonen",
     "colorMode": {
       "group": "Kleurmodus",
       "light": "Licht",
@@ -30,7 +39,9 @@
       "save": "Opslaan en doorgaan",
       "discard": "Wijzigingen negeren en doorgaan",
       "cancel": "Op pagina blijven"
-    }
+    },
+    "yes": "Ja",
+    "no": "Nee"
   },
   "nav": {
     "menu": "Menu",
@@ -44,7 +55,8 @@
     "team": "Team",
     "organization": "Organisatie",
     "invites": "Uitnodigen",
-    "settings": "Instellingen"
+    "settings": "Instellingen",
+    "requests": "Aanvragen"
   },
   "auth": {
     "email": "E-mail",
@@ -60,6 +72,13 @@
     "createAccount": "Account aanmaken",
     "alreadyHaveAccount": "Al een account?",
     "landingTagline": "Plan je team eenvoudig en overzichtelijk."
+  },
+  "account": {
+    "inactive": {
+      "title": "Je toegang is ingetrokken",
+      "description": "Een beheerder heeft je account gedeactiveerd.",
+      "contactAdmin": "Neem contact op met je beheerder om weer toegang te krijgen."
+    }
   },
   "validation": {
     "email": {
@@ -93,6 +112,16 @@
     },
     "address": {
       "tooLong": "Adres is te lang"
+    },
+    "title": {
+      "required": "Titel is verplicht",
+      "tooLong": "Titel is te lang"
+    },
+    "description": {
+      "tooLong": "Beschrijving is te lang"
+    },
+    "notes": {
+      "tooLong": "Notities zijn te lang"
     },
     "time": {
       "invalid": "Ongeldige tijd"
@@ -129,8 +158,12 @@
     },
     "editWeeklyRule": "Wekelijkse regel bewerken",
     "editException": "Uitzondering bewerken",
+    "deleteWeeklyRule": "Wekelijkse blokkade verwijderen?",
+    "deleteException": "Uitzondering verwijderen?",
+    "deleteConfirmDescription": "Dit kun je niet terugdraaien.",
     "newWeeklyRule": "Wekelijkse blokkade",
     "newException": "Eenmalige uitzondering",
+    "exception": "Uitzondering",
     "day": "Dag",
     "date": "Datum",
     "until": "Tot",
@@ -147,15 +180,58 @@
     "oneTimeExceptions": "Eenmalige uitzonderingen",
     "oneTimeExceptionsDescription": "Vakantie, afspraken of andere uitzonderingen op een datum.",
     "noOneTimeExceptions": "Geen eenmalige uitzonderingen.",
+    "showPastExceptions": "Verlopen uitzonderingen tonen ({count})",
+    "hidePastExceptions": "Verlopen uitzonderingen verbergen",
     "conflictWarningTitle": "Let op: dienst al ingepland",
     "conflictWarningDescription": "Er staat al een dienst gepland op deze datum. Overleg eventueel met de planner.",
     "toast": {
+      "submitted": "Aanvraag verstuurd, wacht op goedkeuring",
       "created": "Regel opgeslagen",
       "createFailed": "Regel opslaan mislukt",
       "updated": "Regel bijgewerkt",
       "updateFailed": "Regel bijwerken mislukt",
       "deleted": "Regel verwijderd",
       "deleteFailed": "Regel verwijderen mislukt"
+    }
+  },
+  "requests": {
+    "loading": "Aanvragen laden...",
+    "empty": "Geen openstaande aanvragen.",
+    "emptySwaps": "Geen wisselverzoeken.",
+    "emptySwapsDescription": "Diensten ruilen tussen medewerkers komt hier te staan.",
+    "noDecided": "Nog niets afgehandeld.",
+    "decided": "Afgehandeld",
+    "tabs": {
+      "all": "Alles",
+      "swaps": "Wissels",
+      "leave": "Verlof"
+    },
+    "kind": {
+      "leave": "Verlof",
+      "availability": "Beschikbaarheid"
+    },
+    "status": {
+      "pending": "Aangevraagd",
+      "approved": "Goedgekeurd",
+      "rejected": "Afgewezen"
+    },
+    "actions": {
+      "approve": "Goedkeuren",
+      "reject": "Afwijzen",
+      "approveAll": "Alles goedkeuren"
+    },
+    "approveAll": {
+      "title": "Alles goedkeuren?",
+      "description": "Je keurt {count} aanvragen in één keer goed. Een goedkeuring kun je niet terugdraaien."
+    },
+    "toast": {
+      "approved": "Aanvraag goedgekeurd",
+      "approvedMany": "{count} aanvragen goedgekeurd",
+      "rejected": "Aanvraag afgewezen",
+      "rejectedMany": "{count} aanvragen afgewezen",
+      "skipped": "{count} aanvragen waren al afgehandeld.",
+      "approveFailed": "Goedkeuren mislukt",
+      "rejectFailed": "Afwijzen mislukt"
     }
   },
   "customers": {
@@ -232,6 +308,7 @@
   "dashboard": {
     "overview": "Overzicht van {organization}",
     "teamMembers": "Teamleden",
+    "openShiftsThisWeek": "Open diensten deze week",
     "yourRole": "Jouw rol",
     "quickLinks": "Snel naar",
     "viewPlanning": "Bekijk planning",
@@ -247,6 +324,8 @@
   },
   "users": {
     "roleUpdated": "Rol bijgewerkt",
+    "activated": "Teamlid geactiveerd",
+    "deactivated": "Teamlid gedeactiveerd",
     "loading": "Team laden...",
     "searchPlaceholder": "Zoeken op naam, e-mail, rol of status...",
     "empty": "Nog geen teamleden.",
@@ -268,7 +347,8 @@
     "updated": "Teamlid bijgewerkt",
     "fields": {
       "role": "Rol",
-      "modules": "Modules"
+      "modules": "Modules",
+      "requiresApproval": "Moet aanvragen"
     },
     "access": {
       "title": "Rol en modules",
@@ -277,6 +357,9 @@
     "tabs": {
       "details": "Gegevens",
       "planning": "Planning"
+    },
+    "requiresApproval": {
+      "description": "Beschikbaarheid en verlof van deze medewerker wachten op goedkeuring van een planner."
     }
   },
   "planning": {
@@ -291,6 +374,8 @@
       "week": "Week"
     },
     "withoutCustomer": "Zonder klant",
+    "openShift": "Open dienst",
+    "openShifts": "Open diensten",
     "duplicate": "Dupliceren",
     "previousPeriod": "Vorige periode",
     "nextPeriod": "Volgende periode",
@@ -349,7 +434,6 @@
     "noResourcesToDisplay": "Geen resources om weer te geven.",
     "clickToEdit": "Klik om te bewerken",
     "clickToOpen": "Klik om te openen",
-    "openShift": "Open dienst",
     "noShifts": "Geen diensten",
     "shiftCountSingular": "{count} dienst",
     "shiftCountPlural": "{count} diensten",
@@ -364,7 +448,9 @@
       "loading": "Diensten laden...",
       "empty": "Geen diensten in deze periode",
       "emptyDescription": "Diensten van de afgelopen maand tot drie maanden vooruit staan hier."
-    }
+    },
+    "deleteTitle": "Dienst verwijderen?",
+    "deleteDescription": "Dit kun je niet terugdraaien."
   },
   "organizations": {
     "loading": "Organisatie laden...",
@@ -437,7 +523,6 @@
     "minutes": "{count} min",
     "lessThanOneMinute": "< 1 min",
     "endAfterStart": "Einde moet na de start liggen",
-    "multipleDays": "Meerdere dagen",
     "start": "Start",
     "end": "Einde",
     "time": "Tijd",
@@ -450,6 +535,10 @@
     "validationFailed": "Er zijn een of meer validatiefouten opgetreden.",
     "unknown": "Onbekende fout",
     "genericFormError": "Er is iets misgegaan. Probeer het later opnieuw.",
+    "plannerOnly": {
+      "title": "Geen toegang",
+      "description": "De tijdlijn is alleen voor planners."
+    },
     "moduleDisabled": {
       "title": "Geen toegang",
       "description": "Deze module is uitgeschakeld voor jouw account."
@@ -457,12 +546,6 @@
   },
   "layout": {
     "toggleSidebarMobile": "Zijbalk in-/uitschakelen",
-    "sidebarMode": {
-      "label": "Navigatie",
-      "open": "Altijd open",
-      "auto": "Automatisch",
-      "closed": "Dicht"
-    },
     "headerActions": {
       "open": "Acties"
     },

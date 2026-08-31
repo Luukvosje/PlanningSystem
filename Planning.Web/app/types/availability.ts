@@ -1,5 +1,6 @@
 import type { Composer } from 'vue-i18n';
-import type { Weekday } from '~/generated/models';
+import type { AvailabilityRuleResponse, UserRole, Weekday } from '~/generated/models';
+import { canManagePlanning } from '~/utils/userRole';
 
 type Translate = Composer['t']
 
@@ -47,3 +48,15 @@ export function getWeekdayOptions(t: Translate): { label: string, value: Weekday
 
 export const WHOLE_DAY_START = '00:00:00';
 export const WHOLE_DAY_END = '23:59:00';
+
+/**
+ * Whether this caller may change or remove the rule. Mirrors AvailabilityRuleService: your own
+ * absence is yours to edit and delete, a planner may do it for anyone. The API stays the boundary;
+ * this only keeps a button off screen that would always come back 403.
+ */
+export function canManageAvailabilityRule(
+  rule: Pick<AvailabilityRuleResponse, 'employeeId'>,
+  user?: { userId?: string | null, role?: UserRole | string | null } | null,
+): boolean {
+  return canManagePlanning(user?.role) || rule.employeeId === user?.userId;
+}

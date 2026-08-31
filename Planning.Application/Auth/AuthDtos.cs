@@ -31,7 +31,8 @@ public sealed record OrganizationMembershipResponse(
     Guid OrganizationId,
     string OrganizationName,
     Guid UserId,
-    UserRole Role);
+    UserRole Role,
+    bool IsActive);
 
 public sealed record CurrentUserResponse(
     Guid UserId,
@@ -42,6 +43,7 @@ public sealed record CurrentUserResponse(
     string LastName,
     UserRole Role,
     string OrganizationName,
+    bool RequiresApproval,
     IReadOnlyList<ModuleSettingResponse> Modules);
 
 public sealed record UpdateProfileRequest(

@@ -18,15 +18,12 @@ export function usePlanning() {
   );
 
   async function createRecord(request: Parameters<typeof api.create>[0]) {
-    try {
-      const created = await api.create(request);
-      api.invalidatePlanning();
-      toast.add({ title: 'Planning aangemaakt', color: 'success' });
-      return created;
-    } catch {
-      toast.add({ title: 'Aanmaken mislukt', color: 'error' });
-      throw new Error('create failed');
-    }
+    // The original error travels on: the sidebar form maps its validation errors onto the
+    // fields, which a replacement Error (or a toast) would throw away.
+    const created = await api.create(request);
+    api.invalidatePlanning();
+    toast.add({ title: 'Planning aangemaakt', color: 'success' });
+    return created;
   }
 
   async function deleteRecord(id: string) {
@@ -44,8 +41,13 @@ store.clearSelection();
 
   async function duplicateRecord(id: string) {
     try {
-      await api.duplicate(id);
+      const created = await api.duplicate(id);
       api.invalidatePlanning();
+      // The copy lands on top of the original, so select it: without the highlight two identical
+      // blocks side by side leave you guessing which one is new.
+      if (created?.id) {
+        store.selectPlanning(created.id, { openSidebar: false });
+      }
       toast.add({ title: 'Planning gedupliceerd', color: 'success' });
     } catch {
       toast.add({ title: 'Dupliceren mislukt', color: 'error' });

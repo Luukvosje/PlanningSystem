@@ -22,9 +22,10 @@ const USER_EDIT_KEY = Symbol('user-edit');
 type UserEdit = EditInstance<ReturnType<typeof createUpdateUserSchema>, UserResponse>
 
 /**
- * What an administrator may change about a team member: role and modules. Both sit behind their own
- * endpoint, so one save writes only the part that actually changed. Name and e-mail are not here -
- * the API only exposes those through the profile endpoint.
+ * What an administrator may change about a team member: role, modules and whether their own
+ * availability needs approving. Each sits behind its own endpoint, so one save writes only the parts
+ * that actually changed. Name and e-mail are not here - the API only exposes those through the
+ * profile endpoint.
  */
 export function useUserEdit(): UserEdit {
   const auth = useAuthStore();
@@ -78,6 +79,16 @@ export function useUserEdit(): UserEdit {
           display: (value) => getRoleLabel(value as UserRole, t),
         },
         {
+          name: 'requiresApproval',
+          label: t('users.fields.requiresApproval'),
+          description: t('users.requiresApproval.description'),
+          type: 'switch',
+          // Only an employee can carry it: anyone else decides on requests, so the API refuses the
+          // flag for them and clears it when a member is promoted.
+          hidden: role !== UserRole.Employee,
+          display: (value) => (value ? t('common.yes') : t('common.no')),
+        },
+        {
           name: 'modules',
           label: t('users.fields.modules'),
           description: t('users.modules.description'),
@@ -94,6 +105,7 @@ export function useUserEdit(): UserEdit {
     }),
     toState: (user: UserResponse) => ({
       role: user.role,
+      requiresApproval: user.requiresApproval,
       modules: modulesFromSettings(user.modules),
     }),
     onSubmit: async (user, data) => {
@@ -101,8 +113,16 @@ export function useUserEdit(): UserEdit {
       const modules = resolveModuleSelection(toggleStates, data.modules);
       const saved = modulesFromSettings(user.modules);
 
+      // Read off the role being saved, not the stored one: promoting someone and leaving the switch
+      // on in the same save would otherwise send a flag the API refuses for their new role.
+      const requiresApproval = data.role === UserRole.Employee && data.requiresApproval;
+
       if (data.role !== user.role) {
         await usersApi.updateRole(user.id, { role: data.role });
+      }
+
+      if (requiresApproval !== user.requiresApproval) {
+        await usersApi.updateApproval(user.id, { requiresApproval });
       }
 
       if (ALL_MODULES.some((module) => modules[module] !== saved[module])) {

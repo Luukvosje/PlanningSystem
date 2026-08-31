@@ -24,10 +24,13 @@ const previewTimes = computed(() => toTimeStrings(form.state.importantWorkTimes)
 			<template #after>
 				<OrganizationsImportantWorkTimesPreview :important-work-times="previewTimes" />
 			</template>
-
-			<template #footer>
-				<component :is="form.renderFooter" />
-			</template>
 		</component>
+
+		<template
+			v-if="!isLoading"
+			#footer
+		>
+			<component :is="form.renderFooter" />
+		</template>
 	</LayoutCard>
 </template>

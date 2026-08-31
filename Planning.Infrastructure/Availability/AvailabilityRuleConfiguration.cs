@@ -45,6 +45,17 @@ public class AvailabilityRuleConfiguration : IEntityTypeConfiguration<Availabili
         builder.Property(x => x.Reason)
             .HasMaxLength(500);
 
+        builder.Property(x => x.ApprovalStatus)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(50);
+
+        builder.Property(x => x.DecidedByUserId)
+            .IsRequired(false);
+
+        builder.Property(x => x.DecidedAtUtc)
+            .IsRequired(false);
+
         builder.Property(x => x.CreatedAtUtc)
             .IsRequired();
 
@@ -57,6 +68,9 @@ public class AvailabilityRuleConfiguration : IEntityTypeConfiguration<Availabili
         builder.HasIndex(x => new { x.OrganizationId, x.EmployeeId, x.Date })
             .HasFilter($"[{nameof(AvailabilityRule.Type)}] = 'OneTime'");
 
+        // The request inbox reads by organization and approval state.
+        builder.HasIndex(x => new { x.OrganizationId, x.ApprovalStatus });
+
         builder.HasOne<Organization>()
             .WithMany()
             .HasForeignKey(x => x.OrganizationId)
@@ -65,6 +79,11 @@ public class AvailabilityRuleConfiguration : IEntityTypeConfiguration<Availabili
         builder.HasOne<User>()
             .WithMany()
             .HasForeignKey(x => x.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.DecidedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -19,7 +19,8 @@ internal static class OrganizationMapper
                 membership.OrganizationId,
                 organizationNames.GetValueOrDefault(membership.OrganizationId, "Unknown"),
                 membership.Id,
-                membership.Role))
+                membership.Role,
+                membership.IsActive))
             .ToList();
 
     public static OrganizationResponse ToResponse(

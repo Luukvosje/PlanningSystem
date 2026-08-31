@@ -108,11 +108,22 @@ namespace Planning.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ApprovalStatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<DateOnly?>("Date")
                         .HasColumnType("date");
+
+                    b.Property<DateTime?>("DecidedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("DecidedByUserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uniqueidentifier");
@@ -149,9 +160,13 @@ namespace Planning.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DecidedByUserId");
+
                     b.HasIndex("EmployeeId");
 
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("OrganizationId", "ApprovalStatus");
 
                     b.HasIndex("OrganizationId", "EmployeeId", "Date")
                         .HasFilter("[Type] = 'OneTime'");
@@ -326,7 +341,7 @@ namespace Planning.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("AssignedUserId")
+                    b.Property<Guid?>("AssignedUserId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Color")
@@ -420,6 +435,9 @@ namespace Planning.Infrastructure.Migrations
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("RequiresApproval")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -454,6 +472,11 @@ namespace Planning.Infrastructure.Migrations
 
             modelBuilder.Entity("Planning.Domain.Availability.AvailabilityRule", b =>
                 {
+                    b.HasOne("Planning.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("DecidedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Planning.Domain.Users.User", null)
                         .WithMany()
                         .HasForeignKey("EmployeeId")
@@ -508,8 +531,7 @@ namespace Planning.Infrastructure.Migrations
                     b.HasOne("Planning.Domain.Users.User", null)
                         .WithMany()
                         .HasForeignKey("AssignedUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("Planning.Domain.Customers.Customer", null)
                         .WithMany()

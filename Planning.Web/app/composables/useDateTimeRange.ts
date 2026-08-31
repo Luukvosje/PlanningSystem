@@ -5,6 +5,7 @@ import {
   Time,
   fromDate,
   getLocalTimeZone,
+  parseDate,
   toCalendarDate,
   toCalendarDateTime,
 } from '@internationalized/date';
@@ -29,6 +30,24 @@ function combineDateTime(calendarDate: CalendarDate, time: Time): Date {
 
 function timeToMinutes(time: Time): number {
   return time.hour * 60 + time.minute;
+}
+
+function timeToText(time: Time): string {
+  return `${String(time.hour).padStart(2, '0')}:${String(time.minute).padStart(2, '0')}`;
+}
+
+/** `parseDate` throws on anything but a full ISO date, and manual typing hits that state. */
+function calendarDateFromText(value: string): CalendarDate | null {
+  try {
+    return parseDate(value);
+  } catch {
+    return null;
+  }
+}
+
+function timeFromText(value: string): Time {
+  const [hours, minutes] = value.split(':');
+  return new Time(Number(hours) || 0, Number(minutes) || 0);
 }
 
 export function formatDateTimeRangeDuration(start: Date, end: Date, t: ReturnType<typeof useI18n>['t']): string {
@@ -147,9 +166,15 @@ export function useDateTimeRange(
     set: onStartTimeChange,
   });
 
+  /** ISO date (`YYYY-MM-DD`), the shape `ControlsDateSelectInput` binds to. */
   const startDateModel = computed({
-    get: () => startDate.value,
-    set: onStartDateChange,
+    get: () => startDate.value.toString(),
+    set: (value: string) => {
+      const parsed = calendarDateFromText(value);
+      if (parsed) {
+        onStartDateChange(parsed);
+      }
+    },
   });
 
   const endTimeModel = computed({
@@ -158,9 +183,26 @@ export function useDateTimeRange(
   });
 
   const endDateModel = computed({
-    get: () => endDate.value,
-    set: onEndDateChange,
+    get: () => endDate.value.toString(),
+    set: (value: string) => {
+      const parsed = calendarDateFromText(value);
+      if (parsed) {
+        onEndDateChange(parsed);
+      }
+    },
   });
+
+  /** `HH:mm` views on both ends, so quick picks can read and write a plain time. */
+  const startTimeText = computed(() => timeToText(startTime.value));
+  const endTimeText = computed(() => timeToText(endTime.value));
+
+  function applyStartTime(value: string) {
+    onStartTimeChange(timeFromText(value));
+  }
+
+  function applyEndTime(value: string) {
+    onEndTimeChange(timeFromText(value));
+  }
 
   const isMultiDay = computed(() => startDate.value.compare(endDate.value) !== 0);
 
@@ -204,6 +246,10 @@ export function useDateTimeRange(
     startDate: startDateModel,
     endTime: endTimeModel,
     endDate: endDateModel,
+    startTimeText,
+    endTimeText,
+    applyStartTime,
+    applyEndTime,
     isMultiDay,
     multiDayLabel,
     durationLabel,

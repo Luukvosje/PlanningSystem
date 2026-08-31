@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TimelineRow } from '~/types/planning';
+import { OPEN_SHIFT_ROW_ID, UNASSIGNED_CUSTOMER_ROW_ID } from '~/utils/planning/constants';
 
 const { t } = useI18n();
 const store = usePlanningStore();
@@ -41,7 +42,7 @@ const timelineRows = computed<TimelineRow[]>(() => {
       const unassigned = visibleRecords.value.filter((r) => !r.customerId);
       if (unassigned.length > 0) {
         rows.unshift({
-          id: '__unassigned__',
+          id: UNASSIGNED_CUSTOMER_ROW_ID,
           label: t('planning.withoutCustomer'),
           records: unassigned,
         });
@@ -58,6 +59,17 @@ const timelineRows = computed<TimelineRow[]>(() => {
       label: `${user.firstName} ${user.lastName}`.trim(),
       records: visibleRecords.value.filter((r) => r.assignedUserId === user.id),
     }));
+
+    if (userIds.length === 0) {
+      const openShifts = visibleRecords.value.filter((r) => !r.assignedUserId);
+      if (openShifts.length > 0) {
+        rows.unshift({
+          id: OPEN_SHIFT_ROW_ID,
+          label: t('planning.openShifts'),
+          records: openShifts,
+        });
+      }
+    }
   }
 
   // Always keep resource/customer rows visible so users can still create
@@ -72,9 +84,6 @@ function openCreate() {
   const preferredUser = filteredUserIds.length > 0 ?
     activeUsers.find((u) => u.id && filteredUserIds.includes(u.id)) :
     activeUsers[0];
-  if (!preferredUser?.id) {
-    return;
-  }
 
   const start = new Date();
   start.setMinutes(0, 0, 0);
@@ -86,7 +95,7 @@ function openCreate() {
     undefined;
 
   store.openCreateSidebar({
-    assignedUserId: preferredUser.id,
+    assignedUserId: preferredUser?.id ?? null,
     customerId: customerId ?? null,
     status: store.filters.statuses[0],
     startUtc: start.toISOString(),

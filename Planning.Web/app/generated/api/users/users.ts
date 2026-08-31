@@ -8,7 +8,9 @@
 import type {
   ModuleSettingResponse,
   UpdateModulesRequest,
+  UpdateUserApprovalRequest,
   UpdateUserRoleRequest,
+  UpdateUserStatusRequest,
   UserResponse
 } from '../../models';
 
@@ -72,6 +74,50 @@ export const putApiUsersIdRole = async (id: string,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       updateUserRoleRequest,)
+  }
+);}
+
+
+export const getPutApiUsersIdStatusUrl = (id: string,) => {
+
+
+  
+
+  return `/api/users/${id}/status`
+}
+
+export const putApiUsersIdStatus = async (id: string,
+    updateUserStatusRequest: UpdateUserStatusRequest, options?: RequestInit): Promise<UserResponse> => {
+  
+  return customFetch<UserResponse>(getPutApiUsersIdStatusUrl(id),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateUserStatusRequest,)
+  }
+);}
+
+
+export const getPutApiUsersIdApprovalUrl = (id: string,) => {
+
+
+  
+
+  return `/api/users/${id}/approval`
+}
+
+export const putApiUsersIdApproval = async (id: string,
+    updateUserApprovalRequest: UpdateUserApprovalRequest, options?: RequestInit): Promise<UserResponse> => {
+  
+  return customFetch<UserResponse>(getPutApiUsersIdApprovalUrl(id),
+  {      
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateUserApprovalRequest,)
   }
 );}
 

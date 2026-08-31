@@ -36,6 +36,15 @@ public class AvailabilityRuleServiceTests
                 Arg.Any<DateOnly>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
             .Returns([]);
 
+        // Creating and updating a dated rule looks for a shift that clashes with it; without a stub
+        // the substitute hands back a null list and every one of those calls fails on it.
+        _records.GetByOrganizationAndRangeAsync(
+                Arg.Any<Guid>(), Arg.Any<DateTime>(), Arg.Any<DateTime>(),
+                Arg.Any<IReadOnlyList<Guid>?>(), Arg.Any<IReadOnlyList<Guid>?>(),
+                Arg.Any<IReadOnlyList<PlanningStatus>?>(), Arg.Any<string?>(),
+                Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(((IReadOnlyList<PlanningRecord>)[], 0));
+
         _users.GetByIdAsync(SelfId, Arg.Any<CancellationToken>())
             .Returns(MakeUser(SelfId, UserRole.Employee));
         _users.GetByIdAsync(ColleagueId, Arg.Any<CancellationToken>())
@@ -129,14 +138,29 @@ public class AvailabilityRuleServiceTests
     }
 
     // ---- Managing rules ---------------------------------------------------
-    // Recording your own absence is self-service; changing or removing an existing rule is
-    // planner-only, including your own.
+    // Recording, changing and removing your own absence is all self-service. Changing one hands it
+    // back to whoever has to approve it: the approval was about what the rule used to say.
 
-    private static AvailabilityRule OwnRule() =>
+    private static AvailabilityRule OwnRule() => RuleFor(SelfId);
+
+    private static AvailabilityRule ColleagueRule() => RuleFor(ColleagueId);
+
+    private static AvailabilityRule RuleFor(Guid employeeId) =>
         AvailabilityRule.CreateOneTime(
-            OrganizationId, SelfId, new DateOnly(2026, 8, 19),
+            OrganizationId, employeeId, new DateOnly(2026, 8, 19),
             new TimeOnly(9, 0), new TimeOnly(17, 0),
-            AvailabilityRuleStatus.Unavailable, "Vakantie", Now);
+            AvailabilityRuleStatus.Unavailable, "Vakantie", ApprovalStatus.Approved, Now);
+
+    private static User MustRequestUser(Guid id)
+    {
+        var user = MakeUser(id, UserRole.Employee);
+        user.SetRequiresApproval(true, Now);
+        return user;
+    }
+
+    private static UpdateAvailabilityRuleRequest UpdateRequest() =>
+        new(null, new DateOnly(2026, 8, 20), new TimeOnly(10, 0), new TimeOnly(16, 0),
+            AvailabilityRuleStatus.Unavailable, "Vakantie");
 
     private CreateAvailabilityRuleRequest CreateRequest(Guid employeeId) =>
         new(employeeId, AvailabilityRuleType.OneTime, null, new DateOnly(2026, 8, 19),
@@ -172,10 +196,23 @@ public class AvailabilityRuleServiceTests
     }
 
     [Fact]
-    public async Task An_employee_may_not_delete_their_own_rule()
+    public async Task An_employee_may_delete_their_own_rule()
     {
         _context.Role.Returns(UserRole.Employee);
         var rule = OwnRule();
+        _rules.GetByIdAsync(rule.Id, Arg.Any<CancellationToken>()).Returns(rule);
+
+        var result = await CreateService().DeleteAsync(rule.Id);
+
+        Assert.True(result.IsSuccess);
+        await _rules.Received(1).DeleteAsync(rule, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task An_employee_may_not_delete_a_rule_of_a_colleague()
+    {
+        _context.Role.Returns(UserRole.Employee);
+        var rule = ColleagueRule();
         _rules.GetByIdAsync(rule.Id, Arg.Any<CancellationToken>()).Returns(rule);
 
         var result = await CreateService().DeleteAsync(rule.Id);
@@ -186,15 +223,41 @@ public class AvailabilityRuleServiceTests
     }
 
     [Fact]
-    public async Task An_employee_may_not_shrink_their_own_rule_to_nothing()
+    public async Task Changing_an_approved_rule_puts_it_back_in_review_when_the_member_has_to_request()
+    {
+        _context.Role.Returns(UserRole.Employee);
+        _users.GetByIdAsync(SelfId, Arg.Any<CancellationToken>()).Returns(MustRequestUser(SelfId));
+        var rule = OwnRule();
+        _rules.GetByIdAsync(rule.Id, Arg.Any<CancellationToken>()).Returns(rule);
+
+        var result = await CreateService().UpdateAsync(rule.Id, UpdateRequest());
+
+        Assert.True(result.IsSuccess, $"{result.ErrorCode}: {result.Error}");
+        Assert.Equal(ApprovalStatus.Pending, result.Value!.ApprovalStatus);
+        await _rules.Received(1).UpdateAsync(rule, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Changing_your_own_rule_stays_in_force_when_you_do_not_have_to_request()
     {
         _context.Role.Returns(UserRole.Employee);
         var rule = OwnRule();
         _rules.GetByIdAsync(rule.Id, Arg.Any<CancellationToken>()).Returns(rule);
 
-        var result = await CreateService().UpdateAsync(rule.Id, new UpdateAvailabilityRuleRequest(
-            null, new DateOnly(2026, 8, 19), new TimeOnly(9, 0), new TimeOnly(9, 1),
-            AvailabilityRuleStatus.Unavailable, "Vakantie"));
+        var result = await CreateService().UpdateAsync(rule.Id, UpdateRequest());
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(ApprovalStatus.Approved, result.Value!.ApprovalStatus);
+    }
+
+    [Fact]
+    public async Task An_employee_may_not_change_a_rule_of_a_colleague()
+    {
+        _context.Role.Returns(UserRole.Employee);
+        var rule = ColleagueRule();
+        _rules.GetByIdAsync(rule.Id, Arg.Any<CancellationToken>()).Returns(rule);
+
+        var result = await CreateService().UpdateAsync(rule.Id, UpdateRequest());
 
         Assert.False(result.IsSuccess);
         Assert.Equal("FORBIDDEN", result.ErrorCode);

@@ -12,6 +12,7 @@ import {
   snapPxToTimeline,
 } from '~/utils/planning/blockSnap';
 import { getUnavailableOverlaysForMatrix } from '~/utils/planning/availabilityMath';
+import { OPEN_SHIFT_ROW_ID, UNASSIGNED_CUSTOMER_ROW_ID } from '~/utils/planning/constants';
 
 const props = defineProps<{
   rowId: string
@@ -123,8 +124,8 @@ function pxFromEvent(event: PointerEvent, target: HTMLElement): number {
 
 function resolveAssignedUserId(): string | null {
   if (store.rowMode === 'resource') {
-    return props.rowId;
-  }
+return props.rowId === OPEN_SHIFT_ROW_ID ? null : props.rowId;
+}
   const filteredUserIds = store.filters.userIds;
   const activeUsers = (users.value ?? []).filter((u) => u.isActive !== false);
   if (filteredUserIds.length > 0) {
@@ -135,11 +136,11 @@ function resolveAssignedUserId(): string | null {
 
 function resolveCustomerId(): string | null {
   if (props.rowCustomerId) {
-    return props.rowCustomerId;
-  }
-  if (store.rowMode === 'customer' && props.rowId !== '__unassigned__') {
-    return props.rowId;
-  }
+return props.rowCustomerId;
+}
+  if (store.rowMode === 'customer' && props.rowId !== UNASSIGNED_CUSTOMER_ROW_ID) {
+return props.rowId;
+}
   const filteredCustomerIds = store.filters.customerIds;
   if (filteredCustomerIds.length === 1) {
     return filteredCustomerIds[0]!;
@@ -168,13 +169,8 @@ function openCreate(startPx: number, endPx: number) {
     endUtc = new Date(new Date(startUtc).getTime() + minDurationMs).toISOString();
   }
 
-  const assignedUserId = resolveAssignedUserId();
-  if (!assignedUserId) {
-    return;
-  }
-
   store.openCreateSidebar({
-    assignedUserId,
+    assignedUserId: resolveAssignedUserId(),
     customerId: resolveCustomerId(),
     status: store.filters.statuses[0],
     startUtc,
@@ -220,11 +216,11 @@ function onRowPointerDown(event: PointerEvent) {
 
 <template>
 	<div
-		class="flex border-b border-default/60"
+		class="flex border-b border-default/25"
 		:style="{ height: `${rowHeight}px` }"
 	>
 		<div
-			class="sticky left-0 z-1000 shrink-0 border-r border-default bg-default px-3 flex items-center"
+			class="sticky left-0 z-1000 shrink-0 border-r border-default glass px-3 flex items-center"
 			:style="{ width: `${rowLabelWidth}px` }"
 		>
 			<span class="text-sm font-medium truncate">{{ label }}</span>

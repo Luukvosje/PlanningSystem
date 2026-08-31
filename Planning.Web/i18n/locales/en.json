@@ -16,6 +16,15 @@
       "discard": "Discard changes"
     },
     "loading": "Loading...",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "sort": {
+      "alphabetical": "A-Z",
+      "recent": "Recent"
+    },
+    "showInactive": "Show inactive",
     "colorMode": {
       "group": "Color mode",
       "light": "Light",
@@ -30,7 +39,9 @@
       "save": "Save and leave",
       "discard": "Discard and leave",
       "cancel": "Stay on page"
-    }
+    },
+    "yes": "Yes",
+    "no": "No"
   },
   "nav": {
     "menu": "Menu",
@@ -44,7 +55,8 @@
     "team": "Team",
     "organization": "Organization",
     "invites": "Invite",
-    "settings": "Settings"
+    "settings": "Settings",
+    "requests": "Requests"
   },
   "auth": {
     "email": "Email",
@@ -60,6 +72,13 @@
     "createAccount": "Create account",
     "alreadyHaveAccount": "Already have an account?",
     "landingTagline": "Plan your team simply and clearly."
+  },
+  "account": {
+    "inactive": {
+      "title": "Your access has been revoked",
+      "description": "An administrator deactivated your account.",
+      "contactAdmin": "Contact your administrator to get your access back."
+    }
   },
   "validation": {
     "email": {
@@ -93,6 +112,16 @@
     },
     "address": {
       "tooLong": "Address is too long"
+    },
+    "title": {
+      "required": "Title is required",
+      "tooLong": "Title is too long"
+    },
+    "description": {
+      "tooLong": "Description is too long"
+    },
+    "notes": {
+      "tooLong": "Notes are too long"
     },
     "time": {
       "invalid": "Invalid time"
@@ -129,8 +158,12 @@
     },
     "editWeeklyRule": "Edit weekly rule",
     "editException": "Edit exception",
+    "deleteWeeklyRule": "Delete this weekly block?",
+    "deleteException": "Delete this exception?",
+    "deleteConfirmDescription": "This cannot be undone.",
     "newWeeklyRule": "Weekly block",
     "newException": "One-time exception",
+    "exception": "Exception",
     "day": "Day",
     "date": "Date",
     "until": "Until",
@@ -147,15 +180,58 @@
     "oneTimeExceptions": "One-time exceptions",
     "oneTimeExceptionsDescription": "Vacation, appointments, or other exceptions on a date.",
     "noOneTimeExceptions": "No one-time exceptions.",
+    "showPastExceptions": "Show past exceptions ({count})",
+    "hidePastExceptions": "Hide past exceptions",
     "conflictWarningTitle": "Note: shift already scheduled",
     "conflictWarningDescription": "A shift is already scheduled on this date. You may want to check with the planner.",
     "toast": {
+      "submitted": "Request sent, waiting for approval",
       "created": "Rule saved",
       "createFailed": "Could not save rule",
       "updated": "Rule updated",
       "updateFailed": "Could not update rule",
       "deleted": "Rule deleted",
       "deleteFailed": "Could not delete rule"
+    }
+  },
+  "requests": {
+    "loading": "Loading requests...",
+    "empty": "No open requests.",
+    "emptySwaps": "No swap requests.",
+    "emptySwapsDescription": "Swapping shifts between employees will show up here.",
+    "noDecided": "Nothing decided yet.",
+    "decided": "Decided",
+    "tabs": {
+      "all": "All",
+      "swaps": "Swaps",
+      "leave": "Leave"
+    },
+    "kind": {
+      "leave": "Leave",
+      "availability": "Availability"
+    },
+    "status": {
+      "pending": "Requested",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "actions": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveAll": "Approve all"
+    },
+    "approveAll": {
+      "title": "Approve everything?",
+      "description": "You are approving {count} requests at once. An approval cannot be undone."
+    },
+    "toast": {
+      "approved": "Request approved",
+      "approvedMany": "{count} requests approved",
+      "rejected": "Request rejected",
+      "rejectedMany": "{count} requests rejected",
+      "skipped": "{count} requests had already been decided.",
+      "approveFailed": "Could not approve",
+      "rejectFailed": "Could not reject"
     }
   },
   "customers": {
@@ -232,6 +308,7 @@
   "dashboard": {
     "overview": "Overview of {organization}",
     "teamMembers": "Team members",
+    "openShiftsThisWeek": "Open shifts this week",
     "yourRole": "Your role",
     "quickLinks": "Quick links",
     "viewPlanning": "View planning",
@@ -247,6 +324,8 @@
   },
   "users": {
     "roleUpdated": "Role updated",
+    "activated": "Team member activated",
+    "deactivated": "Team member deactivated",
     "loading": "Loading team...",
     "searchPlaceholder": "Search by name, email, role or status...",
     "empty": "No team members yet.",
@@ -268,7 +347,8 @@
     "updated": "Team member updated",
     "fields": {
       "role": "Role",
-      "modules": "Modules"
+      "modules": "Modules",
+      "requiresApproval": "Must request"
     },
     "access": {
       "title": "Role and modules",
@@ -277,6 +357,9 @@
     "tabs": {
       "details": "Details",
       "planning": "Planning"
+    },
+    "requiresApproval": {
+      "description": "This member's availability and leave wait for a planner's approval."
     }
   },
   "planning": {
@@ -291,6 +374,8 @@
       "week": "Week"
     },
     "withoutCustomer": "Without customer",
+    "openShift": "Open shift",
+    "openShifts": "Open shifts",
     "duplicate": "Duplicate",
     "previousPeriod": "Previous period",
     "nextPeriod": "Next period",
@@ -349,7 +434,6 @@
     "noResourcesToDisplay": "No resources to display.",
     "clickToEdit": "Click to edit",
     "clickToOpen": "Click to open",
-    "openShift": "Open shift",
     "noShifts": "No shifts",
     "shiftCountSingular": "{count} shift",
     "shiftCountPlural": "{count} shifts",
@@ -364,7 +448,9 @@
       "loading": "Loading shifts...",
       "empty": "No shifts in this period",
       "emptyDescription": "Shifts from the past month up to three months ahead appear here."
-    }
+    },
+    "deleteTitle": "Delete this shift?",
+    "deleteDescription": "This cannot be undone."
   },
   "organizations": {
     "loading": "Loading organization...",
@@ -437,7 +523,6 @@
     "minutes": "{count} min",
     "lessThanOneMinute": "< 1 min",
     "endAfterStart": "End must be after the start",
-    "multipleDays": "Multiple days",
     "start": "Start",
     "end": "End",
     "time": "Time",
@@ -450,6 +535,10 @@
     "validationFailed": "One or more validation errors occurred.",
     "unknown": "Unknown error",
     "genericFormError": "Something went wrong. Please try again later.",
+    "plannerOnly": {
+      "title": "No access",
+      "description": "The timeline is for planners only."
+    },
     "moduleDisabled": {
       "title": "No access",
       "description": "This module is disabled for your account."
@@ -457,12 +546,6 @@
   },
   "layout": {
     "toggleSidebarMobile": "Toggle sidebar",
-    "sidebarMode": {
-      "label": "Navigation",
-      "open": "Always open",
-      "auto": "Automatic",
-      "closed": "Closed"
-    },
     "headerActions": {
       "open": "Actions"
     },

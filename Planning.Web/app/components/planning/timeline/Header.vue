@@ -39,14 +39,14 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 <template>
 	<div
 		ref="headerRef"
-		class="sticky top-0 z-100 bg-default/95 backdrop-blur border-b border-default"
+		class="sticky top-0 z-100 glass border-b border-default"
 	>
 		<div
 			v-if="showPeriodHeaders"
 			class="flex border-b border-default"
 		>
 			<div
-				class="sticky left-0 z-30 shrink-0 border-r border-default bg-default px-3 py-2"
+				class="sticky left-0 z-30 shrink-0 border-r border-default glass-fill px-3 py-2"
 				:style="{ width: `${rowLabelWidth}px` }"
 			/>
 
@@ -58,22 +58,40 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 					:class="periodBorderClass(period.isPrimaryBorderEnd)"
 					:style="{ width: `${period.width}px` }"
 				>
-					<p class="text-xs font-semibold text-default leading-tight truncate">
-						{{ period.label }}
-					</p>
-					<p
-						v-if="period.dateRange"
-						class="text-[10px] text-muted leading-tight truncate"
+					<!--
+						Sticky needs room to travel, so the label is `w-max` rather than filling the
+						cell: it rides against the resource column while its period scrolls past, then
+						the next period's label pushes it out.
+					-->
+					<div
+						class="sticky w-max max-w-full"
+						:style="{ left: `${rowLabelWidth + 8}px` }"
 					>
-						{{ period.dateRange }}
-					</p>
+						<p class="text-xs font-semibold text-default leading-tight truncate">
+							{{ period.label }}
+						</p>
+						<p
+							v-if="period.dateRange"
+							class="text-[10px] text-muted leading-tight truncate"
+						>
+							{{ period.dateRange }}
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
 
-		<div class="flex">
+		<!--
+			The day labels used to carry a near-opaque fill, which is what set this band apart from
+			the ruler under it. On glass they read as one surface, so the separation is a real border
+			now — only when the slot ruler follows, or it doubles up with the header's own bottom edge.
+		-->
+		<div
+			class="flex"
+			:class="showTimeSlots ? 'border-b border-default' : ''"
+		>
 			<div
-				class="sticky left-0 z-30 flex shrink-0 items-center border-r border-default bg-default px-3 py-2"
+				class="sticky left-0 z-30 flex shrink-0 items-center border-r border-default glass px-3 py-2"
 				:style="{ width: `${rowLabelWidth}px` }"
 			>
 				<span class="text-xs font-medium text-muted uppercase tracking-wide">{{ store.rowMode === 'resource' ? t('nav.team') : t('planning.fields.customer') }}</span>
@@ -96,7 +114,6 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 					<PlanningTimelineStickyDayLabel
 						:weekday="day.compact.weekday"
 						:day="day.compact.day"
-						:is-weekend="day.isWeekend && store.showWeekends"
 						variant="header"
 					/>
 				</div>
@@ -113,15 +130,20 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 					:class="periodBorderClass(column.isPrimaryBorderEnd)"
 					:style="{ width: `${column.width}px` }"
 				>
-					<p class="text-xs font-semibold text-default leading-tight truncate">
-						{{ column.label }}
-					</p>
-					<p
-						v-if="column.dateRange"
-						class="text-[10px] text-muted leading-tight truncate"
+					<div
+						class="sticky w-max max-w-full"
+						:style="{ left: `${rowLabelWidth + 8}px` }"
 					>
-						{{ column.dateRange }}
-					</p>
+						<p class="text-xs font-semibold text-default leading-tight truncate">
+							{{ column.label }}
+						</p>
+						<p
+							v-if="column.dateRange"
+							class="text-[10px] text-muted leading-tight truncate"
+						>
+							{{ column.dateRange }}
+						</p>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -131,7 +153,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 			class="flex"
 		>
 			<div
-				class="sticky left-0 z-30 shrink-0 border-r border-default bg-default"
+				class="sticky left-0 z-30 shrink-0 border-r border-default glass"
 				:style="{ width: `${rowLabelWidth}px` }"
 			/>
 

@@ -4,7 +4,8 @@ import {
   postApiAvailabilityRules,
   putApiAvailabilityRulesId,
 } from '~/generated/api/availability/availability';
-import type { CreateAvailabilityRuleRequest, UpdateAvailabilityRuleRequest } from '~/types/availability';
+import { ApprovalStatus } from '~/generated/models';
+import type { AvailabilityRule, CreateAvailabilityRuleRequest, UpdateAvailabilityRuleRequest } from '~/types/availability';
 
 export function useAvailabilityApi() {
   const queryClient = useQueryClient();
@@ -25,11 +26,25 @@ export function useAvailabilityApi() {
     }
   }
 
+  /**
+   * A member who has to request their availability gets a pending rule back - on a change as well,
+   * because the earlier approval was about what the rule used to say. Saying "saved" there would
+   * claim more than happened.
+   */
+  function reportSaved(rule: AvailabilityRule, savedKey: 'created' | 'updated') {
+    toast.add({
+      title: rule.approvalStatus === ApprovalStatus.Pending ?
+        t('availability.toast.submitted') :
+        t(`availability.toast.${savedKey}`),
+      color: 'success',
+    });
+  }
+
   const create = useMutation({
     mutationFn: (request: CreateAvailabilityRuleRequest) => postApiAvailabilityRules(request),
     onSuccess: async (rule) => {
       await invalidateAvailability();
-      toast.add({ title: t('availability.toast.created'), color: 'success' });
+      reportSaved(rule, 'created');
       warnIfConflicting(rule);
     },
     onError: () => {
@@ -42,7 +57,7 @@ export function useAvailabilityApi() {
       putApiAvailabilityRulesId(id, request),
     onSuccess: async (rule) => {
       await invalidateAvailability();
-      toast.add({ title: t('availability.toast.updated'), color: 'success' });
+      reportSaved(rule, 'updated');
       warnIfConflicting(rule);
     },
     onError: () => {

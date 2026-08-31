@@ -193,6 +193,7 @@ export function modulesFromSettings(
 
 const ROUTE_MODULE_MAP: Array<{ prefix: string, module: AppModule }> = [
   { prefix: '/planning', module: AppModuleEnum.Planning },
+  { prefix: '/timeline', module: AppModuleEnum.Planning },
   { prefix: '/beschikbaarheid', module: AppModuleEnum.Planning },
   { prefix: '/customers', module: AppModuleEnum.Klant },
   { prefix: '/users', module: AppModuleEnum.Beheer },
@@ -215,4 +216,17 @@ export function canAccessRoute(
 ): boolean {
   const required = getRequiredModuleForPath(path);
   return !required || canAccessModule(required, modules);
+}
+
+/**
+ * Routes showing the planning of the whole organization instead of the visitor's own. An
+ * employee has no business seeing when their colleagues work, so these need a planner role on
+ * top of the module — hiding the menu item alone leaves the URL open.
+ */
+const PLANNER_ONLY_ROUTE_PREFIXES = ['/timeline'];
+
+export function isPlannerOnlyRoute(path: string): boolean {
+  return PLANNER_ONLY_ROUTE_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+  );
 }

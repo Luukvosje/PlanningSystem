@@ -62,6 +62,9 @@ const NL_TRANSLATIONS: Record<string, string> = {
   'You are not allowed to update this rule.': 'Je hebt geen toegang om deze regel te wijzigen.',
   'You are not allowed to delete this rule.': 'Je hebt geen toegang om deze regel te verwijderen.',
   'Only owners and admins can change roles.': 'Alleen eigenaren en beheerders kunnen rollen wijzigen.',
+  'You are not allowed to decide on requests.': 'Je hebt geen toegang om aanvragen te beoordelen.',
+  'Only owners and admins can change who has to request their availability.':
+    'Alleen eigenaren en beheerders kunnen instellen wie beschikbaarheid moet aanvragen.',
   'Only owners and admins can create invites.': 'Alleen eigenaren en beheerders kunnen uitnodigingen aanmaken.',
   'Only owners and admins can update organization modules.':
     'Alleen eigenaren en beheerders kunnen organisatiemodules wijzigen.',
@@ -96,6 +99,11 @@ const NL_TRANSLATIONS: Record<string, string> = {
   'Color must be a valid hex color (e.g. #6366F1).': 'Kleur moet een geldige hexkleur zijn (bijv. #6366F1).',
   'End time must be after start time.': 'Eindtijd moet na de starttijd liggen.',
   'Only unavailable rules are supported at this time.': 'Alleen \'niet beschikbaar\'-regels worden nu ondersteund.',
+  'This request has already been decided.': 'Deze aanvraag is al afgehandeld.',
+  'Only an employee can be required to request availability.':
+    'Alleen een medewerker kan beschikbaarheid hoeven aanvragen.',
+  'Cannot decide on more than 200 requests at once.':
+    'Je kunt niet meer dan 200 aanvragen in één keer beoordelen.',
   'Customer name is required.': 'Klantnaam is verplicht.',
   'Customer email is required.': 'E-mailadres van de klant is verplicht.',
   'Organization id is required.': 'Organisatie-ID is verplicht.',

@@ -42,16 +42,19 @@ const values = computed(() => props.edit.toState(props.entity));
 		<component
 			:is="edit.form.render"
 			v-if="canEdit"
-		>
-			<template #footer>
-				<component :is="edit.form.renderFooter" />
-			</template>
-		</component>
+		/>
 
 		<FormDisplay
 			v-else
 			:controls="controls"
 			:values="values"
 		/>
+
+		<template
+			v-if="canEdit"
+			#footer
+		>
+			<component :is="edit.form.renderFooter" />
+		</template>
 	</LayoutCard>
 </template>

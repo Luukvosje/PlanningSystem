@@ -48,6 +48,7 @@ public class AvailabilityRuleRepository : IAvailabilityRuleRepository
             .Where(x =>
                 x.OrganizationId == organizationId
                 && employeeIds.Contains(x.EmployeeId)
+                && x.ApprovalStatus != ApprovalStatus.Rejected
                 && (x.Type == AvailabilityRuleType.Weekly
                     || (x.Type == AvailabilityRuleType.OneTime
                         && x.Date >= rangeStart
@@ -57,6 +58,31 @@ public class AvailabilityRuleRepository : IAvailabilityRuleRepository
             .ThenBy(x => x.Weekday)
             .ThenBy(x => x.Date)
             .ThenBy(x => x.StartTime)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<AvailabilityRule>> GetForOrganizationAsync(
+        Guid organizationId,
+        IReadOnlyList<Guid>? employeeIds,
+        bool includeDecided,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.AvailabilityRules
+            .AsNoTracking()
+            .Where(x => x.OrganizationId == organizationId);
+
+        if (employeeIds is not null)
+        {
+            query = query.Where(x => employeeIds.Contains(x.EmployeeId));
+        }
+
+        if (!includeDecided)
+        {
+            query = query.Where(x => x.ApprovalStatus == ApprovalStatus.Pending);
+        }
+
+        return await query
+            .OrderByDescending(x => x.CreatedAtUtc)
             .ToListAsync(cancellationToken);
     }
 

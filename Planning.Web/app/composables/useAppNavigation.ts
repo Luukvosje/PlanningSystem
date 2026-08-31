@@ -34,9 +34,10 @@ export function useAppNavigation() {
 
     if (hasPlanning) {
       planningItems.push({ label: t('nav.planning'), icon: 'i-lucide-calendar-check', to: '/planning' });
-      planningItems.push({ label: t('nav.timeline'), icon: 'i-lucide-gantt-chart', to: '/timeline' });
 
       if (canManagePlanning(auth.currentUser?.role)) {
+        planningItems.push({ label: t('nav.timeline'), icon: 'i-lucide-gantt-chart', to: '/timeline' });
+        planningItems.push({ label: t('nav.requests'), icon: 'i-lucide-inbox', to: '/aanvragen' });
         planningItems.push({
           label: t('nav.availability'),
           icon: 'i-lucide-calendar-clock',
@@ -110,6 +111,7 @@ export function useAppNavigation() {
       '/dashboard': t('nav.dashboard'),
       '/planning': t('nav.planning'),
       '/timeline': t('nav.timeline'),
+      '/aanvragen': t('nav.requests'),
       '/beschikbaarheid': t('nav.availability'),
       '/customers': t('nav.customers'),
       '/users': t('nav.team'),

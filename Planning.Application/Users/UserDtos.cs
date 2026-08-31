@@ -11,7 +11,10 @@ public sealed record UserResponse(
     string Email,
     UserRole Role,
     bool IsActive,
+    bool RequiresApproval,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc,
     IReadOnlyList<ModuleSettingResponse> Modules);
 public sealed record UpdateUserRoleRequest(UserRole Role);
+public sealed record UpdateUserStatusRequest(bool IsActive);
+public sealed record UpdateUserApprovalRequest(bool RequiresApproval);

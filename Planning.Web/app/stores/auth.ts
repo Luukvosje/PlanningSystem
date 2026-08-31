@@ -84,12 +84,16 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function fetchMe() {
-    if ((!accessToken.value && !refreshToken.value) || !hasOrganization.value) {
+    if (!accessToken.value && !refreshToken.value) {
       currentUser.value = null;
       return null;
     }
 
+    // Called without an organization too: /me falls back to the account's only
+    // active membership, and adopting the organization it answered for is what
+    // puts the X-Organization-Id header on every request after this one.
     const user = await getApiAuthMe();
+    setOrganizationId(user.organizationId);
     currentUser.value = user;
     return user;
   }

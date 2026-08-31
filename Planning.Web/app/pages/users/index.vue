@@ -122,12 +122,9 @@ function openUser(user: UserResponse) {
 						</template>
 
 						<template #status-cell="{ row }">
-							<UBadge
-								:color="row.original.isActive ? 'success' : 'neutral'"
-								variant="subtle"
-							>
-								{{ row.original.isActive ? t('users.active') : t('users.inactive') }}
-							</UBadge>
+							<div @click.stop>
+								<UsersStatusToggle :user="row.original" />
+							</div>
 						</template>
 					</UiDataTable>
 				</div>

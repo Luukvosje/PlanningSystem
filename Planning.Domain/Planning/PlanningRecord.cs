@@ -10,7 +10,7 @@ public class PlanningRecord : TenantEntity
     public static readonly TimeSpan MinimumDuration = TimeSpan.FromMinutes(15);
 
     public Guid? CustomerId { get; private set; }
-    public Guid AssignedUserId { get; private set; }
+    public Guid? AssignedUserId { get; private set; }
     public string Title { get; private set; } = string.Empty;
     public string? Description { get; private set; }
     public string? Notes { get; private set; }
@@ -18,6 +18,12 @@ public class PlanningRecord : TenantEntity
     public DateTime EndUtc { get; private set; }
     public PlanningStatus Status { get; private set; }
     public string Color { get; private set; } = DefaultColor;
+
+    /// <summary>
+    /// A shift without an employee is the open shift; there is no separate status or table for
+    /// it, so anything that counts or renders open shifts keys off this null check.
+    /// </summary>
+    public bool IsOpenShift => AssignedUserId is null;
 
     private PlanningRecord()
     {
@@ -27,7 +33,7 @@ public class PlanningRecord : TenantEntity
         Guid id,
         Guid organizationId,
         Guid? customerId,
-        Guid assignedUserId,
+        Guid? assignedUserId,
         string title,
         string? description,
         string? notes,
@@ -52,7 +58,7 @@ public class PlanningRecord : TenantEntity
     public static PlanningRecord Create(
         Guid organizationId,
         Guid? customerId,
-        Guid assignedUserId,
+        Guid? assignedUserId,
         string title,
         string? description,
         string? notes,
@@ -82,7 +88,7 @@ public class PlanningRecord : TenantEntity
 
     public void Update(
         Guid? customerId,
-        Guid assignedUserId,
+        Guid? assignedUserId,
         string title,
         string? description,
         string? notes,
@@ -106,7 +112,7 @@ public class PlanningRecord : TenantEntity
     }
 
     public void Move(
-        Guid assignedUserId,
+        Guid? assignedUserId,
         Guid? customerId,
         DateTime startUtc,
         DateTime endUtc,
@@ -121,6 +127,12 @@ public class PlanningRecord : TenantEntity
         Touch(utcNow);
     }
 
+    /// <summary>
+    /// The copy keeps a concept status so a draft stays a draft, but anything else - including a
+    /// completed or cancelled original - copies as a confirmed booking. Copying to Planned across
+    /// the board hid the duplicate on a board with concepts turned off, and copying a terminal
+    /// status produced a booking that could never change status again.
+    /// </summary>
     public PlanningRecord Duplicate(
         Guid? assignedUserId,
         DateTime startUtc,
@@ -139,7 +151,7 @@ public class PlanningRecord : TenantEntity
             Notes,
             startUtc,
             endUtc,
-            PlanningStatus.Planned,
+            Status == PlanningStatus.Planned ? PlanningStatus.Planned : PlanningStatus.Confirmed,
             Color,
             utcNow);
     }

@@ -11,6 +11,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const publicRoutes = new Set(['/', '/login', '/register', '/join']);
   const bootstrapRoutes = new Set([
+    '/account/inactive',
     '/organization/new',
     '/organization/select',
     '/organization',

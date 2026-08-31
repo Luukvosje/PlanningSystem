@@ -7,6 +7,7 @@ using Planning.Application.Invites;
 using Planning.Application.Modules;
 using Planning.Application.Organizations;
 using Planning.Application.Planning;
+using Planning.Application.Requests;
 using Planning.Application.Users;
 
 namespace Planning.Application;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<IPlanningService, PlanningService>();
         services.AddScoped<IAvailabilityRuleService, AvailabilityRuleService>();
+        services.AddScoped<IRequestService, RequestService>();
         services.AddScoped<IModuleService, ModuleService>();
 
         return services;

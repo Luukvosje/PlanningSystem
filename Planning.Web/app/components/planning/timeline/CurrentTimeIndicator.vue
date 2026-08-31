@@ -30,10 +30,16 @@ function openingOverlaysForDay(day: TimelineDayHeader) {
   return getOutsideOpeningOverlays(day.date, day.width, openingHours.value);
 }
 
+/**
+ * The grid reads as one field of lines when every line has the same weight, so each kind gets
+ * its own: week or month boundary heaviest, then the day, then the important work times, then
+ * the hour, and the sub-hour slot lines barely there. A day boundary used to be drawn at the
+ * same strength as a 15-minute slot.
+ */
 function dayBorderClass(day: TimelineDayHeader) {
   return day.isPrimaryBorderEnd ?
     'border-r-2 border-default/70' :
-    'border-r border-default/15';
+    'border-r border-default/40';
 }
 </script>
 
@@ -70,7 +76,7 @@ function dayBorderClass(day: TimelineDayHeader) {
 			class="shrink-0 h-full relative"
 			:class="[
 				dayBorderClass(day),
-				day.isWeekend && store.showWeekends ? 'bg-muted/20' : 'bg-brand/5',
+				day.isWeekend && store.showWeekends ? 'bg-muted/30' : '',
 			]"
 			:style="{ width: `${day.width}px` }"
 		>
@@ -85,7 +91,7 @@ function dayBorderClass(day: TimelineDayHeader) {
 				<div
 					v-for="line in (day.importantGridLines ?? importantGridLines)"
 					:key="`${day.label}-important-${line.leftPx}`"
-					class="absolute inset-y-0 border-l-2 border-default/60"
+					class="absolute inset-y-0 border-l border-default/50"
 					:style="{ left: `${line.leftPx}px` }"
 				/>
 			</template>
@@ -97,7 +103,8 @@ function dayBorderClass(day: TimelineDayHeader) {
 				<div
 					v-for="line in (day.gridLines ?? timelineGridLines)"
 					:key="`${day.label}-grid-${line.leftPx}`"
-					class="shrink-0 h-full border-l border-default/15"
+					class="shrink-0 h-full border-l"
+					:class="line.isHourStart ? 'border-default/25' : 'border-default/8'"
 					:style="{ width: `${line.width}px` }"
 				/>
 			</div>
@@ -106,7 +113,7 @@ function dayBorderClass(day: TimelineDayHeader) {
 				v-for="line in (day.importantGridLines ?? importantGridLines)"
 				v-show="showTimeSlots && !isZoomedOut"
 				:key="`${day.label}-accent-${line.leftPx}`"
-				class="absolute inset-y-0 border-l-2 border-default/60 pointer-events-none"
+				class="absolute inset-y-0 border-l border-default/50 pointer-events-none"
 				:style="{ left: `${line.leftPx}px` }"
 			/>
 

@@ -8,6 +8,7 @@
 import type { AvailabilityRuleType } from './availabilityRuleType';
 import type { Weekday } from './weekday';
 import type { AvailabilityRuleStatus } from './availabilityRuleStatus';
+import type { ApprovalStatus } from './approvalStatus';
 
 export interface AvailabilityRuleResponse {
   id: string;
@@ -21,6 +22,9 @@ export interface AvailabilityRuleResponse {
   status: AvailabilityRuleStatus;
   /** @nullable */
   reason?: string | null;
+  approvalStatus: ApprovalStatus;
+  /** @nullable */
+  decidedAtUtc?: string | null;
   createdAtUtc: string;
   updatedAtUtc: string;
   schedulingConflict?: boolean;

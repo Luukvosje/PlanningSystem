@@ -10,6 +10,12 @@ const props = withDefaults(defineProps<{
 const start = defineModel<Date>('start', { required: true });
 const end = defineModel<Date>('end', { required: true });
 
+defineSlots<{
+  /** Quick picks for a single boundary: `current` is `HH:mm`, `apply` writes a new one. */
+  'startPresets'?: (props: { current: string, apply: (time: string) => void }) => unknown
+  'endPresets'?: (props: { current: string, apply: (time: string) => void }) => unknown
+}>();
+
 const { t } = useI18n();
 
 const {
@@ -17,7 +23,10 @@ const {
   startDate,
   endTime,
   endDate,
-  isMultiDay,
+  startTimeText,
+  endTimeText,
+  applyStartTime,
+  applyEndTime,
   multiDayLabel,
   durationLabel,
   validationError,
@@ -29,102 +38,73 @@ const {
 </script>
 
 <template>
-	<div class="space-y-4">
-		<div
-			class="flex flex-wrap items-center gap-2 rounded-lg border border-default/60 bg-elevated/30 px-3 py-2"
-			:class="{ 'border-error/40 bg-error/5': validationError }"
-		>
-			<div class="flex items-center gap-1.5 text-sm font-medium">
-				<UIcon
-					name="i-lucide-timer"
-					class="size-4 text-muted"
-				/>
-				<span>{{ durationLabel }}</span>
-			</div>
-
-			<UBadge
-				v-if="isMultiDay"
-				color="info"
-				variant="subtle"
+	<div
+		class="divide-y divide-default rounded-lg border border-default bg-elevated/20"
+		:class="{ 'border-error/60': validationError }"
+	>
+		<div class="grid grid-cols-[3rem_1fr_1fr] items-center gap-x-2 gap-y-1.5 p-2">
+			<span class="text-xs text-muted">{{ t('dateTimeRange.start') }}</span>
+			<UInputTime
+				v-model="startTime"
+				:hour-cycle="24"
+				:disabled="disabled"
 				size="sm"
-				icon="i-lucide-calendar-range"
+				class="w-full"
+			/>
+			<ControlsDateSelectInput
+				v-model="startDate"
+				:disabled="disabled"
+				size="sm"
+			/>
+			<div
+				v-if="$slots.startPresets"
+				class="col-start-2 col-end-4"
 			>
-				{{ t('dateTimeRange.multipleDays') }}
-			</UBadge>
+				<slot
+					name="startPresets"
+					:current="startTimeText"
+					:apply="applyStartTime"
+				/>
+			</div>
 
-			<span
-				v-if="multiDayLabel"
-				class="text-xs text-muted"
+			<span class="text-xs text-muted">{{ t('dateTimeRange.end') }}</span>
+			<UInputTime
+				v-model="endTime"
+				:hour-cycle="24"
+				:disabled="disabled"
+				size="sm"
+				class="w-full"
+			/>
+			<ControlsDateSelectInput
+				v-model="endDate"
+				:disabled="disabled"
+				size="sm"
+			/>
+			<div
+				v-if="$slots.endPresets"
+				class="col-start-2 col-end-4"
 			>
-				{{ multiDayLabel }}
+				<slot
+					name="endPresets"
+					:current="endTimeText"
+					:apply="applyEndTime"
+				/>
+			</div>
+		</div>
+
+		<div class="flex items-center px-2 py-1.5">
+			<span class="ms-auto flex items-center gap-1 whitespace-nowrap text-xs text-muted">
+				<UIcon
+					:name="multiDayLabel ? 'i-lucide-calendar-range' : 'i-lucide-timer'"
+					class="size-3.5"
+				/>
+				{{ multiDayLabel ? `${durationLabel} · ${multiDayLabel}` : durationLabel }}
 			</span>
-		</div>
-
-		<div class="space-y-2">
-			<p class="text-sm font-medium text-highlighted">
-				{{ t('dateTimeRange.start') }}
-			</p>
-			<div class="grid grid-cols-2 gap-2">
-				<UFormField
-					:label="t('dateTimeRange.time')"
-					name="startTime"
-				>
-					<UInputTime
-						v-model="startTime"
-						:hour-cycle="24"
-						:disabled="disabled"
-						icon="i-lucide-clock"
-						class="w-full"
-					/>
-				</UFormField>
-				<UFormField
-					:label="t('availability.date')"
-					name="startDate"
-				>
-					<UInputDate
-						v-model="startDate"
-						:disabled="disabled"
-						icon="i-lucide-calendar"
-						class="w-full"
-					/>
-				</UFormField>
-			</div>
-		</div>
-
-		<div class="space-y-2">
-			<p class="text-sm font-medium text-highlighted">
-				{{ t('dateTimeRange.end') }}
-			</p>
-			<div class="grid grid-cols-2 gap-2">
-				<UFormField
-					:label="t('dateTimeRange.time')"
-					name="endTime"
-				>
-					<UInputTime
-						v-model="endTime"
-						:hour-cycle="24"
-						:disabled="disabled"
-						icon="i-lucide-clock"
-						class="w-full"
-					/>
-				</UFormField>
-				<UFormField
-					:label="t('availability.date')"
-					name="endDate"
-				>
-					<UInputDate
-						v-model="endDate"
-						:disabled="disabled"
-						icon="i-lucide-calendar"
-						class="w-full"
-					/>
-				</UFormField>
-			</div>
 		</div>
 
 		<div
 			v-if="suggestsNextDay"
-			class="flex items-center justify-between gap-2 rounded-lg border border-warning/30 bg-warning/5 px-3 py-2"
+			class="flex items-center justify-between gap-2 px-2 py-1.5"
 		>
 			<p class="text-xs text-warning">
 				{{ t('dateTimeRange.endBeforeStartSuggestion') }}
@@ -138,12 +118,5 @@ const {
 				@click="applyNextDayEnd"
 			/>
 		</div>
-
-		<p
-			v-if="validationError"
-			class="text-xs text-error"
-		>
-			{{ validationError }}
-		</p>
 	</div>
 </template>

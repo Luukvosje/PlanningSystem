@@ -24,12 +24,17 @@ public class UserRepository : IUserRepository
             x => x.AccountId == accountId && x.OrganizationId == organizationId,
             cancellationToken);
 
+    /// <summary>
+    /// Every membership of the account, deactivated ones included. Callers decide what an
+    /// inactive membership means to them: login skips it, /organizations/mine reports it so the
+    /// client can tell "deactivated" apart from "belongs to no organization".
+    /// </summary>
     public async Task<IReadOnlyList<User>> GetByAccountIdAsync(
         Guid accountId,
         CancellationToken cancellationToken = default) =>
         await _context.Users
             .AsNoTracking()
-            .Where(x => x.AccountId == accountId && x.IsActive)
+            .Where(x => x.AccountId == accountId)
             .OrderBy(x => x.LastName)
             .ThenBy(x => x.FirstName)
             .ToListAsync(cancellationToken);

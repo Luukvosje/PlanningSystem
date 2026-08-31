@@ -1,6 +1,7 @@
 import type { UnavailablePeriod } from '~/types/availability';
 import type { PlanningRecord } from '~/types/planning';
 import { pxFromPointerEvent } from '~/utils/planning/timelineMath';
+import { OPEN_SHIFT_ROW_ID, UNASSIGNED_CUSTOMER_ROW_ID } from '~/utils/planning/constants';
 import {
   collectBlockSnapPoints,
   getRowAvailabilitySnapPoints,
@@ -49,14 +50,14 @@ function resolveMoveTarget(
 
   if (rowMode === 'resource') {
     return {
-      assignedUserId: targetRowId,
+      assignedUserId: targetRowId === OPEN_SHIFT_ROW_ID ? null : targetRowId,
       customerId: record.customerId ?? null,
     };
   }
 
-  const customerId = targetRowId === '__unassigned__' ? null : targetRowId;
+  const customerId = targetRowId === UNASSIGNED_CUSTOMER_ROW_ID ? null : targetRowId;
   return {
-    assignedUserId: record.assignedUserId,
+    assignedUserId: record.assignedUserId ?? null,
     customerId,
   };
 }

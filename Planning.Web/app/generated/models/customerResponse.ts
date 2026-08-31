@@ -10,7 +10,8 @@ export interface CustomerResponse {
   id: string;
   organizationId: string;
   name: string;
-  email: string;
+  /** @nullable */
+  email?: string | null;
   /** @nullable */
   address?: string | null;
   createdAtUtc: string;

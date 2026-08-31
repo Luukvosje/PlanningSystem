@@ -83,7 +83,12 @@ public class AuthService : IAuthService
             account.Email));
         var refreshToken = await IssueRefreshTokenAsync(account.Id, cancellationToken);
 
-        var memberships = await _userRepository.GetByAccountIdAsync(account.Id, cancellationToken);
+        // Only an active membership can be landed in. An inactive one still exists and is still
+        // reported by /organizations/mine - that is how the client tells a deactivated member
+        // apart from an account that belongs to no organization at all.
+        var memberships = (await _userRepository.GetByAccountIdAsync(account.Id, cancellationToken))
+            .Where(x => x.IsActive)
+            .ToList();
 
         if (memberships.Count == 0)
         {
@@ -162,9 +167,19 @@ public class AuthService : IAuthService
 
         var user = await _userRepository.GetByIdAsync(_currentUserContext.UserId.Value, cancellationToken);
 
-        if (user is null || !user.IsActive)
+        if (user is null)
         {
             return Result<CurrentUserResponse>.Failure("User not found.", Failures.NotFound);
+        }
+
+        // Deactivated is not missing: answering NO_ORGANIZATION puts the client on the path it
+        // already has for a revoked membership - drop the stale organization cookie and re-resolve
+        // - instead of leaving it on a page whose every call fails.
+        if (!user.IsActive)
+        {
+            return Result<CurrentUserResponse>.Failure(
+                "Your access to this organization has been deactivated.",
+                Failures.NoOrganization);
         }
 
         var organization = await _organizationRepository.GetByIdAsync(user.OrganizationId, cancellationToken);
@@ -188,6 +203,7 @@ public class AuthService : IAuthService
             user.LastName,
             user.Role,
             organization.Name,
+            user.RequiresApproval,
             modules));
     }
 

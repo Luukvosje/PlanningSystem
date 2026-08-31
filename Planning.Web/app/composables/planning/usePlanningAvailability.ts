@@ -23,7 +23,7 @@ export function usePlanningAvailability(records: Ref<PlanningRecord[]>) {
     const fromRecords = [...new Set(
       records.value
         .map((record) => record.assignedUserId)
-        .filter((id) => id && id !== '0'),
+        .filter((id): id is string => !!id && id !== '0'),
     )];
 
     return fromRecords.length > 0 ? fromRecords : activeUsers;

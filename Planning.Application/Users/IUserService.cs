@@ -11,6 +11,14 @@ public interface IUserService
         Guid id,
         UpdateUserRoleRequest request,
         CancellationToken cancellationToken = default);
+    Task<Result<UserResponse>> UpdateStatusAsync(
+        Guid id,
+        UpdateUserStatusRequest request,
+        CancellationToken cancellationToken = default);
+    Task<Result<UserResponse>> UpdateApprovalAsync(
+        Guid id,
+        UpdateUserApprovalRequest request,
+        CancellationToken cancellationToken = default);
     Task<Result<IReadOnlyList<ModuleSettingResponse>>> UpdateModulesAsync(
         Guid id,
         UpdateModulesRequest request,

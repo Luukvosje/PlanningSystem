@@ -111,6 +111,103 @@ public class UserService : TenantServiceBase, IUserService
         return Result<UserResponse>.Success(UserMapper.ToResponse(user, modules));
     }
 
+    public async Task<Result<UserResponse>> UpdateStatusAsync(
+        Guid id,
+        UpdateUserStatusRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!CurrentUser.HasOrganization || CurrentUser.UserId is null)
+        {
+            return Failures.NoOrganizationContext<UserResponse>();
+        }
+
+        if (CurrentUser.Role is not (UserRole.Owner or UserRole.Admin))
+        {
+            return Failures.ForbiddenFor<UserResponse>(
+                "Only owners and admins can activate or deactivate a team member.");
+        }
+
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+
+        if (user is null || !Owns(user))
+        {
+            return Failures.NotFoundFor<UserResponse>("User");
+        }
+
+        // Deactivating drops the member out of the organization: OrganizationContextMiddleware
+        // never sets the context for an inactive user, so every tenant endpoint refuses them.
+        // The account itself can still sign in - it may belong to another organization - but
+        // neither guard below is recoverable from the UI, so both are blocked outright.
+        if (!request.IsActive && user.Role is UserRole.Owner)
+        {
+            return Result<UserResponse>.Failure(
+                "Cannot deactivate the owner.",
+                Failures.Validation);
+        }
+
+        if (!request.IsActive && user.Id == CurrentUser.UserId)
+        {
+            return Result<UserResponse>.Failure(
+                "You cannot deactivate yourself.",
+                Failures.Validation);
+        }
+
+        if (user.IsActive != request.IsActive)
+        {
+            var utcNow = DateTime.UtcNow;
+
+            if (request.IsActive)
+            {
+                user.Activate(utcNow);
+            }
+            else
+            {
+                user.Deactivate(utcNow);
+            }
+
+            await _userRepository.UpdateAsync(user, cancellationToken);
+        }
+
+        var userModules = await _moduleService.GetUserModulesAsync(user.Id, cancellationToken);
+        return Result<UserResponse>.Success(UserMapper.ToResponse(user, userModules));
+    }
+
+    public async Task<Result<UserResponse>> UpdateApprovalAsync(
+        Guid id,
+        UpdateUserApprovalRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!CurrentUser.HasOrganization || CurrentUser.UserId is null)
+        {
+            return Failures.NoOrganizationContext<UserResponse>();
+        }
+
+        if (CurrentUser.Role is not (UserRole.Owner or UserRole.Admin))
+        {
+            return Failures.ForbiddenFor<UserResponse>(
+                "Only owners and admins can change who has to request their availability.");
+        }
+
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+
+        if (user is null || !Owns(user))
+        {
+            return Failures.NotFoundFor<UserResponse>("User");
+        }
+
+        return await TranslateDomainErrorsAsync(async () =>
+        {
+            if (user.RequiresApproval != request.RequiresApproval)
+            {
+                user.SetRequiresApproval(request.RequiresApproval, DateTime.UtcNow);
+                await _userRepository.UpdateAsync(user, cancellationToken);
+            }
+
+            var modules = await _moduleService.GetUserModulesAsync(user.Id, cancellationToken);
+            return Result<UserResponse>.Success(UserMapper.ToResponse(user, modules));
+        });
+    }
+
     public async Task<Result<IReadOnlyList<ModuleSettingResponse>>> UpdateModulesAsync(
         Guid id,
         UpdateModulesRequest request,

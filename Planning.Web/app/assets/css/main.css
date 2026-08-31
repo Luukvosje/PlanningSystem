@@ -8,13 +8,71 @@
   --color-teal-600: #006a61;
 }
 
+/* Unlayered on purpose: Nuxt UI declares these in `@layer theme`, and an override
+   from inside a layer only wins from a later layer. Unlayered beats every layer. */
 :root {
   --ui-border: var(--ui-color-neutral-300);
   --ui-radius: 0.375rem;
+
+  /* The material floating chrome is cut from: the timeline ruler you scroll the grid
+     under, the nav panel that hangs over the page. Saturation is pushed up because
+     blur washes colour out, and the coloured blocks passing under the ruler are
+     exactly what you want to keep recognising while you drag one. */
+  --glass-bg: color-mix(in oklab, var(--ui-bg) 62%, transparent);
+  --glass-blur: 20px;
+  --glass-saturate: 180%;
+  --glass-brightness: 105%;
+  --glass-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brightness));
+
+  /* Hazes the page a scrim covers. A token rather than `backdrop-blur-sm` on the
+     element so it clears together with the rest of the material. */
+  --overlay-blur: 6px;
 }
 
 .dark {
   --ui-border: var(--ui-color-neutral-700);
+
+  /* Dark glass brightens what is behind it instead of dimming it, the way a lit pane
+     over a dark room does, and needs a deeper fill: the light alpha over an already
+     dark grid does not read as a pane at all. */
+  --glass-bg: color-mix(in oklab, var(--ui-bg) 72%, transparent);
+  --glass-blur: 24px;
+  --glass-saturate: 150%;
+  --glass-brightness: 115%;
+}
+
+/* Frosted back to fully solid for anyone who asked their OS for less transparency. */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  .dark {
+    --glass-bg: var(--ui-bg);
+    --glass-blur: 0px;
+    --overlay-blur: 0px;
+  }
+}
+
+/* A floating pane: its own fill plus the material behind it. */
+@utility glass {
+  background-color: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+}
+
+/* Fill only, for something standing on a pane that already blurs — the resource column's
+   header cells sit on the glass ruler. Stacking the fill deepens them to roughly 86%, which
+   is what makes that column read as one strip running under the ruler rather than a hole in
+   it, and skipping the material avoids a second backdrop pass that would buy nothing. */
+@utility glass-fill {
+  background-color: var(--glass-bg);
+}
+
+/* Material only, no fill of its own. For a Nuxt UI slot, where the fill has to be
+   written as `bg-[var(--glass-bg)]` instead: tailwind-merge recognises that as a
+   background utility and drops the component's own `bg-default`, where a custom
+   class like `glass` is unknown to it and would leave both backgrounds standing. */
+@utility glass-material {
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
 }
 
 body {

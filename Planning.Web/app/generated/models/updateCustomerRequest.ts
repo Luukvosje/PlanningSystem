@@ -8,7 +8,8 @@
 
 export interface UpdateCustomerRequest {
   name: string;
-  email: string;
+  /** @nullable */
+  email?: string | null;
   /** @nullable */
   address?: string | null;
 }

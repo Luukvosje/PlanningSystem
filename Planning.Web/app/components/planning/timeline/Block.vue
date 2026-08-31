@@ -26,6 +26,7 @@ const { rowLabelWidth } = useTimeline();
 const headerHeight = inject<Ref<number>>('timelineHeaderHeight', ref(0));
 
 const isConcept = computed(() => props.record.status === 'Planned');
+const isOpenShift = computed(() => !props.record.assignedUserId);
 const blockColor = computed(() =>
   isConcept.value ?
     CONCEPT_BLOCK_STYLE.backgroundColor :
@@ -161,8 +162,11 @@ function onContextMenu(event: MouseEvent) {
 	>
 		<div
 			class="absolute inset-0 rounded-md overflow-hidden"
-			:class="store.showBlockColor ? '' : 'border-2 bg-default'"
-			:style="store.showBlockColor
+			:class="[
+				store.showBlockColor && !isOpenShift ? '' : 'border-2 bg-default',
+				isOpenShift ? 'border-dashed' : '',
+			]"
+			:style="store.showBlockColor && !isOpenShift
 				? (isConcept
 					? { ...CONCEPT_BLOCK_STYLE }
 					: { backgroundColor: blockColor })
@@ -214,7 +218,7 @@ function onContextMenu(event: MouseEvent) {
 			v-if="displayLayout.widthPx > 40"
 			class="sticky z-25 min-w-0 overflow-hidden px-2 h-full flex flex-col justify-center gap-px pointer-events-none rounded-l-md"
 			:class="[
-				store.showBlockColor ? 'text-white' : 'text-default',
+				store.showBlockColor && !isOpenShift ? 'text-white' : 'text-default',
 				store.rowLayout === 'spacious' ? 'py-2' : 'py-0.5',
 			]"
 			:style="{
@@ -234,6 +238,13 @@ function onContextMenu(event: MouseEvent) {
 				class="min-w-0 text-[10px] leading-tight opacity-75 truncate shrink-0"
 			>
 				{{ formatTimeRange(record.startUtc, record.endUtc, intlLocale) }}
+			</p>
+
+			<p
+				v-if="isOpenShift && displayLayout.widthPx > 80"
+				class="min-w-0 text-[10px] font-medium leading-tight truncate shrink-0"
+			>
+				{{ t('planning.openShift') }}
 			</p>
 
 			<!-- Spacious-only: klant + beschrijving -->

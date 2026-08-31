@@ -85,7 +85,7 @@ public class PlanningRecordRepository : IPlanningRecordRepository
 
         if (userIds is { Count: > 0 })
         {
-            query = query.Where(x => userIds.Contains(x.AssignedUserId));
+            query = query.Where(x => x.AssignedUserId.HasValue && userIds.Contains(x.AssignedUserId.Value));
         }
 
         if (customerIds is { Count: > 0 })

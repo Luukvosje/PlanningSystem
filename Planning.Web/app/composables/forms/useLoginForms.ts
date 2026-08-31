@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/vue-query';
 import { createLoginCredentialsSchema, createSelectOrganizationSchema } from '~/schemas/auth.schema';
 import type { OrganizationMembership } from '~/types/api-error';
 
@@ -9,27 +10,33 @@ export function useLoginForms() {
   const auth = useAuthStore();
   const router = useRouter();
   const route = useRoute();
+  const queryClient = useQueryClient();
   const { t } = useI18n();
 
   const memberships = ref<OrganizationMembership[]>([]);
   const showOrgPicker = ref(false);
 
-  function defaultPath(inviteCode: string | undefined) {
-    if (auth.hasOrganization) {
-      return '/dashboard';
-    }
-
-    return inviteCode ? '/join' : '/organization/new';
-  }
-
   async function navigateAfterLogin() {
     const redirect = route.query.redirect as string | undefined;
     const inviteCode = route.query.code as string | undefined;
-    const target = redirect ?? defaultPath(inviteCode);
 
-    await router.push(inviteCode && target === '/join' ?
-      { path: target, query: { code: inviteCode } } :
-      target);
+    if (redirect) {
+      await router.push(redirect);
+      return;
+    }
+
+    if (!auth.hasOrganization && inviteCode) {
+      await router.push({ path: '/join', query: { code: inviteCode } });
+      return;
+    }
+
+    // Where an account without a current organization belongs is one decision, and
+    // resolveOrganizationTarget owns it. This page used to answer it a second time with a
+    // hardcoded /organization/new, which is how a deactivated member ended up being asked to
+    // start an organization.
+    await router.push(auth.hasOrganization ?
+      '/dashboard' :
+      await resolveOrganizationTarget('/dashboard', auth, queryClient));
   }
 
   const credentialsForm = useForm({
@@ -54,6 +61,11 @@ export function useLoginForms() {
     submit: computed(() => ({ label: t('auth.login'), block: true })),
     onSubmit: async (data) => {
       const result = await auth.login(data);
+
+      // Nothing cached belongs to the session that just started, and some of it - the
+      // membership list this very navigation reads - would otherwise be answered from the
+      // previous account's data in a tab that never reloaded.
+      queryClient.clear();
 
       if (result.requiresOrganizationSelection && result.memberships?.length) {
         memberships.value = result.memberships;

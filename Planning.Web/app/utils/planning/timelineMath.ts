@@ -397,6 +397,8 @@ export interface TimelineGridLine {
   label?: string
   showLabel: boolean
   isImportant: boolean
+  /** Only slot lines carry this; it decides how heavy the line is drawn. */
+  isHourStart?: boolean
 }
 
 export function getImportantGridLines(
@@ -511,6 +513,7 @@ export function getTimelineGridLines(
       label: formatter.format(date),
       showLabel: showLabels,
       isImportant: false,
+      isHourStart: totalMinutes % 60 === 0,
     });
   }
 
@@ -757,6 +760,7 @@ export function getCompactTimelineGridLines(
       label: formatter.format(date),
       showLabel: showLabels,
       isImportant: false,
+      isHourStart: totalMinutes % 60 === 0,
     });
   }
 

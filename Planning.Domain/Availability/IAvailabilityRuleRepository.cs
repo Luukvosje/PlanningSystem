@@ -16,6 +16,16 @@ public interface IAvailabilityRuleRepository
         DateOnly rangeEnd,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// The request inbox: every rule in the organization, optionally narrowed to a set of
+    /// employees. Without <paramref name="includeDecided"/> only pending requests come back.
+    /// </summary>
+    Task<IReadOnlyList<AvailabilityRule>> GetForOrganizationAsync(
+        Guid organizationId,
+        IReadOnlyList<Guid>? employeeIds,
+        bool includeDecided,
+        CancellationToken cancellationToken = default);
+
     Task AddAsync(AvailabilityRule rule, CancellationToken cancellationToken = default);
 
     Task UpdateAsync(AvailabilityRule rule, CancellationToken cancellationToken = default);

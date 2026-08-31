@@ -12,6 +12,8 @@ const teamCount = computed(() => users.value?.length ?? 0);
 const organizationName = computed(() => auth.currentUser?.organizationName ?? t('common.unknown'));
 const roleLabel = computed(() => getRoleLabel(auth.currentUser?.role, t));
 const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
+
+const { openShiftCount, isLoading: openShiftsLoading } = useOpenShiftCount(canManage);
 </script>
 
 <template>
@@ -58,6 +60,28 @@ const canManage = computed(() => canManagePlanning(auth.currentUser?.role));
 						</div>
 						<UIcon
 							name="i-lucide-users"
+							class="size-5 text-brand"
+						/>
+					</div>
+				</LayoutCard>
+
+				<LayoutCard v-if="canManage">
+					<div class="flex items-start justify-between">
+						<div>
+							<p class="text-xs font-semibold uppercase tracking-wide text-muted">
+								{{ t('dashboard.openShiftsThisWeek') }}
+							</p>
+							<p class="mt-2 text-lg font-semibold">
+								<UIcon
+									v-if="openShiftsLoading"
+									name="i-lucide-loader-circle"
+									class="size-5 text-brand animate-spin"
+								/>
+								<span v-else>{{ openShiftCount }}</span>
+							</p>
+						</div>
+						<UIcon
+							name="i-lucide-user-round-search"
 							class="size-5 text-brand"
 						/>
 					</div>
