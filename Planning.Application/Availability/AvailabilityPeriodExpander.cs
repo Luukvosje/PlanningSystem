@@ -33,6 +33,7 @@ public static class AvailabilityPeriodExpander
                 rule.StartTime,
                 rule.EndTime,
                 rule.Status,
+                rule.ApprovalStatus,
                 rule.Reason,
                 rule.Id));
         }

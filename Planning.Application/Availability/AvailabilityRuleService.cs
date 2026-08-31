@@ -77,15 +77,21 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
             return Failures.NoOrganizationContext<AvailabilityRuleResponse>();
         }
 
-        if (!await CanManageForEmployeeAsync(request.EmployeeId, organizationId, cancellationToken))
+        if (request.EmployeeId != CurrentUser.UserId && !CanManageAnyEmployee())
         {
             return Failures.ForbiddenFor<AvailabilityRuleResponse>("You are not allowed to create this rule.");
         }
 
-        if (!await EmployeeExistsInOrganizationAsync(request.EmployeeId, organizationId, cancellationToken))
+        // Loaded once: it answers both "does this employee exist here" and "do their own entries
+        // need approval".
+        var employee = await LoadEmployeeAsync(request.EmployeeId, organizationId, cancellationToken);
+
+        if (employee is null)
         {
             return Failures.NotFoundFor<AvailabilityRuleResponse>("Employee");
         }
+
+        var approvalStatus = ResolveApprovalStatus(employee);
 
         return await TranslateDomainErrorsAsync(async () =>
         {
@@ -101,6 +107,7 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
                         request.EndTime,
                         request.Status,
                         request.Reason,
+                        approvalStatus,
                         utcNow),
                 AvailabilityRuleType.OneTime when request.Date is { } date =>
                     AvailabilityRule.CreateOneTime(
@@ -111,6 +118,7 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
                         request.EndTime,
                         request.Status,
                         request.Reason,
+                        approvalStatus,
                         utcNow),
                 _ => throw new ArgumentException("Invalid rule type or missing required fields."),
             };
@@ -202,7 +210,14 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
             return Failures.NotFoundFor("Availability rule");
         }
 
-        if (!await CanManageAnyEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
+        // Withdrawing your own request is allowed even though deleting is otherwise planner-only: a
+        // pending rule was never granted, so removing it is not the end run around delete that
+        // removing an approved one would be.
+        var isOwnPendingRequest = existing.EmployeeId == CurrentUser.UserId
+            && existing.ApprovalStatus == ApprovalStatus.Pending;
+
+        if (!isOwnPendingRequest
+            && !await CanManageAnyEmployeeAsync(existing.EmployeeId, organizationId, cancellationToken))
         {
             return Failures.ForbiddenFor("You are not allowed to delete this rule.");
         }
@@ -247,6 +262,16 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
         var users = await _userRepository.GetByOrganizationIdAsync(organizationId, cancellationToken);
         return users.Where(x => x.IsActive).Select(x => x.Id).ToList();
     }
+
+    /// <summary>
+    /// A planner records an absence as a fact - they are the approver, including when they enter it
+    /// for someone else. Only a member submitting for themselves can end up pending, and only when
+    /// the organization flagged them as having to request it.
+    /// </summary>
+    private ApprovalStatus ResolveApprovalStatus(User employee) =>
+        CanManageAnyEmployee() || !employee.RequiresApproval
+            ? ApprovalStatus.Approved
+            : ApprovalStatus.Pending;
 
     /// <summary>
     /// Reading and recording an absence is self-service: you may always do it for yourself.
@@ -320,9 +345,15 @@ public class AvailabilityRuleService : TenantServiceBase, IAvailabilityRuleServi
     private async Task<bool> EmployeeExistsInOrganizationAsync(
         Guid employeeId,
         Guid organizationId,
+        CancellationToken cancellationToken) =>
+        await LoadEmployeeAsync(employeeId, organizationId, cancellationToken) is not null;
+
+    private async Task<User?> LoadEmployeeAsync(
+        Guid employeeId,
+        Guid organizationId,
         CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetByIdAsync(employeeId, cancellationToken);
-        return user is not null && user.OrganizationId == organizationId;
+        return user is not null && user.OrganizationId == organizationId ? user : null;
     }
 }

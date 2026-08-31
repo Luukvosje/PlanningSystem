@@ -99,6 +99,9 @@ public sealed class TestDataSeeder : ITestDataSeeder
                 utcNow));
         }
 
+        // Mark Smit is the member whose own entries need a planner's approval.
+        users.First(user => user.Email == "medewerker5@test.local").SetRequiresApproval(true, utcNow);
+
         var organizationModules = AllModules
             .Select(module => OrganizationModule.Create(organization.Id, module, isEnabled: true))
             .ToList();
@@ -168,6 +171,7 @@ public sealed class TestDataSeeder : ITestDataSeeder
                     new TimeOnly(13, 0),
                     AvailabilityRuleStatus.Unavailable,
                     "Lunchpauze",
+                    ApprovalStatus.Approved,
                     utcNow));
             }
         }
@@ -181,6 +185,7 @@ public sealed class TestDataSeeder : ITestDataSeeder
             new TimeOnly(17, 0),
             AvailabilityRuleStatus.Unavailable,
             "Vrijdagmiddag",
+            ApprovalStatus.Approved,
             utcNow));
 
         rules.Add(AvailabilityRule.CreateOneTime(
@@ -191,6 +196,9 @@ public sealed class TestDataSeeder : ITestDataSeeder
             new TimeOnly(17, 0),
             AvailabilityRuleStatus.Unavailable,
             "Vakantie",
+            // Pending, and its employee is flagged as having to request: gives the request inbox
+            // something to decide on straight after seeding.
+            ApprovalStatus.Pending,
             utcNow));
 
         return rules;

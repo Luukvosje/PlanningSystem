@@ -13,6 +13,16 @@ public class AvailabilityRule : TenantEntity
     public TimeOnly EndTime { get; private set; }
     public AvailabilityRuleStatus Status { get; private set; }
     public string? Reason { get; private set; }
+    public ApprovalStatus ApprovalStatus { get; private set; }
+    public Guid? DecidedByUserId { get; private set; }
+    public DateTime? DecidedAtUtc { get; private set; }
+
+    /// <summary>
+    /// A rule counts against the planning until it is rejected - a pending one included. Waiting
+    /// for approval before warning the planner would leave a silent gap in which a shift gets
+    /// booked on a day leave was already requested for, and the warning is advisory anyway.
+    /// </summary>
+    public bool BlocksPlanning => ApprovalStatus != ApprovalStatus.Rejected;
 
     private AvailabilityRule()
     {
@@ -29,6 +39,7 @@ public class AvailabilityRule : TenantEntity
         TimeOnly endTime,
         AvailabilityRuleStatus status,
         string? reason,
+        ApprovalStatus approvalStatus,
         DateTime utcNow)
         : base(id, organizationId, utcNow, utcNow)
     {
@@ -40,6 +51,7 @@ public class AvailabilityRule : TenantEntity
         EndTime = endTime;
         Status = status;
         Reason = reason?.Trim();
+        ApprovalStatus = approvalStatus;
     }
 
     public static AvailabilityRule CreateWeekly(
@@ -50,6 +62,7 @@ public class AvailabilityRule : TenantEntity
         TimeOnly endTime,
         AvailabilityRuleStatus status,
         string? reason,
+        ApprovalStatus approvalStatus,
         DateTime utcNow)
     {
         ValidateWeekly(weekday, startTime, endTime, status);
@@ -65,6 +78,7 @@ public class AvailabilityRule : TenantEntity
             endTime,
             status,
             reason,
+            approvalStatus,
             utcNow);
     }
 
@@ -76,6 +90,7 @@ public class AvailabilityRule : TenantEntity
         TimeOnly endTime,
         AvailabilityRuleStatus status,
         string? reason,
+        ApprovalStatus approvalStatus,
         DateTime utcNow)
     {
         ValidateOneTime(date, startTime, endTime, status);
@@ -91,6 +106,7 @@ public class AvailabilityRule : TenantEntity
             endTime,
             status,
             reason,
+            approvalStatus,
             utcNow);
     }
 
@@ -137,6 +153,32 @@ public class AvailabilityRule : TenantEntity
         EndTime = endTime;
         Status = status;
         Reason = reason?.Trim();
+        Touch(utcNow);
+    }
+
+    public void Approve(Guid decidedByUserId, DateTime utcNow) =>
+        Decide(ApprovalStatus.Approved, decidedByUserId, utcNow);
+
+    public void Reject(Guid decidedByUserId, DateTime utcNow) =>
+        Decide(ApprovalStatus.Rejected, decidedByUserId, utcNow);
+
+    /// <summary>
+    /// Both decisions are terminal: an approved or rejected request is not decided a second time,
+    /// the employee submits a new one. Editing a rule (Update*) deliberately leaves the approval
+    /// alone - a planner correcting a time is not deciding on it.
+    /// </summary>
+    private void Decide(ApprovalStatus status, Guid decidedByUserId, DateTime utcNow)
+    {
+        if (ApprovalStatus != ApprovalStatus.Pending)
+        {
+            // Fixed string, no interpolation: the frontend translates backend messages by exact
+            // match (Planning.Web/app/utils/backendMessages.ts).
+            throw new ArgumentException("This request has already been decided.");
+        }
+
+        ApprovalStatus = status;
+        DecidedByUserId = decidedByUserId;
+        DecidedAtUtc = utcNow;
         Touch(utcNow);
     }
 

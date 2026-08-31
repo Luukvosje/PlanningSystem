@@ -136,7 +136,7 @@ public class AvailabilityRuleServiceTests
         AvailabilityRule.CreateOneTime(
             OrganizationId, SelfId, new DateOnly(2026, 8, 19),
             new TimeOnly(9, 0), new TimeOnly(17, 0),
-            AvailabilityRuleStatus.Unavailable, "Vakantie", Now);
+            AvailabilityRuleStatus.Unavailable, "Vakantie", ApprovalStatus.Approved, Now);
 
     private CreateAvailabilityRuleRequest CreateRequest(Guid employeeId) =>
         new(employeeId, AvailabilityRuleType.OneTime, null, new DateOnly(2026, 8, 19),

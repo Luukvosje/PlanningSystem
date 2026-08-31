@@ -14,6 +14,13 @@ public class User : TenantEntity
     public UserRole Role { get; private set; }
     public bool IsActive { get; private set; }
 
+    /// <summary>
+    /// Whether this member's own availability and leave has to be approved by a planner before it
+    /// counts. Only honoured for <see cref="UserRole.Employee"/>: anyone who may approve requests
+    /// would otherwise be approving their own.
+    /// </summary>
+    public bool RequiresApproval { get; private set; }
+
     private User()
     {
     }
@@ -27,6 +34,7 @@ public class User : TenantEntity
         string email,
         UserRole role,
         bool isActive,
+        bool requiresApproval,
         DateTime utcNow)
         : base(id, organizationId, utcNow, utcNow)
     {
@@ -36,6 +44,7 @@ public class User : TenantEntity
         Email = email;
         Role = role;
         IsActive = isActive;
+        RequiresApproval = requiresApproval;
     }
 
     public static User Create(
@@ -69,6 +78,7 @@ public class User : TenantEntity
             email.Trim().ToLowerInvariant(),
             role,
             isActive: true,
+            requiresApproval: false,
             utcNow);
     }
 
@@ -92,6 +102,25 @@ public class User : TenantEntity
     public void ChangeRole(UserRole role, DateTime utcNow)
     {
         Role = role;
+
+        // Anyone but an employee decides on requests themselves, so the flag would be silently
+        // ignored from here on. Clearing it keeps the stored value from lying about what happens.
+        if (role != UserRole.Employee)
+        {
+            RequiresApproval = false;
+        }
+
+        Touch(utcNow);
+    }
+
+    public void SetRequiresApproval(bool requiresApproval, DateTime utcNow)
+    {
+        if (requiresApproval && Role != UserRole.Employee)
+        {
+            throw new ArgumentException("Only an employee can be required to request availability.");
+        }
+
+        RequiresApproval = requiresApproval;
         Touch(utcNow);
     }
 

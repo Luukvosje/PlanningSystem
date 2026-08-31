@@ -30,6 +30,8 @@ public sealed record AvailabilityRuleResponse(
     TimeOnly EndTime,
     AvailabilityRuleStatus Status,
     string? Reason,
+    ApprovalStatus ApprovalStatus,
+    DateTime? DecidedAtUtc,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc,
     bool SchedulingConflict = false);
@@ -48,6 +50,7 @@ public sealed record UnavailablePeriodResponse(
     TimeOnly StartTime,
     TimeOnly EndTime,
     AvailabilityRuleStatus Status,
+    ApprovalStatus ApprovalStatus,
     string? Reason,
     Guid RuleId);
 

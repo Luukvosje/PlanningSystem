@@ -15,6 +15,8 @@ public static class AvailabilityRuleMapper
             rule.EndTime,
             rule.Status,
             rule.Reason,
+            rule.ApprovalStatus,
+            rule.DecidedAtUtc,
             rule.CreatedAtUtc,
             rule.UpdatedAtUtc,
             schedulingConflict);
