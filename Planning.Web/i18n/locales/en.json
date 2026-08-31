@@ -185,6 +185,7 @@
     "conflictWarningTitle": "Note: shift already scheduled",
     "conflictWarningDescription": "A shift is already scheduled on this date. You may want to check with the planner.",
     "toast": {
+      "submitted": "Request sent, waiting for approval",
       "created": "Rule saved",
       "createFailed": "Could not save rule",
       "updated": "Rule updated",

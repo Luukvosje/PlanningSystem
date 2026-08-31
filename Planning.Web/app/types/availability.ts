@@ -1,6 +1,5 @@
 import type { Composer } from 'vue-i18n';
 import type { AvailabilityRuleResponse, UserRole, Weekday } from '~/generated/models';
-import { ApprovalStatus } from '~/generated/models';
 import { canManagePlanning } from '~/utils/userRole';
 
 type Translate = Composer['t']
@@ -51,17 +50,13 @@ export const WHOLE_DAY_START = '00:00:00';
 export const WHOLE_DAY_END = '23:59:00';
 
 /**
- * Whether to offer a delete button at all. Mirrors AvailabilityRuleService.DeleteAsync: deleting is
- * planner work, except for withdrawing your own request - nothing was granted yet. The API stays the
- * boundary; this only keeps a button off screen that would always come back 403.
+ * Whether this caller may change or remove the rule. Mirrors AvailabilityRuleService: your own
+ * absence is yours to edit and delete, a planner may do it for anyone. The API stays the boundary;
+ * this only keeps a button off screen that would always come back 403.
  */
-export function canDeleteAvailabilityRule(
-  rule: Pick<AvailabilityRuleResponse, 'employeeId' | 'approvalStatus'>,
+export function canManageAvailabilityRule(
+  rule: Pick<AvailabilityRuleResponse, 'employeeId'>,
   user?: { userId?: string | null, role?: UserRole | string | null } | null,
 ): boolean {
-  if (canManagePlanning(user?.role)) {
-    return true;
-  }
-
-  return rule.employeeId === user?.userId && rule.approvalStatus === ApprovalStatus.Pending;
+  return canManagePlanning(user?.role) || rule.employeeId === user?.userId;
 }

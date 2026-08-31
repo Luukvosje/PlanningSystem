@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AvailabilityRule, AvailabilityRuleType, Weekday } from '~/types/availability';
-import { WHOLE_DAY_END, WHOLE_DAY_START, canDeleteAvailabilityRule, getWeekdayOptions } from '~/types/availability';
+import { WHOLE_DAY_END, WHOLE_DAY_START, canManageAvailabilityRule, getWeekdayOptions } from '~/types/availability';
 
 const props = defineProps<{
   employeeId: string
@@ -23,9 +23,9 @@ const api = useAvailabilityApi();
 const isSaving = computed(() => api.create.isPending.value || api.update.isPending.value);
 const isDeleting = computed(() => api.remove.isPending.value);
 
-/** Nothing to delete on a new rule, and an employee may only withdraw a request of their own. */
+/** Nothing to delete on a new rule, and only your own absence is yours to remove. */
 const canDelete = computed(() =>
-  !!props.rule && canDeleteAvailabilityRule(props.rule, auth.currentUser));
+  !!props.rule && canManageAvailabilityRule(props.rule, auth.currentUser));
 
 const confirmDeleteOpen = ref(false);
 

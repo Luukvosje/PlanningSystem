@@ -185,6 +185,7 @@
     "conflictWarningTitle": "Let op: dienst al ingepland",
     "conflictWarningDescription": "Er staat al een dienst gepland op deze datum. Overleg eventueel met de planner.",
     "toast": {
+      "submitted": "Aanvraag verstuurd, wacht op goedkeuring",
       "created": "Regel opgeslagen",
       "createFailed": "Regel opslaan mislukt",
       "updated": "Regel bijgewerkt",
