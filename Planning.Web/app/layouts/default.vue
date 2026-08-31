@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui';
-import { useLocalStorage, useMediaQuery } from '@vueuse/core';
-import { unlessEditing } from '~/utils/shortcuts';
+import { useMediaQuery } from '@vueuse/core';
 
 const auth = useAuthStore();
 const route = useRoute();
@@ -16,14 +15,6 @@ const currentLanguageIcon = computed(() =>
   languageOptions.find((option) => option.code === locale.value)?.icon ?? languageOptions[0].icon,
 );
 
-type SidebarMode = 'open' | 'auto' | 'closed'
-
-const SIDEBAR_MODE_ICONS: Record<SidebarMode, string> = {
-  open: 'i-lucide-panel-left-close',
-  auto: 'i-lucide-panel-left-dashed',
-  closed: 'i-lucide-panel-left',
-};
-
 const colorMode = useColorMode();
 
 const COLOR_MODE_ICONS: Record<'light' | 'dark', string> = {
@@ -31,11 +22,13 @@ const COLOR_MODE_ICONS: Record<'light' | 'dark', string> = {
   dark: 'i-lucide-moon',
 };
 
-const sidebarMode = useLocalStorage<SidebarMode>('sidebar-mode', 'open');
 const mobileSidebarOpen = ref(false);
 const isDesktop = useMediaQuery('(min-width: 1024px)');
 
-/** Hovering anywhere over the rail (or the panel hanging off it) reveals the panel in auto mode. */
+/**
+ * The desktop sidebar is always automatic: only the icon rail takes up layout space and hovering
+ * anywhere over it (or over the panel hanging off it) floats the panel out over the page.
+ */
 const sidebarHovered = ref(false);
 /**
  * Reka sets `pointer-events: none` on the body while a select in the panel is open, so the
@@ -43,34 +36,12 @@ const sidebarHovered = ref(false);
  * unmount the open list together with the panel, hence the second condition.
  */
 const panelControlActive = ref(false);
-const floatingPanelOpen = computed(() =>
-  sidebarMode.value === 'auto' && (sidebarHovered.value || panelControlActive.value));
+const floatingPanelOpen = computed(() => (sidebarHovered.value || panelControlActive.value));
 
-/** The keyboard shortcut stays a plain on/off: auto is a choice you make in the menu, not one you toggle into. */
+/** Only mobile has a sidebar to toggle; on desktop the rail is permanent and the panel follows the pointer. */
 function toggleSidebar() {
-  if (!isDesktop.value) {
-    mobileSidebarOpen.value = !mobileSidebarOpen.value;
-    return;
-  }
-
-  sidebarMode.value = sidebarMode.value === 'open' ? 'closed' : 'open';
+  mobileSidebarOpen.value = !mobileSidebarOpen.value;
 }
-
-defineShortcuts({
-  h: unlessEditing(toggleSidebar),
-});
-
-const sidebarModeItems = computed<DropdownMenuItem[][]>(() => [
-  (['open', 'auto', 'closed'] as const).map((mode) => ({
-    label: t(`layout.sidebarMode.${mode}`),
-    icon: SIDEBAR_MODE_ICONS[mode],
-    type: 'checkbox' as const,
-    checked: sidebarMode.value === mode,
-    onSelect: () => {
-      sidebarMode.value = mode;
-    },
-  })),
-]);
 
 function closeMobileSidebar() {
   if (!isDesktop.value) {
@@ -184,6 +155,7 @@ const pageIcon = computed(() => {
     '/dashboard': 'i-lucide-layout-dashboard',
     '/planning': 'i-lucide-calendar-check',
     '/timeline': 'i-lucide-gantt-chart',
+    '/aanvragen': 'i-lucide-inbox',
     '/beschikbaarheid': 'i-lucide-calendar-clock',
     '/customers': 'i-lucide-contact',
     '/users': 'i-lucide-users',
@@ -223,97 +195,57 @@ const userMenuContent = computed(() => ({
 			@mouseenter="sidebarHovered = true"
 			@mouseleave="sidebarHovered = false"
 		>
-			<!-- The floating panel butts straight against this card, so the seam between them loses its corners. -->
-			<div
-				class="flex h-full overflow-hidden bg-default shadow-sm ring ring-default transition-[border-radius] duration-150 ease-out motion-reduce:transition-none"
+			<!-- The floating panel butts straight against this rail, so the seam between them loses its corners. -->
+			<aside
+				class="flex h-full w-14 shrink-0 flex-col items-center overflow-hidden bg-default shadow-sm ring ring-default transition-[border-radius] duration-150 ease-out motion-reduce:transition-none"
 				:class="floatingPanelOpen ? 'rounded-s-xl' : 'rounded-xl'"
 			>
-				<aside class="flex w-14 shrink-0 flex-col items-center">
-					<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
-						<NuxtLink
-							to="/dashboard"
-							class="flex size-8 items-center justify-center rounded-lg text-highlighted"
-							aria-label="Planning"
-						>
-							<UIcon
-								name="i-lucide-calendar-days"
-								class="size-5 text-brand"
-							/>
-						</NuxtLink>
-					</div>
+				<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
+					<NuxtLink
+						to="/dashboard"
+						class="flex size-8 items-center justify-center rounded-lg text-highlighted"
+						aria-label="Planning"
+					>
+						<UIcon
+							name="i-lucide-calendar-days"
+							class="size-5 text-brand"
+						/>
+					</NuxtLink>
+				</div>
 
-					<div class="flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto py-2">
-						<UTooltip
-							v-for="module in navigationModules"
-							:key="module.key"
-							:text="module.label"
-							:content="{ side: 'right' }"
-						>
-							<UButton
-								:icon="module.icon"
-								:color="module.key === activeModule?.key ? 'brand' : 'neutral'"
-								:variant="module.key === activeModule?.key ? 'soft' : 'ghost'"
-								:to="module.items[0]?.to"
-								square
-								size="md"
-								:aria-label="module.label"
-								:aria-current="module.key === activeModule?.key ? 'page' : undefined"
-							/>
-						</UTooltip>
-					</div>
-
-					<div class="flex shrink-0 flex-col items-center gap-1 p-4">
-						<UDropdownMenu
-							:items="sidebarModeItems"
-							:content="{ side: 'right', align: 'end', sideOffset: 12 }"
-							:ui="{ content: 'w-44' }"
-						>
-							<UTooltip
-								:text="t('layout.sidebarMode.label')"
-								:kbds="['H']"
-								:content="{ side: 'right' }"
-							>
-								<UButton
-									:icon="SIDEBAR_MODE_ICONS[sidebarMode]"
-									color="neutral"
-									variant="ghost"
-									square
-									size="md"
-									class="data-[state=open]:bg-elevated"
-									:aria-label="t('layout.sidebarMode.label')"
-								/>
-							</UTooltip>
-						</UDropdownMenu>
-
-						<UDropdownMenu
-							:items="userItems"
-							:content="userMenuContent"
-							:ui="{ content: 'w-48' }"
-						>
-							<UButton
-								icon="i-lucide-user"
-								color="neutral"
-								variant="ghost"
-								square
-								size="md"
-								class="data-[state=open]:bg-elevated"
-								:aria-label="t('common.account')"
-							/>
-						</UDropdownMenu>
-					</div>
-				</aside>
-
-				<aside
-					class="flex flex-col overflow-hidden transition-[width,border-color] duration-200 ease-out motion-reduce:transition-none"
-					:class="sidebarMode === 'open' ? 'w-48 border-s border-default' : 'w-0 border-s-0'"
-				>
-					<LayoutNavPanel
-						:label="activeModule?.label"
-						:items="panelItems"
-						class="bg-default"
+				<div class="flex min-h-0 flex-1 flex-col items-center gap-1 overflow-y-auto py-2">
+					<UButton
+						v-for="module in navigationModules"
+						:key="module.key"
+						:icon="module.icon"
+						:color="module.key === activeModule?.key ? 'brand' : 'neutral'"
+						:variant="module.key === activeModule?.key ? 'soft' : 'ghost'"
+						:to="module.items[0]?.to"
+						square
+						size="md"
+						:aria-label="module.label"
+						:aria-current="module.key === activeModule?.key ? 'page' : undefined"
 					/>
-				</aside>
-			</div>
+				</div>
+
+				<div class="flex shrink-0 flex-col items-center gap-1 p-4">
+					<UDropdownMenu
+						:items="userItems"
+						:content="userMenuContent"
+						:ui="{ content: 'w-48' }"
+					>
+						<UButton
+							icon="i-lucide-user"
+							color="neutral"
+							variant="ghost"
+							square
+							size="md"
+							class="data-[state=open]:bg-elevated"
+							:aria-label="t('common.account')"
+						/>
+					</UDropdownMenu>
+				</div>
+			</aside>
 
 			<Transition
 				enter-active-class="transition duration-150 ease-out"

@@ -11,9 +11,10 @@ export function createCustomerSchema(t: Translate) {
       .max(200, t('validation.name.tooLong')),
     email: z
       .string()
-      .min(1, t('validation.email.required'))
+      .max(320, t('validation.email.tooLong'))
       .email(t('validation.email.invalid'))
-      .max(320, t('validation.email.tooLong')),
+      .optional()
+      .or(z.literal('')),
     address: z
       .string()
       .max(500, t('validation.address.tooLong')),

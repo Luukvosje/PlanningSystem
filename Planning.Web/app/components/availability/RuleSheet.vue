@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { AvailabilityRule, AvailabilityRuleType, Weekday } from '~/types/availability';
-import { WHOLE_DAY_END, WHOLE_DAY_START, getWeekdayOptions } from '~/types/availability';
+import { WHOLE_DAY_END, WHOLE_DAY_START, canDeleteAvailabilityRule, getWeekdayOptions } from '~/types/availability';
 
 const props = defineProps<{
   employeeId: string
@@ -17,9 +17,22 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false });
 
 const { t } = useI18n();
+const auth = useAuthStore();
 const weekdayOptions = computed(() => getWeekdayOptions(t));
 const api = useAvailabilityApi();
 const isSaving = computed(() => api.create.isPending.value || api.update.isPending.value);
+const isDeleting = computed(() => api.remove.isPending.value);
+
+/** Nothing to delete on a new rule, and an employee may only withdraw a request of their own. */
+const canDelete = computed(() =>
+  !!props.rule && canDeleteAvailabilityRule(props.rule, auth.currentUser));
+
+const confirmDeleteOpen = ref(false);
+
+const deleteTitle = computed(() =>
+  props.type === 'Weekly' ?
+    t('availability.deleteWeeklyRule') :
+    t('availability.deleteException'));
 
 const weekday = ref<Weekday>('Monday');
 const date = ref('');
@@ -111,6 +124,8 @@ function resetForm() {
 watch(open, (isOpen) => {
   if (isOpen) {
     resetForm();
+  } else {
+    confirmDeleteOpen.value = false;
   }
 });
 
@@ -149,6 +164,16 @@ async function save() {
   }
 
   emit('saved');
+  open.value = false;
+}
+
+async function remove() {
+  if (!props.rule) {
+    return;
+  }
+
+  confirmDeleteOpen.value = false;
+  await api.remove.mutateAsync(props.rule.id);
   open.value = false;
 }
 </script>
@@ -246,13 +271,36 @@ async function save() {
 					/>
 				</UFormField>
 
-				<UButton
-					block
-					:label="t('common.actions.save')"
-					:loading="isSaving"
-					@click="save"
-				/>
+				<div class="flex gap-2">
+					<UButton
+						v-if="canDelete"
+						color="error"
+						variant="outline"
+						icon="i-lucide-trash-2"
+						:label="t('common.actions.delete')"
+						:loading="isDeleting"
+						:disabled="isSaving"
+						@click="confirmDeleteOpen = true"
+					/>
+					<UButton
+						block
+						class="flex-1"
+						:label="t('common.actions.save')"
+						:loading="isSaving"
+						:disabled="isDeleting"
+						@click="save"
+					/>
+				</div>
 			</div>
 		</template>
 	</USlideover>
+
+	<UiConfirmModal
+		v-model:open="confirmDeleteOpen"
+		:title="deleteTitle"
+		:description="t('availability.deleteConfirmDescription')"
+		:confirm-label="t('common.actions.delete')"
+		:loading="isDeleting"
+		@confirm="remove"
+	/>
 </template>

@@ -4,25 +4,25 @@ namespace Planning.Application.Customers;
 public interface ICustomerRequestFields
 {
     string Name { get; }
-    string Email { get; }
+    string? Email { get; }
     string? Address { get; }
 }
 
 public sealed record CreateCustomerRequest(
     string Name,
-    string Email,
+    string? Email,
     string? Address) : ICustomerRequestFields;
 
 public sealed record UpdateCustomerRequest(
     string Name,
-    string Email,
+    string? Email,
     string? Address) : ICustomerRequestFields;
 
 public sealed record CustomerResponse(
     Guid Id,
     Guid OrganizationId,
     string Name,
-    string Email,
+    string? Email,
     string? Address,
     DateTime CreatedAtUtc,
     DateTime UpdatedAtUtc);

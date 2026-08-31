@@ -1,8 +1,7 @@
 <script setup lang="ts">
 /**
  * The navigation panel next to the icon rail: the name of the module you are in plus its pages.
- * Rendered inline in the sidebar when the panel stays open, and as a floating panel over the page
- * while you hover the rail in automatic mode.
+ * Floats out over the page while you hover the rail; the rail itself keeps its width in the layout.
  */
 const emit = defineEmits<{
   controlActive: [active: boolean]

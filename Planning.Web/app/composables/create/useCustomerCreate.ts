@@ -19,7 +19,7 @@ export function useCustomerCreate() {
     initialState: { name: '', email: '', address: '' },
     controls: computed(() => [
       { name: 'name', label: t('customers.fields.name'), type: 'input', required: true },
-      { name: 'email', label: t('customers.fields.email'), type: 'email', required: true },
+      { name: 'email', label: t('customers.fields.email'), type: 'email', required: false },
       { name: 'address', label: t('customers.fields.address'), type: 'textarea', props: { rows: 3 } },
     ]),
     submitLabel: computed(() => t('customers.create.submit')),

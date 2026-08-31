@@ -6,7 +6,7 @@ namespace Planning.Domain.Customers;
 public class Customer : TenantEntity
 {
     public string Name { get; private set; } = string.Empty;
-    public string Email { get; private set; } = string.Empty;
+    public string? Email { get; private set; } = string.Empty;
     public string? Address { get; private set; }
 
     private Customer()
