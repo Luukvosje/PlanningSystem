@@ -271,20 +271,18 @@ async function remove() {
 					/>
 				</UFormField>
 
-				<div class="flex gap-2">
+				<div class="flex gap-2 justify-between">
 					<UButton
 						v-if="canDelete"
 						color="error"
 						variant="outline"
 						icon="i-lucide-trash-2"
-						:label="t('common.actions.delete')"
 						:loading="isDeleting"
 						:disabled="isSaving"
 						@click="confirmDeleteOpen = true"
 					/>
 					<UButton
 						block
-						class="flex-1"
 						:label="t('common.actions.save')"
 						:loading="isSaving"
 						:disabled="isDeleting"

@@ -115,7 +115,7 @@ export default defineAppConfig({
         // Denser than the Nuxt UI default (th px-4 py-3.5 / td p-4): ~44px rows instead of ~56.
         // The header borrows the timeline's section-label recipe.
         th: 'px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted text-left',
-        td: 'px-3 py-2.5 text-sm text-muted whitespace-nowrap',
+        td: 'px-3 py-4 text-sm text-muted whitespace-nowrap',
       },
     },
   },
