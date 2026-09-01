@@ -28,12 +28,12 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
             .IsRequired();
 
         builder.Property(x => x.ImportantWorkTimes)
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("jsonb")
             .HasConversion(new JsonColumnConverter<List<ImportantWorkTime>>(OrganizationPlanningDefaults.ImportantWorkTimes.ToList()))
             .Metadata.SetValueComparer(new JsonListValueComparer<ImportantWorkTime>());
 
         builder.Property(x => x.OpeningHours)
-            .HasColumnType("nvarchar(max)")
+            .HasColumnType("jsonb")
             .HasConversion(new JsonColumnConverter<List<DayOpeningHours>>([]))
             .Metadata.SetValueComparer(new JsonListValueComparer<DayOpeningHours>());
 

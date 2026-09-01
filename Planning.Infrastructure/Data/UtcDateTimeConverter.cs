@@ -3,26 +3,27 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Planning.Infrastructure.Data;
 
 /// <summary>
-/// Stamps <see cref="DateTimeKind.Utc"/> on every <see cref="DateTime"/> read from the database.
+/// Forces every <see cref="DateTime"/> crossing the database boundary to <see cref="DateTimeKind.Utc"/>.
 /// <para>
-/// SQL Server's <c>datetime2</c> carries no time zone, so EF materializes
-/// <see cref="DateTimeKind.Unspecified"/>. System.Text.Json then serializes it without a <c>Z</c>,
-/// and JavaScript parses a suffix-less timestamp as <em>local</em> time - shifting every planning
-/// block by the viewer's UTC offset. The frontend used to patch this up client-side by appending
-/// the missing <c>Z</c>; this fixes it at the source instead.
+/// On write this is a hard requirement, not a nicety: Npgsql maps <see cref="DateTime"/> to
+/// <c>timestamp with time zone</c> and throws when handed a value whose kind is not
+/// <see cref="DateTimeKind.Utc"/>. Every column here is named <c>*Utc</c> and is stamped from
+/// <see cref="DateTime.UtcNow"/>, so an <see cref="DateTimeKind.Unspecified"/> value is already UTC
+/// and only needs labelling; a local-kind value is genuinely converted rather than mislabelled.
 /// </para>
 /// <para>
-/// Values are only converted on the way out. On write, an already-UTC or unspecified value is
-/// stored as-is (all columns are named <c>*Utc</c> and the domain stamps them from
-/// <see cref="DateTime.UtcNow"/>); a local-kind value is converted first rather than silently
-/// stored in the wrong zone.
+/// On read it guards the JSON contract. Without a kind, System.Text.Json serializes the timestamp
+/// without a <c>Z</c>, and JavaScript parses a suffix-less timestamp as <em>local</em> time -
+/// shifting every planning block by the viewer's UTC offset.
 /// </para>
 /// </summary>
 public sealed class UtcDateTimeConverter : ValueConverter<DateTime, DateTime>
 {
     public UtcDateTimeConverter()
         : base(
-            value => value.Kind == DateTimeKind.Local ? value.ToUniversalTime() : value,
+            value => value.Kind == DateTimeKind.Local
+                ? value.ToUniversalTime()
+                : DateTime.SpecifyKind(value, DateTimeKind.Utc),
             value => DateTime.SpecifyKind(value, DateTimeKind.Utc))
     {
     }
@@ -32,8 +33,10 @@ public sealed class NullableUtcDateTimeConverter : ValueConverter<DateTime?, Dat
 {
     public NullableUtcDateTimeConverter()
         : base(
-            value => value.HasValue && value.Value.Kind == DateTimeKind.Local
-                ? value.Value.ToUniversalTime()
+            value => value.HasValue
+                ? (value.Value.Kind == DateTimeKind.Local
+                    ? value.Value.ToUniversalTime()
+                    : DateTime.SpecifyKind(value.Value, DateTimeKind.Utc))
                 : value,
             value => value.HasValue
                 ? DateTime.SpecifyKind(value.Value, DateTimeKind.Utc)

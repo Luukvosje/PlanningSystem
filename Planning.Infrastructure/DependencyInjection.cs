@@ -35,11 +35,11 @@ public static class DependencyInjection
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(connectionString, sqlOptions =>
-                sqlOptions.EnableRetryOnFailure(
+            options.UseNpgsql(connectionString, npgsqlOptions =>
+                npgsqlOptions.EnableRetryOnFailure(
                     maxRetryCount: 5,
                     maxRetryDelay: TimeSpan.FromSeconds(30),
-                    errorNumbersToAdd: null)));
+                    errorCodesToAdd: null)));
 
         services.AddSingleton<IOrganizationLogoStorage>(
             _ => new OrganizationLogoStorage(Path.Combine(contentRootPath, "img", "logos")));

@@ -29,9 +29,10 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserModule> UserModules => Set<UserModule>();
 
     /// <summary>
-    /// Every DateTime column in this schema holds UTC (they are all named <c>*Utc</c>), but
-    /// datetime2 cannot record that. Without this the API would serialize timestamps without a
-    /// <c>Z</c> and every client would read them as local time. See <see cref="UtcDateTimeConverter"/>.
+    /// Every DateTime column in this schema holds UTC (they are all named <c>*Utc</c>). Npgsql
+    /// refuses to write a non-UTC kind to <c>timestamptz</c>, and on read a kindless value would be
+    /// serialized without a <c>Z</c> and read as local time by every client.
+    /// See <see cref="UtcDateTimeConverter"/>.
     /// </summary>
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
