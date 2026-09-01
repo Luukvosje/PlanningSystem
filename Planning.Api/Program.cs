@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Planning.Api.Authorization;
@@ -31,17 +34,43 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUserContext, CurrentUserContext>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
+// Origins come from configuration (Cors:AllowedOrigins, or Cors__AllowedOrigins__0 as an
+// environment variable in production) so that deploying to a new domain never needs a code change.
+// An empty list is fatal rather than permissive: a silently origin-less policy would look like a
+// broken frontend in production and invite someone to "fix" it with AllowAnyOrigin.
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>() ?? [];
+
+if (allowedOrigins.Length == 0)
+{
+    throw new InvalidOperationException(
+        "No CORS origins configured. Set Cors:AllowedOrigins (e.g. Cors__AllowedOrigins__0=https://app.example.com).");
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "http://127.0.0.1:3000")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
 });
+
+// Behind the reverse proxy the app only ever sees the proxy's IP and a plain http scheme.
+// Without this, generated links and any scheme-dependent behaviour are wrong. KnownNetworks and
+// KnownProxies are cleared because the proxy sits on a container network with an address we do
+// not know up front; only the proxy can reach the container, so nothing else can spoof these.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
+builder.Services.AddHealthChecks()
+    .AddDbContextCheck<ApplicationDbContext>("database");
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -129,6 +158,24 @@ if (app.Environment.IsEnvironment("Test"))
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<ITestDataSeeder>().InitializeAsync();
 }
+else
+{
+    // A deploy ships code and schema together, so the container migrates itself on boot rather
+    // than relying on a remembered manual step. Safe because exactly one API instance runs; with
+    // a second instance this races and must move to a one-shot job before the app starts.
+    using var scope = app.Services.CreateScope();
+    var database = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database;
+    var pending = (await database.GetPendingMigrationsAsync()).ToArray();
+
+    if (pending.Length > 0)
+    {
+        app.Logger.LogInformation("Applying {Count} pending migration(s): {Migrations}",
+            pending.Length, string.Join(", ", pending));
+        await database.MigrateAsync();
+    }
+}
+
+app.UseForwardedHeaders();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
@@ -140,10 +187,10 @@ if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Test"))
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "Planning API v1");
     });
 }
-else
-{
-    app.UseHttpsRedirection();
-}
+
+// No UseHttpsRedirection here: in production the container listens on plain HTTP and is only
+// reachable over the internal network. The reverse proxy terminates TLS and does the
+// http->https redirect. Redirecting again inside the container would loop.
 
 // Drives FluentValidation's built-in default messages (e.g. "'{Field}' must not be empty.")
 // into the requester's language. The frontend sends this as a plain Accept-Language
@@ -169,5 +216,11 @@ app.UseAuthentication();
 app.UseMiddleware<OrganizationContextMiddleware>();
 app.UseAuthorization();
 app.MapControllers();
+
+// Split deliberately: /health/live answers "is this process up" and is what the container
+// healthcheck and the proxy poll, so a database blip must not restart a healthy API.
+// /health/ready adds the database and is what a deploy checks before declaring itself done.
+app.MapHealthChecks("/health/live", new HealthCheckOptions { Predicate = _ => false });
+app.MapHealthChecks("/health/ready");
 
 app.Run();
