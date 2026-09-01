@@ -18,6 +18,7 @@ public static class DependencyInjection
     {
         services.AddValidatorsFromAssemblyContaining<ApplicationAssemblyMarker>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IPasswordResetService, PasswordResetService>();
         services.AddScoped<IInviteService, InviteService>();
         services.AddScoped<IOrganizationService, OrganizationService>();
         services.AddScoped<IUserService, UserService>();

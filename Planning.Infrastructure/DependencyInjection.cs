@@ -14,6 +14,7 @@ using Planning.Infrastructure.Auth;
 using Planning.Infrastructure.Availability;
 using Planning.Infrastructure.Customers;
 using Planning.Infrastructure.Data;
+using Planning.Infrastructure.Email;
 using Planning.Infrastructure.Invites;
 using Planning.Infrastructure.Modules;
 using Planning.Infrastructure.Organizations;
@@ -44,11 +45,28 @@ public static class DependencyInjection
         services.AddSingleton<IOrganizationLogoStorage>(
             _ => new OrganizationLogoStorage(Path.Combine(contentRootPath, "img", "logos")));
 
+        services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+
+        // Without SMTP settings the app logs what it would have sent instead of failing. That
+        // keeps local development free of mail credentials and makes it impossible to mail a real
+        // customer by accident, while the reset link stays visible in the console for testing.
+        var emailOptions = configuration.GetSection(EmailOptions.SectionName).Get<EmailOptions>();
+
+        if (emailOptions?.IsConfigured == true)
+        {
+            services.AddScoped<IEmailSender, SmtpEmailSender>();
+        }
+        else
+        {
+            services.AddScoped<IEmailSender, LogOnlyEmailSender>();
+        }
+
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IAccountRepository, AccountRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationInviteRepository, OrganizationInviteRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();

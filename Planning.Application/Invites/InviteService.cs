@@ -1,4 +1,6 @@
+﻿using Microsoft.Extensions.Options;
 using Planning.Application.Common;
+using Planning.Application.Email;
 using Planning.Application.Modules;
 using Planning.Domain.Auth;
 using Planning.Domain.Enums;
@@ -19,6 +21,8 @@ public class InviteService : IInviteService
     private readonly IAccountRepository _accountRepository;
     private readonly ICurrentUserContext _currentUserContext;
     private readonly IModuleService _moduleService;
+    private readonly IEmailSender _emailSender;
+    private readonly EmailOptions _emailOptions;
 
     public InviteService(
         IOrganizationInviteRepository inviteRepository,
@@ -26,7 +30,9 @@ public class InviteService : IInviteService
         IUserRepository userRepository,
         IAccountRepository accountRepository,
         ICurrentUserContext currentUserContext,
-        IModuleService moduleService)
+        IModuleService moduleService,
+        IEmailSender emailSender,
+        IOptions<EmailOptions> emailOptions)
     {
         _inviteRepository = inviteRepository;
         _organizationRepository = organizationRepository;
@@ -34,6 +40,8 @@ public class InviteService : IInviteService
         _accountRepository = accountRepository;
         _currentUserContext = currentUserContext;
         _moduleService = moduleService;
+        _emailSender = emailSender;
+        _emailOptions = emailOptions.Value;
     }
 
     public async Task<Result<InviteResponse>> CreateAsync(
@@ -63,8 +71,29 @@ public class InviteService : IInviteService
 
         await _inviteRepository.AddAsync(invite, cancellationToken);
 
+        var emailSent = false;
+
+        if (!string.IsNullOrWhiteSpace(request.Email))
+        {
+            var organization = await _organizationRepository.GetByIdAsync(
+                invite.OrganizationId,
+                cancellationToken);
+
+            var joinUrl = $"{_emailOptions.AppBaseUrl.TrimEnd('/')}/join?code={Uri.EscapeDataString(invite.Code)}";
+
+            // The invite itself is already saved. A failed send leaves a usable code the caller
+            // can still share by hand, which is why this reports the outcome instead of failing.
+            emailSent = await _emailSender.SendAsync(
+                EmailTemplates.Invitation(
+                    request.Email.Trim(),
+                    organization?.Name ?? "Planning",
+                    joinUrl,
+                    invite.ExpiresAtUtc),
+                cancellationToken);
+        }
+
         return Result<InviteResponse>.Success(
-            new InviteResponse(invite.Code, invite.ExpiresAtUtc));
+            new InviteResponse(invite.Code, invite.ExpiresAtUtc, emailSent));
     }
 
     public async Task<Result<AcceptInviteResponse>> AcceptAsync(

@@ -1,6 +1,7 @@
-using FluentValidation;
+﻿using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Planning.Api.Extensions;
 using Planning.Api.Models;
 using Planning.Application.Auth;
@@ -13,23 +14,32 @@ namespace Planning.Api.Controllers;
 public class AuthController : ApiControllerBase
 {
     private readonly IAuthService _authService;
+    private readonly IPasswordResetService _passwordResetService;
     private readonly IValidator<RegisterRequest> _registerValidator;
     private readonly IValidator<LoginRequest> _loginValidator;
     private readonly IValidator<RefreshTokenRequest> _refreshTokenValidator;
     private readonly IValidator<UpdateProfileRequest> _updateProfileValidator;
+    private readonly IValidator<ForgotPasswordRequest> _forgotPasswordValidator;
+    private readonly IValidator<ResetPasswordRequest> _resetPasswordValidator;
 
     public AuthController(
         IAuthService authService,
+        IPasswordResetService passwordResetService,
         IValidator<RegisterRequest> registerValidator,
         IValidator<LoginRequest> loginValidator,
         IValidator<RefreshTokenRequest> refreshTokenValidator,
-        IValidator<UpdateProfileRequest> updateProfileValidator)
+        IValidator<UpdateProfileRequest> updateProfileValidator,
+        IValidator<ForgotPasswordRequest> forgotPasswordValidator,
+        IValidator<ResetPasswordRequest> resetPasswordValidator)
     {
         _authService = authService;
+        _passwordResetService = passwordResetService;
         _registerValidator = registerValidator;
         _loginValidator = loginValidator;
         _refreshTokenValidator = refreshTokenValidator;
         _updateProfileValidator = updateProfileValidator;
+        _forgotPasswordValidator = forgotPasswordValidator;
+        _resetPasswordValidator = resetPasswordValidator;
     }
 
     [HttpGet]
@@ -38,6 +48,7 @@ public class AuthController : ApiControllerBase
 
     [HttpPost("register")]
     [AllowAnonymous]
+    [EnableRateLimiting("Auth")]
     [ProducesResponseType(typeof(RegisterResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> Register([FromBody] RegisterRequest request) =>
@@ -55,6 +66,7 @@ public class AuthController : ApiControllerBase
 
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("Auth")]
     [ProducesResponseType(typeof(LoginResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public Task<IActionResult> Login([FromBody] LoginRequest request) =>
@@ -73,6 +85,38 @@ public class AuthController : ApiControllerBase
         ValidateAndExecuteAsync(request, _refreshTokenValidator, async () =>
         {
             var result = await _authService.RefreshAsync(request, HttpContext.RequestAborted);
+            return result.ToActionResult(this);
+        });
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("PasswordReset")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request) =>
+        ValidateAndExecuteAsync(request, _forgotPasswordValidator, async () =>
+        {
+            // Always 204, even for an address with no account: a different response here would
+            // let anyone check which email addresses are registered.
+            await _passwordResetService.RequestResetAsync(request, HttpContext.RequestAborted);
+            return NoContent();
+        });
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    [EnableRateLimiting("PasswordReset")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request) =>
+        ValidateAndExecuteAsync(request, _resetPasswordValidator, async () =>
+        {
+            var result = await _passwordResetService.ResetAsync(request, HttpContext.RequestAborted);
+
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+
             return result.ToActionResult(this);
         });
 

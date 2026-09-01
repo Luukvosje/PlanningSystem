@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<User> Users => Set<User>();
     public DbSet<OrganizationInvite> OrganizationInvites => Set<OrganizationInvite>();
     public DbSet<Customer> Customers => Set<Customer>();

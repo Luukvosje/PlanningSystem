@@ -1,4 +1,4 @@
-using FluentValidation;
+﻿using FluentValidation;
 
 namespace Planning.Application.Invites;
 
@@ -6,6 +6,10 @@ public class CreateInviteRequestValidator : AbstractValidator<CreateInviteReques
 {
     public CreateInviteRequestValidator()
     {
+        RuleFor(x => x.Email)
+            .EmailAddress()
+            .MaximumLength(320)
+            .When(x => !string.IsNullOrWhiteSpace(x.Email));
     }
 }
 

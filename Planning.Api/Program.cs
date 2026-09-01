@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -18,6 +18,7 @@ using Planning.Infrastructure;
 using Planning.Infrastructure.Data;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -71,6 +72,32 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<ApplicationDbContext>("database");
+
+// The anonymous auth endpoints are the only ones an attacker can hammer for free. Partitioning by
+// client IP works because UseForwardedHeaders (below) resolves the real address rather than the
+// proxy's. Both limits are generous for a person and useless for a script.
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    // Sending mail costs money and lands in someone else's inbox, so this is the tighter of the two.
+    options.AddPolicy("PasswordReset", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 5,
+            Window = TimeSpan.FromMinutes(15),
+        }));
+
+    // Guards against credential stuffing on login and account enumeration on register.
+    options.AddPolicy("Auth", context => RateLimitPartition.GetFixedWindowLimiter(
+        context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 20,
+            Window = TimeSpan.FromMinutes(5),
+        }));
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -202,6 +229,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions()
     .AddSupportedCultures("nl", "en")
     .AddSupportedUICultures("nl", "en"));
 
+app.UseRateLimiter();
 app.UseCors("Frontend");
 
 var imgPath = Path.Combine(app.Environment.ContentRootPath, "img");
