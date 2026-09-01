@@ -1,0 +1,106 @@
+# Production stack. Lives on the VPS in /opt/planning, alongside a .env built from .env.example.
+#   docker compose pull && docker compose up -d
+#
+# Only Caddy publishes ports. The API, the frontend and the database talk over the internal
+# network and are unreachable from the internet - which is also why the API can safely serve
+# plain HTTP and skip its own https redirect.
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    logging: &default-logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/planningsystem-api:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      Jwt__Key: ${JWT_KEY}
+      Jwt__Issuer: ${JWT_ISSUER:-Planning.Api}
+      Jwt__Audience: ${JWT_AUDIENCE:-Planning.Api}
+      Cors__AllowedOrigins__0: https://${APP_DOMAIN}
+      Email__Provider: ${EMAIL_PROVIDER:-smtp}
+      Email__SmtpHost: ${EMAIL_SMTP_HOST}
+      Email__SmtpPort: ${EMAIL_SMTP_PORT:-587}
+      Email__Username: ${EMAIL_USERNAME}
+      Email__Password: ${EMAIL_PASSWORD}
+      Email__FromAddress: ${EMAIL_FROM_ADDRESS}
+      Email__FromName: ${EMAIL_FROM_NAME}
+      Email__AppBaseUrl: https://${APP_DOMAIN}
+    volumes:
+      # Uploaded organization logos are the only user data outside the database.
+      - logo-data:/app/img/logos
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    logging: *default-logging
+
+  web:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/planningsystem-web:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      # Server-side rendering talks to the API container directly; the browser goes back out
+      # through Caddy on the public domain. Same origin, so no CORS preflight in production.
+      NUXT_API_BASE_URL: http://api:8080
+      NUXT_PUBLIC_API_BASE_URL: https://${APP_DOMAIN}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: *default-logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - web
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # caddy-data holds the issued certificates. Losing it means re-requesting them and
+      # running into Let's Encrypt rate limits, so it must survive a redeploy.
+      - caddy-data:/data
+      - caddy-config:/config
+    logging: *default-logging
+
+volumes:
+  db-data:
+  logo-data:
+  caddy-data:
+  caddy-config:

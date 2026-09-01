@@ -1,0 +1,29 @@
+# Local development database only - the API and frontend keep running from the IDE.
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Credentials are dev-only and intentionally literal: this listens on 127.0.0.1 exclusively, so it
+# is not reachable from the network. The API reads its connection string from user-secrets:
+#   dotnet user-secrets set "ConnectionStrings:DefaultConnection" \
+#     "Host=localhost;Port=5432;Database=PlanningDb;Username=planning;Password=planning_dev" \
+#     --project Planning.Api
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: planning-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: planning
+      POSTGRES_PASSWORD: planning_dev
+      POSTGRES_DB: PlanningDb
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - planning-db-dev:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U planning -d PlanningDb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  planning-db-dev:

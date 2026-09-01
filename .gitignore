@@ -354,3 +354,18 @@ TimeOn.Api/appsettings.Test.json
 /TimeOn.Web/appsettings.Development.json
 /TimeOn.Web/appsettings.Test.json
 /TimeOn.Api/appsettings.config
+
+# --- Planning: production secrets ---
+# The deploy .env holds the database password, the JWT signing key and the SMTP credentials.
+# Only .env.example, which carries names and no values, belongs in the repository.
+/.env
+/.env.*
+!/.env.example
+/deploy/.env
+/deploy/.env.*
+!/deploy/.env.example
+/deploy/.previous_tag
+
+# appsettings.Production.json is never used - production is configured through environment
+# variables in deploy/.env - but ignore it so an accidental local copy cannot be committed.
+/Planning.Api/appsettings.Production.json

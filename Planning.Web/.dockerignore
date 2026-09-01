@@ -1,0 +1,15 @@
+# node_modules must be installed inside the image: the host copy holds platform-specific
+# binaries built for Windows, which break the Linux build in confusing ways.
+node_modules/
+.nuxt/
+.output/
+.data/
+dist/
+
+# Secrets and local overrides never belong in an image layer.
+.env
+.env.*
+!.env.example
+
+test/
+*.md

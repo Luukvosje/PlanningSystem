@@ -1,0 +1,22 @@
+# Build artefacts - these must come from the build inside the image, never from the host.
+**/bin/
+**/obj/
+**/.vs/
+**/node_modules/
+**/.nuxt/
+**/.output/
+
+# Secrets and local config must never reach an image layer.
+**/.env
+**/.env.*
+!**/.env.example
+**/appsettings.Development.json
+**/appsettings.Test.json
+
+# Repo noise that would bust the build cache on every commit.
+.git/
+.github/
+.claude/
+.cursor/
+**/*.md
+deploy/

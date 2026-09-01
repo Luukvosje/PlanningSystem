@@ -1,0 +1,38 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$APP_DOMAIN} {
+	encode zstd gzip
+
+	# One domain for everything: the API lives under /api, uploaded logos under /img.
+	# Anything else is the Nuxt app. Because the browser only ever talks to this one origin,
+	# there is no cross-origin request to preflight in production.
+	handle /api/* {
+		reverse_proxy api:8080
+	}
+
+	handle /img/* {
+		reverse_proxy api:8080
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+
+	# /health/* is deliberately absent: the deploy checks it from inside the network, so it does
+	# not need to be public. Anything reachable is something that has to be kept safe.
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	log {
+		output stdout
+		format console
+	}
+}
