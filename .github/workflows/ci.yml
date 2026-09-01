@@ -1,0 +1,64 @@
+name: CI
+
+# Runs on every pull request and on every push to test. Pushes to main are covered by deploy.yml,
+# which runs the same checks before it is allowed to ship anything.
+on:
+  pull_request:
+    branches: [main, test]
+  push:
+    branches: [test]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore Planning.slnx
+
+      - name: Build
+        run: dotnet build Planning.slnx --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Planning.slnx --configuration Release --no-build --verbosity normal
+
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Planning.Web
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: Planning.Web/pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test
+        run: pnpm run test
+
+      - name: Build
+        run: pnpm run build
