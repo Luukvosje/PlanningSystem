@@ -15,7 +15,7 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
 
     {
 
-        builder.ToTable("customer");
+        builder.ToTable("Customers");
 
 
 

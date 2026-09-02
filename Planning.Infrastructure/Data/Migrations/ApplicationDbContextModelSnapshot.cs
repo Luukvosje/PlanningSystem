@@ -205,7 +205,7 @@ namespace Planning.Infrastructure.Data.Migrations
                     b.HasIndex("OrganizationId", "ApprovalStatus");
 
                     b.HasIndex("OrganizationId", "EmployeeId", "Date")
-                        .HasFilter("[Type] = 'OneTime'");
+                        .HasFilter("\"Type\" = 'OneTime'");
 
                     b.HasIndex("OrganizationId", "EmployeeId", "Type");
 
@@ -245,7 +245,7 @@ namespace Planning.Infrastructure.Data.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("customer", (string)null);
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("Planning.Domain.Invites.OrganizationInvite", b =>

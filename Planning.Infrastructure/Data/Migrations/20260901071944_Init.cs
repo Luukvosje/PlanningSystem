@@ -46,6 +46,29 @@ namespace Planning.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "PasswordResetTokens",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AccountId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TokenHash = table.Column<string>(type: "character varying(128)", maxLength: 128, nullable: false),
+                    ExpiresAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UsedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PasswordResetTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PasswordResetTokens_Accounts_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Accounts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RefreshTokens",
                 columns: table => new
                 {
@@ -70,7 +93,7 @@ namespace Planning.Infrastructure.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "customer",
+                name: "Customers",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -83,9 +106,9 @@ namespace Planning.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_customer", x => x.Id);
+                    table.PrimaryKey("PK_Customers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_customer_Organizations_OrganizationId",
+                        name: "FK_Customers_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
                         principalColumn: "Id",
@@ -235,6 +258,12 @@ namespace Planning.Infrastructure.Data.Migrations
                 {
                     table.PrimaryKey("PK_PlanningRecords", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_PlanningRecords_Customers_CustomerId",
+                        column: x => x.CustomerId,
+                        principalTable: "Customers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_PlanningRecords_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
@@ -244,12 +273,6 @@ namespace Planning.Infrastructure.Data.Migrations
                         name: "FK_PlanningRecords_Users_AssignedUserId",
                         column: x => x.AssignedUserId,
                         principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_PlanningRecords_customer_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "customer",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -303,7 +326,7 @@ namespace Planning.Infrastructure.Data.Migrations
                 name: "IX_AvailabilityRules_OrganizationId_EmployeeId_Date",
                 table: "AvailabilityRules",
                 columns: new[] { "OrganizationId", "EmployeeId", "Date" },
-                filter: "[Type] = 'OneTime'");
+                filter: "\"Type\" = 'OneTime'");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AvailabilityRules_OrganizationId_EmployeeId_Type",
@@ -311,8 +334,8 @@ namespace Planning.Infrastructure.Data.Migrations
                 columns: new[] { "OrganizationId", "EmployeeId", "Type" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_customer_OrganizationId",
-                table: "customer",
+                name: "IX_Customers_OrganizationId",
+                table: "Customers",
                 column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
@@ -335,6 +358,17 @@ namespace Planning.Infrastructure.Data.Migrations
                 name: "IX_Organizations_Email",
                 table: "Organizations",
                 column: "Email",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PasswordResetTokens_AccountId",
+                table: "PasswordResetTokens",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PasswordResetTokens_TokenHash",
+                table: "PasswordResetTokens",
+                column: "TokenHash",
                 unique: true);
 
             migrationBuilder.CreateIndex(
@@ -414,6 +448,9 @@ namespace Planning.Infrastructure.Data.Migrations
                 name: "OrganizationModules");
 
             migrationBuilder.DropTable(
+                name: "PasswordResetTokens");
+
+            migrationBuilder.DropTable(
                 name: "PlanningRecords");
 
             migrationBuilder.DropTable(
@@ -423,7 +460,7 @@ namespace Planning.Infrastructure.Data.Migrations
                 name: "UserModules");
 
             migrationBuilder.DropTable(
-                name: "customer");
+                name: "Customers");
 
             migrationBuilder.DropTable(
                 name: "Users");

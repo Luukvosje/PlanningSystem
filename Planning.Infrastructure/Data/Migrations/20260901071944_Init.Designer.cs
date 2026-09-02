@@ -12,8 +12,8 @@ using Planning.Infrastructure.Data;
 namespace Planning.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260901065506_AddPasswordResetTokens")]
-    partial class AddPasswordResetTokens
+    [Migration("20260901071944_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -208,7 +208,7 @@ namespace Planning.Infrastructure.Data.Migrations
                     b.HasIndex("OrganizationId", "ApprovalStatus");
 
                     b.HasIndex("OrganizationId", "EmployeeId", "Date")
-                        .HasFilter("[Type] = 'OneTime'");
+                        .HasFilter("\"Type\" = 'OneTime'");
 
                     b.HasIndex("OrganizationId", "EmployeeId", "Type");
 
@@ -248,7 +248,7 @@ namespace Planning.Infrastructure.Data.Migrations
 
                     b.HasIndex("OrganizationId");
 
-                    b.ToTable("customer", (string)null);
+                    b.ToTable("Customers", (string)null);
                 });
 
             modelBuilder.Entity("Planning.Domain.Invites.OrganizationInvite", b =>

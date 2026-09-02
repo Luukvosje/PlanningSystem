@@ -65,8 +65,10 @@ public class AvailabilityRuleConfiguration : IEntityTypeConfiguration<Availabili
         builder.HasIndex(x => x.OrganizationId);
         builder.HasIndex(x => x.EmployeeId);
         builder.HasIndex(x => new { x.OrganizationId, x.EmployeeId, x.Type });
+        // Double quotes, not brackets: this string is passed to the database verbatim, so it is
+        // the one place in the mapping that has to speak the provider's own dialect.
         builder.HasIndex(x => new { x.OrganizationId, x.EmployeeId, x.Date })
-            .HasFilter($"[{nameof(AvailabilityRule.Type)}] = 'OneTime'");
+            .HasFilter($"\"{nameof(AvailabilityRule.Type)}\" = 'OneTime'");
 
         // The request inbox reads by organization and approval state.
         builder.HasIndex(x => new { x.OrganizationId, x.ApprovalStatus });
