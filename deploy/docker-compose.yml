@@ -52,7 +52,10 @@ services:
       # Uploaded organization logos are the only user data outside the database.
       - logo-data:/app/img/logos
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health/live"]
+      # 127.0.0.1, not localhost: in these images localhost resolves to ::1 first, and a server
+      # bound to IPv4 only then refuses the connection - a healthcheck that fails forever while
+      # the container is perfectly fine.
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8080/health/live"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -71,7 +74,8 @@ services:
       NUXT_API_BASE_URL: http://api:8080
       NUXT_PUBLIC_API_BASE_URL: https://${APP_DOMAIN}
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/"]
+      # See the API healthcheck above: Nitro binds 0.0.0.0 (IPv4), localhost resolves to ::1.
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/"]
       interval: 15s
       timeout: 5s
       retries: 5

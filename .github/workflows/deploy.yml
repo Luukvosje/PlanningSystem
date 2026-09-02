@@ -147,7 +147,7 @@ jobs:
           # /health/ready includes the database, so this only passes once migrations have
           # applied and the API can actually serve traffic.
           for attempt in $(seq 1 30); do
-            if docker compose exec -T api curl -fsS http://localhost:8080/health/ready > /dev/null 2>&1; then
+            if docker compose exec -T api curl -fsS http://127.0.0.1:8080/health/ready > /dev/null 2>&1; then
               echo "API ready after ${attempt} attempt(s)."
               exit 0
             fi
