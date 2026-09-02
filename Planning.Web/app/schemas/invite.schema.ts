@@ -12,7 +12,18 @@ export function createAcceptInviteSchema(t: Translate) {
   });
 }
 
-export const createInviteSchema = z.object({});
+export function createInviteSchema(t: Translate) {
+  return z.object({
+    // Optional: leaving it empty still produces a code to share by hand, which is how invites
+    // worked before mail existed.
+    email: z
+      .string()
+      .max(320, t('validation.email.tooLong'))
+      .email(t('validation.email.invalid'))
+      .optional()
+      .or(z.literal('')),
+  });
+}
 
 export type AcceptInviteSchema = z.infer<ReturnType<typeof createAcceptInviteSchema>>
-export type CreateInviteSchema = z.infer<typeof createInviteSchema>
+export type CreateInviteSchema = z.infer<ReturnType<typeof createInviteSchema>>

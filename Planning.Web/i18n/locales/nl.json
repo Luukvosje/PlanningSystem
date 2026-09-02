@@ -71,7 +71,24 @@
     "accountCreatedDescription": "Je kunt nu inloggen.",
     "createAccount": "Account aanmaken",
     "alreadyHaveAccount": "Al een account?",
-    "landingTagline": "Plan je team eenvoudig en overzichtelijk."
+    "landingTagline": "Plan je team eenvoudig en overzichtelijk.",
+    "forgotPasswordTitle": "Wachtwoord vergeten",
+    "forgotPasswordDescription": "Vul je e-mailadres in. Bestaat er een account, dan sturen we een link om een nieuw wachtwoord in te stellen.",
+    "forgotPasswordLink": "Wachtwoord vergeten?",
+    "sendResetLink": "Stuur de link",
+    "resetLinkSentTitle": "Controleer je e-mail",
+    "resetLinkSentDescription": "Als er een account bij dit adres hoort, is er een link onderweg. De link verloopt over een uur.",
+    "rememberedPassword": "Weet je het weer?",
+    "resetPasswordTitle": "Nieuw wachtwoord instellen",
+    "resetPasswordDescription": "Kies een nieuw wachtwoord van minimaal 8 tekens.",
+    "resetLinkInvalidTitle": "Deze link is onvolledig",
+    "resetLinkInvalidDescription": "Er ontbreekt een code in de link. Kopieer hem volledig uit de e-mail of vraag een nieuwe aan.",
+    "needNewLink": "Link verlopen of ongeldig?",
+    "newPassword": "Nieuw wachtwoord",
+    "confirmPassword": "Herhaal wachtwoord",
+    "setNewPassword": "Wachtwoord opslaan",
+    "passwordChanged": "Wachtwoord gewijzigd",
+    "passwordChangedDescription": "Je bent overal uitgelogd. Log in met je nieuwe wachtwoord."
   },
   "account": {
     "inactive": {
@@ -89,7 +106,8 @@
     "password": {
       "required": "Wachtwoord is verplicht",
       "tooLong": "Wachtwoord is te lang",
-      "minLength": "Minimaal 8 tekens"
+      "minLength": "Minimaal 8 tekens",
+      "mismatch": "Wachtwoorden komen niet overeen"
     },
     "organization": {
       "required": "Selecteer een organisatie"
@@ -296,8 +314,12 @@
     "create": {
       "title": "Team uitnodigen",
       "description": "Genereer een code en deel deze met je teamlid. De code is 24 uur geldig.",
-      "submit": "Code genereren"
-    }
+      "submit": "Code genereren",
+      "emailLabel": "E-mailadres (optioneel)",
+      "emailHint": "Vul een adres in om de uitnodiging direct te mailen. Laat leeg om alleen een code te krijgen."
+    },
+    "emailFailed": "Uitnodiging aangemaakt, mail niet verstuurd",
+    "emailFailedDescription": "Deel de code hieronder handmatig."
   },
   "roles": {
     "owner": "Eigenaar",

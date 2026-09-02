@@ -7,11 +7,13 @@
  */
 import type {
   CurrentUserResponse,
+  ForgotPasswordRequest,
   LoginRequest,
   LoginResponse,
   RefreshTokenRequest,
   RegisterRequest,
   RegisterResponse,
+  ResetPasswordRequest,
   TokenResponse,
   UpdateProfileRequest,
   UpdateProfileResponse
@@ -98,6 +100,48 @@ export const postApiAuthRefresh = async (refreshTokenRequest: RefreshTokenReques
     headers: { 'Content-Type': 'application/json', ...options?.headers },
     body: JSON.stringify(
       refreshTokenRequest,)
+  }
+);}
+
+
+export const getPostApiAuthForgotPasswordUrl = () => {
+
+
+  
+
+  return `/api/auth/forgot-password`
+}
+
+export const postApiAuthForgotPassword = async (forgotPasswordRequest: ForgotPasswordRequest, options?: RequestInit): Promise<void> => {
+  
+  return customFetch<void>(getPostApiAuthForgotPasswordUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      forgotPasswordRequest,)
+  }
+);}
+
+
+export const getPostApiAuthResetPasswordUrl = () => {
+
+
+  
+
+  return `/api/auth/reset-password`
+}
+
+export const postApiAuthResetPassword = async (resetPasswordRequest: ResetPasswordRequest, options?: RequestInit): Promise<void> => {
+  
+  return customFetch<void>(getPostApiAuthResetPasswordUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      resetPasswordRequest,)
   }
 );}
 

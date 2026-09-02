@@ -9,4 +9,5 @@
 export interface InviteResponse {
   code: string;
   expiresAtUtc: string;
+  emailSent: boolean;
 }

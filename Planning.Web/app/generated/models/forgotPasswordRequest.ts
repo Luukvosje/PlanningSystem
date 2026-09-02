@@ -6,7 +6,6 @@
  * OpenAPI spec version: v1
  */
 
-export interface CreateInviteRequest {
-  /** @nullable */
-  email?: string | null;
+export interface ForgotPasswordRequest {
+  email: string;
 }

@@ -71,7 +71,24 @@
     "accountCreatedDescription": "You can now log in.",
     "createAccount": "Create account",
     "alreadyHaveAccount": "Already have an account?",
-    "landingTagline": "Plan your team simply and clearly."
+    "landingTagline": "Plan your team simply and clearly.",
+    "forgotPasswordTitle": "Forgot password",
+    "forgotPasswordDescription": "Enter your email address. If an account exists, we will send a link to set a new password.",
+    "forgotPasswordLink": "Forgot your password?",
+    "sendResetLink": "Send the link",
+    "resetLinkSentTitle": "Check your email",
+    "resetLinkSentDescription": "If an account matches this address, a link is on its way. It expires in one hour.",
+    "rememberedPassword": "Remembered it?",
+    "resetPasswordTitle": "Set a new password",
+    "resetPasswordDescription": "Choose a new password of at least 8 characters.",
+    "resetLinkInvalidTitle": "This link is incomplete",
+    "resetLinkInvalidDescription": "The link is missing its code. Copy it in full from the email, or request a new one.",
+    "needNewLink": "Link expired or invalid?",
+    "newPassword": "New password",
+    "confirmPassword": "Repeat password",
+    "setNewPassword": "Save password",
+    "passwordChanged": "Password changed",
+    "passwordChangedDescription": "You have been signed out everywhere. Sign in with your new password."
   },
   "account": {
     "inactive": {
@@ -89,7 +106,8 @@
     "password": {
       "required": "Password is required",
       "tooLong": "Password is too long",
-      "minLength": "At least 8 characters"
+      "minLength": "At least 8 characters",
+      "mismatch": "Passwords do not match"
     },
     "organization": {
       "required": "Select an organization"
@@ -296,8 +314,12 @@
     "create": {
       "title": "Invite team member",
       "description": "Generate a code and share it with your team member. The code is valid for 24 hours.",
-      "submit": "Generate code"
-    }
+      "submit": "Generate code",
+      "emailLabel": "Email address (optional)",
+      "emailHint": "Enter an address to send the invitation straight away. Leave empty to only get a code."
+    },
+    "emailFailed": "Invite created, email not sent",
+    "emailFailedDescription": "Share the code below by hand."
   },
   "roles": {
     "owner": "Owner",

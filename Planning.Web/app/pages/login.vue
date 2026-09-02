@@ -28,6 +28,19 @@ useHead({ title: computed(() => t('auth.login')) });
 			:form="orgForm"
 		/>
 
+		<!-- Hidden during organization selection: at that point you are already signed in. -->
+		<p
+			v-if="!showOrgPicker"
+			class="text-center text-sm mt-4"
+		>
+			<NuxtLink
+				to="/forgot-password"
+				class="font-medium text-brand"
+			>
+				{{ t('auth.forgotPasswordLink') }}
+			</NuxtLink>
+		</p>
+
 		<template #footer>
 			<AuthFooterLink
 				:question="t('auth.noAccountYet')"

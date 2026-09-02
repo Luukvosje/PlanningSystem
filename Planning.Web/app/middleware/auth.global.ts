@@ -9,7 +9,15 @@ export default defineNuxtRouteMiddleware(async (to) => {
   // is known to work instead of on mere cookie presence.
   await ensureSession(auth, queryClient);
 
-  const publicRoutes = new Set(['/', '/login', '/register', '/join']);
+  // Password recovery has to be reachable while signed out - that is the whole point of it.
+  const publicRoutes = new Set([
+    '/',
+    '/login',
+    '/register',
+    '/join',
+    '/forgot-password',
+    '/reset-password',
+  ]);
   const bootstrapRoutes = new Set([
     '/account/inactive',
     '/organization/new',
@@ -18,6 +26,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
     '/join',
     '/login',
     '/register',
+    // An account that has no organization yet can still be the one resetting its password.
+    '/forgot-password',
+    '/reset-password',
   ]);
 
   if (!auth.isAuthenticated) {
