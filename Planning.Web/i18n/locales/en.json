@@ -28,9 +28,7 @@
     "colorMode": {
       "group": "Color mode",
       "light": "Light",
-      "lightMode": "Light mode",
-      "dark": "Dark",
-      "darkMode": "Dark mode"
+      "dark": "Dark"
     },
     "unsavedChanges": {
       "text": "You have unsaved changes",

@@ -28,9 +28,7 @@
     "colorMode": {
       "group": "Kleurmodus",
       "light": "Licht",
-      "lightMode": "Lichte modus",
-      "dark": "Donker",
-      "darkMode": "Donkere modus"
+      "dark": "Donker"
     },
     "unsavedChanges": {
       "text": "Je hebt niet-opgeslagen wijzigingen",
