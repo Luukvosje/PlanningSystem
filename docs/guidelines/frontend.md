@@ -318,7 +318,7 @@ pnpm exec vitest run test/timelineMath.spec.ts
 ## Open questions
 
 Places where the codebase is inconsistent. Pick an existing variant, do not invent a third,
-and settle it in `docs/decisions.md`.
+and settle it in `docs/decisions/`.
 
 - **`onMounted(() => auth.fetchMe())` in pages.** Several pages re-fetch the session on mount
   even though `auth.global.ts` already validated it via `ensureSession`. Harmless but

@@ -39,7 +39,7 @@ mogelijk maken van open diensten zelf.
 
 **Beslist (22 aug 2026):** gestreepte rand in de omtrek-stijl, label "Open dienst" in het
 blok, en een rij "Open diensten" bovenaan de medewerker-modus waar je naartoe kunt slepen om
-iemand van een dienst af te halen. Zie `../decisions.md`.
+iemand van een dienst af te halen. Zie `../decisions/`.
 
 ---
 

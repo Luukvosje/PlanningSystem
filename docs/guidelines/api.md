@@ -371,7 +371,7 @@ class of bug, and are why `ValidatorParityTests` exists.
 ## Open questions
 
 Places where the codebase is inconsistent. Pick an existing variant, do not invent a third,
-and settle it in `docs/decisions.md` rather than in this list.
+and settle it in `docs/decisions/` rather than in this list.
 
 - **Error payload shape.** `ResultExtensions.MapFailure` writes anonymous objects
   (`new { error, errorCode }`) while `Planning.Api/Models/ApiErrorResponse.cs` exists and is

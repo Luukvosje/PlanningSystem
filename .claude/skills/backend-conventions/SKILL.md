@@ -17,7 +17,7 @@ changing C# in this repository. It is the authority on:
 - authorization policies and middleware order
 - test conventions in `Planning.Tests`
 
-Then check `CLAUDE.md` for the non-negotiables and `docs/decisions.md` for anything that
+Then check `CLAUDE.md` for the non-negotiables and `docs/decisions/` for anything that
 looks arbitrary — it probably is not.
 
 If the code disagrees with the document, the code that most recently touched that area wins.

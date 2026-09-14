@@ -87,5 +87,5 @@ A new field is not done until it exists all the way out:
 ## 5. Record the decision
 
 If the schema change reflects a product decision — a field becoming optional, an entity
-gaining a concept — add an entry to `docs/decisions.md` in the format that file describes.
-Newest first, with what was decided, why, and what was considered instead.
+gaining a concept — add a record under `docs/decisions/` in the format its README describes, and one row in
+that README's table.

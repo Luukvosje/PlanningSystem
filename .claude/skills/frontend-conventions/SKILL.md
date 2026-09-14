@@ -20,7 +20,7 @@ Also read [docs/guidelines/design.md](../../../docs/guidelines/design.md) when t
 visual — tokens, radii, density, the glass material, page anatomy, which shared component to
 reach for.
 
-Then check `CLAUDE.md` for the non-negotiables and `docs/decisions.md` for anything that
+Then check `CLAUDE.md` for the non-negotiables and `docs/decisions/` for anything that
 looks arbitrary.
 
 Run `pnpm lint` on the files you edited rather than guessing at the formatting rules.

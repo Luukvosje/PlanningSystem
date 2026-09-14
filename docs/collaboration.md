@@ -91,7 +91,7 @@ zelf.
 
 ## 4. Beslissingenlogboek
 
-Zie [`docs/decisions.md`](decisions.md) voor het volledige, actuele logboek — dat is de
+Zie [`docs/decisions/`](decisions/) voor het volledige, actuele logboek — dat is de
 centrale plek voor alle genomen besluiten (product, technisch, marketing). Nieuwe
 besluiten komen daar bij, niet hier, zodat er geen twee documenten uit sync raken.
 
