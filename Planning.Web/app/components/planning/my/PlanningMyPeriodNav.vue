@@ -2,9 +2,8 @@
 import type { DateValue } from '@internationalized/date';
 import { fromDate, getLocalTimeZone, toCalendarDate } from '@internationalized/date';
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   label: string
-  weekStart: Date
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }>(), {
   size: 'md',
@@ -13,29 +12,26 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   previous: []
   next: []
-  today: []
-  selectDate: [date: Date]
 }>();
+
+const selectedDate = defineModel<Date>({ required: true });
 
 const { t } = useI18n();
 const calendarOpen = ref(false);
 
-const calendarDefaultDate = computed(() =>
-  toCalendarDate(fromDate(props.weekStart, getLocalTimeZone())),
-);
-
-function onCalendarDateSelect(
-  value: DateValue | { start?: DateValue, end?: DateValue } | DateValue[] | null | undefined,
-) {
-  if (!value || Array.isArray(value) || !('day' in value)) {
-    return;
-  }
-  emit('selectDate', value.toDate(getLocalTimeZone()));
-  calendarOpen.value = false;
-}
+const calendarDate = computed<DateValue | undefined>({
+  get: () => toCalendarDate(fromDate(selectedDate.value, getLocalTimeZone())),
+  set: (value) => {
+    if (!value) {
+      return;
+    }
+    selectedDate.value = value.toDate(getLocalTimeZone());
+    calendarOpen.value = false;
+  },
+});
 
 function goToTodayAndClose() {
-  emit('today');
+  selectedDate.value = new Date();
   calendarOpen.value = false;
 }
 </script>
@@ -76,10 +72,8 @@ function goToTodayAndClose() {
 			<template #content>
 				<div class="flex flex-col gap-2 p-2">
 					<UCalendar
-						v-if="calendarOpen"
-						:default-value="calendarDefaultDate"
+						v-model="calendarDate"
 						color="brand"
-						@update:model-value="onCalendarDateSelect"
 					/>
 					<UButton
 						variant="outline"

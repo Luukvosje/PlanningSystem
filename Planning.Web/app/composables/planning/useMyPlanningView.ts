@@ -25,23 +25,15 @@ export interface MyPlanningDay {
   isWeekend: boolean
 }
 
-function pickDefaultDayKey(days: MyPlanningDay[]): string {
-  const today = days.find((day) => day.isToday);
-  if (today) {
-    return today.dateKey;
-  }
-
-  const firstWorkDay = days.find((day) => day.hasShifts);
-  return firstWorkDay?.dateKey ?? days[0]?.dateKey ?? '';
-}
-
 export function useMyPlanningView() {
   const auth = useAuthStore();
   const { locale } = useI18n();
   const intlLocale = computed(() => getIntlLocale(locale.value));
 
-  const weekStart = ref(getMonday(new Date()));
-  const selectedDateKey = ref('');
+  // The one source of truth for where the view is: the week and the selected day derive from it.
+  const selectedDate = ref(new Date());
+  const weekStart = computed(() => getMonday(selectedDate.value));
+  const selectedDateKey = computed(() => toDateKey(selectedDate.value));
 
   const weekEnd = computed(() => addDays(weekStart.value, 7));
 
@@ -104,22 +96,6 @@ export function useMyPlanningView() {
     () => days.value.find((day) => day.dateKey === selectedDateKey.value) ?? null,
   );
 
-  watch(
-    days,
-    (nextDays) => {
-      if (!nextDays.length) {
-        selectedDateKey.value = '';
-        return;
-      }
-
-      const stillInWeek = nextDays.some((day) => day.dateKey === selectedDateKey.value);
-      if (!stillInWeek) {
-        selectedDateKey.value = pickDefaultDayKey(nextDays);
-      }
-    },
-    { immediate: true },
-  );
-
   const weekNumber = computed(() => getISOWeekNumber(weekStart.value));
 
   const weekLabel = computed(() => `Week ${weekNumber.value}`);
@@ -134,28 +110,26 @@ export function useMyPlanningView() {
   );
 
   function selectDay(dateKey: string) {
-    selectedDateKey.value = dateKey;
+    const day = days.value.find((candidate) => candidate.dateKey === dateKey);
+    if (day) {
+      selectedDate.value = day.date;
+    }
   }
 
   function navigatePrevious() {
-    weekStart.value = addDays(weekStart.value, -7);
+    selectedDate.value = addDays(selectedDate.value, -7);
   }
 
   function navigateNext() {
-    weekStart.value = addDays(weekStart.value, 7);
+    selectedDate.value = addDays(selectedDate.value, 7);
   }
 
   function goToToday() {
-    weekStart.value = getMonday(new Date());
-    selectedDateKey.value = toDateKey(new Date());
-  }
-
-  function selectWeekContaining(date: Date) {
-    weekStart.value = getMonday(date);
-    selectedDateKey.value = toDateKey(date);
+    selectedDate.value = new Date();
   }
 
   return {
+    selectedDate,
     weekStart,
     weekEnd,
     weekDays,
@@ -175,6 +149,5 @@ export function useMyPlanningView() {
     navigatePrevious,
     navigateNext,
     goToToday,
-    selectWeekContaining,
   };
 }

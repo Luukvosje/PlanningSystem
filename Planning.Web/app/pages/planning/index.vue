@@ -12,14 +12,13 @@ const {
   weekRangeLabel,
   isCurrentWeek,
   days,
-  weekStart,
+  selectedDate,
   selectedDateKey,
   selectedDay,
   isLoading,
   navigatePrevious,
   navigateNext,
   goToToday,
-  selectWeekContaining,
   selectDay,
 } = useMyPlanningView();
 
@@ -105,13 +104,11 @@ const headerActions = computed<HeaderAction[]>(() => [
 			<LayoutHeaderActions :items="headerActions">
 				<template #period>
 					<PlanningMyPeriodNav
+						v-model="selectedDate"
 						:label="periodLabel"
-						:week-start="weekStart"
 						size="sm"
 						@previous="navigatePrevious"
 						@next="navigateNext"
-						@today="goToToday"
-						@select-date="selectWeekContaining"
 					/>
 				</template>
 			</LayoutHeaderActions>
