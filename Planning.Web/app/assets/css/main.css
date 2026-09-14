@@ -96,6 +96,10 @@
   backdrop-filter: var(--glass-filter);
 }
 
+/* Tabular figures everywhere. Almost every number in this app is one you compare against the
+   number above it - shift times in a block, hours in a week header, counts in a table column -
+   and proportional digits make those columns jitter as the data changes. */
 body {
   font-family: var(--font-sans);
+  font-variant-numeric: lining-nums tabular-nums;
 }
