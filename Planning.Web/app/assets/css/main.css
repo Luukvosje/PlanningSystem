@@ -55,6 +55,19 @@
      dark text and already has the contrast. */
   --ui-brand: var(--ui-color-brand-600);
 
+  /*
+   * The same treatment for the four semantic colours, and for the same reason: Nuxt UI resolves
+   * them to shade 500 on light, where white label text sits at 2.2:1 (success) to 3.8:1 (error).
+   * Every one of them failed AA, and at that lightness they also shouted over a brand that had
+   * just been brought down to #006a61 - a green Active toggle was the loudest thing on a team
+   * page. Shade 700 is the first step where all four clear 4.5:1, so that is the rule: the
+   * lightest shade that passes, not a fixed number.
+   */
+  --ui-success: var(--ui-color-success-700);
+  --ui-info: var(--ui-color-info-700);
+  --ui-warning: var(--ui-color-warning-700);
+  --ui-error: var(--ui-color-error-700);
+
   /* The material floating chrome is cut from: the timeline ruler you scroll the grid
      under, the nav panel that hangs over the page. Saturation is pushed up because
      blur washes colour out, and the coloured blocks passing under the ruler are
@@ -77,6 +90,10 @@
      and would otherwise beat `.dark` from inside `@layer theme`, dragging the dark accent down
      with the light one. */
   --ui-brand: var(--ui-color-brand-400);
+  --ui-success: var(--ui-color-success-400);
+  --ui-info: var(--ui-color-info-400);
+  --ui-warning: var(--ui-color-warning-400);
+  --ui-error: var(--ui-color-error-400);
 
   /* Dark glass brightens what is behind it instead of dimming it, the way a lit pane
      over a dark room does, and needs a deeper fill: the light alpha over an already
