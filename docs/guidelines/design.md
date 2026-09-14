@@ -13,9 +13,11 @@ This document is only about how it looks.
 1. **Semantic tokens, almost dogmatically.** `bg-default` / `bg-muted` / `bg-elevated` /
    `bg-accented`, `text-default` / `text-muted` / `text-dimmed` / `text-toned` /
    `text-highlighted`, `border-default`. No `gray-*`, `slate-*` or `zinc-*` in components —
-   there are currently zero of those. The only exceptions are status signals (the red dot in
-   `CurrentTimeIndicator`) and overlays on top of a user-chosen block colour, where a token
-   cannot contrast by definition.
+   there are currently zero of those. **One** exception is left in the whole frontend:
+   `text-amber-200` on the warning triangle inside a timeline block, because a token cannot
+   contrast against a colour the user picked. The red dot in `CurrentTimeIndicator` used to be
+   a second one and is `bg-error` now — since the semantic colours joined the contrast band
+   (below), most signals have a token that says what they mean.
 2. **1px hairlines, hierarchy through opacity.** `/8`–`/25` for the finest grid, `/40`–`/70`
    for row and day separation. A primary boundary is the only thing allowed to be 2px:
    `border-r-2 border-default/70` between the resource column and the grid. Never thicker.
@@ -47,11 +49,14 @@ This document is only about how it looks.
 6. **Selection is a ring, not a colour change.** `ring-2 ring-brand ring-offset-1` plus a
    z-index. The object itself does not change colour. A drop target gets the soft variant:
    `ring-1 ring-inset ring-brand/40` with a `bg-brand/10` wash.
-7. **Button idiom.** Inactive is `variant="outline"`; in menus and on icons, `ghost`. `subtle`
-   is the third fixed variant and means "informative, not click-me-important": badges, status
-   labels, the alert default. The primary action leaves its props off and inherits `solid` in
-   the accent colour from `nuxt.config.ts` — which is why an explicit `variant="solid"` appears
-   nowhere. Icon-only buttons always get an `aria-label`.
+7. **Button idiom — ink is action.** The primary action leaves its props off and inherits
+   `solid neutral` from the button default in `app.config.ts`, which resolves to
+   `bg-inverted text-inverted`: near-black on light, near-white on dark. That is why an
+   explicit `variant="solid"` appears nowhere, and why a teal button is now a **state**, not an
+   action — the active row mode in the timeline toolbar passes `color="brand"` on purpose.
+   Inactive is `variant="outline"`; in menus and on icons, `ghost`. `subtle` is the third fixed
+   variant and means "informative, not click-me-important": badges, status labels, the alert
+   default. Icon-only buttons always get an `aria-label`.
 8. **Animation only where something changes place.** A handful of `transition-colors` and
    `transition-shadow` without `duration-*`, plus `transition-transform` on the two things that
    scale up on hover. The only place with explicit timing is the expanding nav panel in
@@ -156,6 +161,11 @@ otherwise the light value leaks into dark mode.
 |---|---|---|---|
 | `--ui-border` | neutral-300 | neutral-700 | — |
 | `--ui-brand` | brand-**600** | brand-400 (Nuxt UI default) | Shade 500 puts white button labels at 3.7:1, below AA for the 14px text buttons and links use. 600 is 6.5:1. Dark sits under near-black labels and already has the contrast. |
+| `--ui-success` `--ui-info` `--ui-warning` `--ui-error` | shade **700** | shade 400 (Nuxt UI default) | On shade 500 white label text measured 2.2:1 (success), 1.9:1 (warning), 3.8:1 (error) and 3.8:1 (info) — all below AA, and all shouting over the accent. 700 is the first step where all four pass. |
+
+The rule is **the lightest shade that clears 4.5:1 under white**, not a fixed number — which
+is why the accent lands on 600 and the four semantics on 700. Measured: success #008236
+4.95:1, warning #a65f00 4.93:1, error #c10007 6.42:1, info #1447e6 6.83:1.
 
 There used to be a third, `--ui-text` on neutral-800, to drag the default text out of grey.
 The ramp above made it unnecessary — shade 700 now carries 12.6:1 on its own.
