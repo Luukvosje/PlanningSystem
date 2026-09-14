@@ -15,6 +15,15 @@ export default defineNuxtConfig({
 
   modules: ['@pinia/nuxt', '@nuxt/ui', '@nuxt/eslint', '@nuxtjs/i18n'],
 
+  // 510 and 590 are not on the static weight ladder; they need Inter's variable axis. They are
+  // the whole point of the weight band in main.css, so they are requested explicitly here -
+  // without this the browser snaps them to 500 and 600 and the band does nothing.
+  fonts: {
+    families: [
+      { name: 'Inter', provider: 'google', weights: ['400 700'] },
+    ],
+  },
+
   ui: {
     theme: {
       // Replaces the default ['primary', 'secondary', ...]. `neutral` is always available and is
