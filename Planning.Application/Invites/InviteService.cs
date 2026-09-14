@@ -58,22 +58,50 @@ public class InviteService : IInviteService
             return Result<InviteResponse>.Failure("Only owners and admins can create invites.", Failures.Forbidden);
         }
 
+        var organizationId = _currentUserContext.OrganizationId!.Value;
+        var recipientEmail = request.Email?.Trim();
+
+        if (request.UserId is Guid targetUserId)
+        {
+            var target = await _userRepository.GetByIdAsync(targetUserId, cancellationToken);
+
+            // Another tenant's member id answers NOT_FOUND, never FORBIDDEN: confirming it exists is
+            // already a leak.
+            if (target is null || target.OrganizationId != organizationId)
+            {
+                return Failures.NotFoundFor<InviteResponse>("User");
+            }
+
+            if (target.HasAccount)
+            {
+                return Result<InviteResponse>.Failure(
+                    "This team member already has an account.",
+                    "CONFLICT");
+            }
+
+            if (string.IsNullOrWhiteSpace(recipientEmail))
+            {
+                recipientEmail = target.Email;
+            }
+        }
+
         var utcNow = DateTime.UtcNow;
         var code = GenerateInviteCode();
 
         var invite = OrganizationInvite.Create(
-            _currentUserContext.OrganizationId!.Value,
+            organizationId,
             code,
             UserRole.Employee,
             _currentUserContext.UserId.Value,
             utcNow,
-            InviteValidity);
+            InviteValidity,
+            request.UserId);
 
         await _inviteRepository.AddAsync(invite, cancellationToken);
 
         var emailSent = false;
 
-        if (!string.IsNullOrWhiteSpace(request.Email))
+        if (!string.IsNullOrWhiteSpace(recipientEmail))
         {
             var organization = await _organizationRepository.GetByIdAsync(
                 invite.OrganizationId,
@@ -85,7 +113,7 @@ public class InviteService : IInviteService
             // can still share by hand, which is why this reports the outcome instead of failing.
             emailSent = await _emailSender.SendAsync(
                 EmailTemplates.Invitation(
-                    request.Email.Trim(),
+                    recipientEmail,
                     organization?.Name ?? "Planning",
                     joinUrl,
                     invite.ExpiresAtUtc),
@@ -141,25 +169,17 @@ public class InviteService : IInviteService
             return Result<AcceptInviteResponse>.Failure("Account not found.", Failures.NotFound);
         }
 
-        var firstName = account.FirstName;
-        var lastName = account.LastName;
-
         try
         {
-            var user = User.Create(
-                _currentUserContext.AccountId,
-                invite.OrganizationId,
-                firstName,
-                lastName,
-                account.Email,
-                invite.Role,
-                utcNow);
+            var user = invite.UserId is Guid targetUserId ?
+                await LinkExistingMemberAsync(targetUserId, invite, account, utcNow, cancellationToken) :
+                await CreateMemberAsync(invite, account, utcNow, cancellationToken);
 
-            await _userRepository.AddAsync(user, cancellationToken);
-            await _moduleService.InitializeUserModulesFromOrganizationAsync(
-                user.Id,
-                invite.OrganizationId,
-                cancellationToken);
+            if (user is null)
+            {
+                return Failures.NotFoundFor<AcceptInviteResponse>("User");
+            }
+
             invite.MarkUsed(user.Id, utcNow);
             await _inviteRepository.UpdateAsync(invite, cancellationToken);
 
@@ -174,6 +194,58 @@ public class InviteService : IInviteService
         {
             return Result<AcceptInviteResponse>.Failure(ex.Message, "CONFLICT");
         }
+    }
+
+    /// <summary>
+    /// The open invite: whoever accepts becomes a new member, named after their account.
+    /// </summary>
+    private async Task<User> CreateMemberAsync(
+        OrganizationInvite invite,
+        Account account,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        var user = User.Create(
+            account.Id,
+            invite.OrganizationId,
+            account.FirstName,
+            account.LastName,
+            account.Email,
+            invite.Role,
+            utcNow);
+
+        await _userRepository.AddAsync(user, cancellationToken);
+        await _moduleService.InitializeUserModulesFromOrganizationAsync(
+            user.Id,
+            invite.OrganizationId,
+            cancellationToken);
+
+        return user;
+    }
+
+    /// <summary>
+    /// The targeted invite: the planner already added this member, so the account is attached
+    /// to that record and its planning. Null when the member is gone or not in the invite's
+    /// organization - the invite is then no longer usable.
+    /// </summary>
+    private async Task<User?> LinkExistingMemberAsync(
+        Guid userId,
+        OrganizationInvite invite,
+        Account account,
+        DateTime utcNow,
+        CancellationToken cancellationToken)
+    {
+        var user = await _userRepository.GetByIdAsync(userId, cancellationToken);
+
+        if (user is null || user.OrganizationId != invite.OrganizationId)
+        {
+            return null;
+        }
+
+        user.LinkAccount(account.Id, account.Email, utcNow);
+        await _userRepository.UpdateAsync(user, cancellationToken);
+
+        return user;
     }
 
     public async Task<Result<InvitePreviewResponse>> GetPreviewAsync(

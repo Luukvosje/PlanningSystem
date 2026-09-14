@@ -19,6 +19,7 @@ Keep it short; the reasoning lives in the individual files.
 | [0008](0008-hosting-vps-docker-compose.md) | A VPS with Docker Compose and Caddy, not Azure. The database is PostgreSQL | final, built |
 | [0009](0009-no-ai-companion.md) | No LLM in the planning flow. Conflict detection stays deterministic rules | final |
 | [0010](0010-timeline-is-a-planner-tool.md) | `/timeline` requires a planner role; an employee sees only their own week | final, built |
+| [0012](0012-members-exist-before-accounts.md) | A team member can exist before their account: `User.AccountId` is nullable, `POST /api/users` adds one by name, an invite can target them and links the login on acceptance | final, built |
 
 ## Still open — no decision here yet
 

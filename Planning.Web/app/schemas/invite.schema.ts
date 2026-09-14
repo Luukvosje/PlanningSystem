@@ -22,6 +22,8 @@ export function createInviteSchema(t: Translate) {
       .email(t('validation.email.invalid'))
       .optional()
       .or(z.literal('')),
+    // Set when the invite is for a member who was added without a login; never typed by hand.
+    userId: z.string().optional(),
   });
 }
 

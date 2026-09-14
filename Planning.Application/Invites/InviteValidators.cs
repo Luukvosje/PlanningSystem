@@ -10,6 +10,7 @@ public class CreateInviteRequestValidator : AbstractValidator<CreateInviteReques
             .EmailAddress()
             .MaximumLength(320)
             .When(x => !string.IsNullOrWhiteSpace(x.Email));
+        RuleFor(x => x.UserId).NotEqual(Guid.Empty).When(x => x.UserId.HasValue);
     }
 }
 

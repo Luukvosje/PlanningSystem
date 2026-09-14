@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Planning.Domain.Invites;
 using Planning.Domain.Organizations;
+using Planning.Domain.Users;
 
 namespace Planning.Infrastructure.Invites;
 
@@ -42,9 +43,16 @@ public class OrganizationInviteConfiguration : IEntityTypeConfiguration<Organiza
 
         builder.HasIndex(x => x.OrganizationId);
 
+        builder.HasIndex(x => x.UserId);
+
         builder.HasOne<Organization>()
             .WithMany()
             .HasForeignKey(x => x.OrganizationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<User>()
+            .WithMany()
+            .HasForeignKey(x => x.UserId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

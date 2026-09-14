@@ -68,4 +68,15 @@ public class UserRepository : IUserRepository
         await _context.Users.AnyAsync(
             x => x.AccountId == accountId && x.OrganizationId == organizationId,
             cancellationToken);
+
+    public async Task<bool> ExistsWithEmailAsync(
+        Guid organizationId,
+        string email,
+        CancellationToken cancellationToken = default)
+    {
+        var normalized = email.Trim().ToLowerInvariant();
+        return await _context.Users.AnyAsync(
+            x => x.OrganizationId == organizationId && x.Email == normalized,
+            cancellationToken);
+    }
 }

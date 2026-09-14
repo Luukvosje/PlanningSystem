@@ -5,12 +5,19 @@ using Planning.Domain.Users;
 
 namespace Planning.Domain.Users;
 
+/// <summary>
+/// A membership of an organization. The login identity is the <see cref="Auth.Account"/>; a member
+/// can exist before there is one, so a planner can schedule people who have not signed up yet.
+/// </summary>
 public class User : TenantEntity
 {
-    public Guid AccountId { get; private set; }
+    /// <summary>Null until the member has accepted an invite and linked their login.</summary>
+    public Guid? AccountId { get; private set; }
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
-    public string Email { get; private set; } = string.Empty;
+    /// <summary>Optional for a member without an account: the planner may not know it yet.</summary>
+    public string? Email { get; private set; }
+    public bool HasAccount => AccountId is not null;
     public UserRole Role { get; private set; }
     public bool IsActive { get; private set; }
 
@@ -27,11 +34,11 @@ public class User : TenantEntity
 
     private User(
         Guid id,
-        Guid accountId,
+        Guid? accountId,
         Guid organizationId,
         string firstName,
         string lastName,
-        string email,
+        string? email,
         UserRole role,
         bool isActive,
         bool requiresApproval,
@@ -75,11 +82,61 @@ public class User : TenantEntity
             organizationId,
             firstName.Trim(),
             lastName.Trim(),
-            email.Trim().ToLowerInvariant(),
+            NormalizeEmail(email),
             role,
             isActive: true,
             requiresApproval: false,
             utcNow);
+    }
+
+    /// <summary>
+    /// A member added by a planner before the person has a login. They can be scheduled straight
+    /// away; <see cref="LinkAccount"/> attaches the login once an invite is accepted.
+    /// </summary>
+    public static User CreateWithoutAccount(
+        Guid organizationId,
+        string firstName,
+        string lastName,
+        string? email,
+        UserRole role,
+        DateTime utcNow)
+    {
+        ValidateName(firstName, nameof(firstName));
+        ValidateName(lastName, nameof(lastName));
+
+        return new User(
+            Guid.NewGuid(),
+            accountId: null,
+            organizationId,
+            firstName.Trim(),
+            lastName.Trim(),
+            NormalizeEmail(email),
+            role,
+            isActive: true,
+            requiresApproval: false,
+            utcNow);
+    }
+
+    /// <summary>
+    /// Attaches the login to a member created without one. The name the planner entered stays:
+    /// the planning already refers to it. The e-mail is only filled in when the planner left it
+    /// empty, so an address they did enter is not silently swapped for the login's.
+    /// </summary>
+    public void LinkAccount(Guid accountId, string accountEmail, DateTime utcNow)
+    {
+        if (accountId == Guid.Empty)
+        {
+            throw new ArgumentException("Account id is required.", nameof(accountId));
+        }
+
+        if (HasAccount)
+        {
+            throw new InvalidOperationException("Member is already linked to an account.");
+        }
+
+        AccountId = accountId;
+        Email ??= NormalizeEmail(accountEmail);
+        Touch(utcNow);
     }
 
     public void UpdateProfile(string firstName, string lastName, string email, UserRole role, DateTime utcNow)
@@ -94,7 +151,7 @@ public class User : TenantEntity
 
         FirstName = firstName.Trim();
         LastName = lastName.Trim();
-        Email = email.Trim().ToLowerInvariant();
+        Email = NormalizeEmail(email);
         Role = role;
         Touch(utcNow);
     }
@@ -135,6 +192,9 @@ public class User : TenantEntity
         IsActive = false;
         Touch(utcNow);
     }
+
+    private static string? NormalizeEmail(string? email) =>
+        string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLowerInvariant();
 
     private static void ValidateName(string value, string paramName)
     {

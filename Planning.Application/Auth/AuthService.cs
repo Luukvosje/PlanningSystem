@@ -194,11 +194,13 @@ public class AuthService : IAuthService
             user.OrganizationId,
             cancellationToken);
 
+        // The membership was resolved from the signed-in account, so it is linked by construction;
+        // the context is the authority on which account that is.
         return Result<CurrentUserResponse>.Success(new CurrentUserResponse(
             user.Id,
-            user.AccountId,
+            _currentUserContext.AccountId,
             user.OrganizationId,
-            user.Email,
+            user.Email ?? _currentUserContext.Email,
             user.FirstName,
             user.LastName,
             user.Role,

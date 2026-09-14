@@ -21,6 +21,7 @@ export * from './createInviteRequest';
 export * from './createOrganizationRequest';
 export * from './createOrganizationResponse';
 export * from './createPlanningRequest';
+export * from './createUserRequest';
 export * from './currentUserResponse';
 export * from './customerResponse';
 export * from './decideRequestsRequest';

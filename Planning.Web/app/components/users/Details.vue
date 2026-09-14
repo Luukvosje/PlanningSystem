@@ -8,8 +8,10 @@ const props = defineProps<{
 const auth = useAuthStore();
 const canEditAvailability = computed(() => canManagePlanning(auth.currentUser?.role));
 const canEdit = computed(() => canEditUserRole(auth.currentUser?.role, props.user.role));
+const canInvite = computed(() => canManageInvites(auth.currentUser?.role));
 const fields = useUserFields();
 const userEdit = useUserEdit();
+const inviteCreate = useInviteCreate();
 const { t } = useI18n();
 
 const values = computed(() => ({
@@ -23,6 +25,11 @@ const values = computed(() => ({
 	<LayoutCard :title="`${user.firstName} ${user.lastName}`">
 		<template #actions>
 			<div class="flex flex-wrap items-center gap-2">
+				<UsersAccountState
+					:user="user"
+					:can-invite="canInvite"
+					@invite="inviteCreate.openFor(user)"
+				/>
 				<UsersStatusToggle :user="user" />
 				<UButton
 					v-if="canEditAvailability"
@@ -34,6 +41,16 @@ const values = computed(() => ({
 				/>
 			</div>
 		</template>
+
+		<UAlert
+			v-if="!user.hasAccount"
+			color="neutral"
+			variant="subtle"
+			icon="i-lucide-user-round-x"
+			:title="t('users.account.none')"
+			:description="t('users.account.noneDescription')"
+			class="mb-4"
+		/>
 
 		<FormDisplay
 			:controls="fields"

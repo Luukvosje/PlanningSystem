@@ -13,9 +13,11 @@ export interface UserResponse {
   organizationId: string;
   firstName: string;
   lastName: string;
-  email: string;
+  /** @nullable */
+  email?: string | null;
   role: UserRole;
   isActive: boolean;
+  hasAccount: boolean;
   requiresApproval: boolean;
   createdAtUtc: string;
   updatedAtUtc: string;

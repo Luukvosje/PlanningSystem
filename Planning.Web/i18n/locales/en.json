@@ -316,7 +316,9 @@
       "description": "Generate a code and share it with your team member. The code is valid for 24 hours.",
       "submit": "Generate code",
       "emailLabel": "Email address (optional)",
-      "emailHint": "Enter an address to send the invitation straight away. Leave empty to only get a code."
+      "emailHint": "Enter an address to send the invitation straight away. Leave empty to only get a code.",
+      "titleFor": "Invite {name}",
+      "descriptionFor": "The code links this member's account to this planning. The code is valid for 24 hours."
     },
     "emailFailed": "Invite created, email not sent",
     "emailFailedDescription": "Share the code below by hand."
@@ -351,7 +353,7 @@
     "loading": "Loading team...",
     "searchPlaceholder": "Search by name, email, role or status...",
     "empty": "No team members yet.",
-    "emptyManage": "No team members yet. Invite someone using a code.",
+    "emptyManage": "No team members yet. Add someone by name, or invite them with a code.",
     "noResults": "No team members found.",
     "active": "Active",
     "inactive": "Inactive",
@@ -359,7 +361,8 @@
       "name": "Name",
       "email": "Email",
       "role": "Role",
-      "status": "Status"
+      "status": "Status",
+      "account": "Account"
     },
     "loadingOne": "Loading team member...",
     "modules": {
@@ -382,6 +385,22 @@
     },
     "requiresApproval": {
       "description": "This member's availability and leave wait for a planner's approval."
+    },
+    "addMember": "Add team member",
+    "inviteWithCode": "Invite with code",
+    "created": "Team member added",
+    "create": {
+      "title": "Add team member",
+      "description": "You can schedule this member straight away. Link a login later with an invite.",
+      "submit": "Add",
+      "emailLabel": "Email address (optional)",
+      "emailHint": "Useful for the invite later on. Leave empty if you do not know it."
+    },
+    "account": {
+      "linked": "Account linked",
+      "none": "No account yet",
+      "noneDescription": "This member cannot sign in yet. Send an invite to link an account.",
+      "invite": "Invite"
     }
   },
   "planning": {

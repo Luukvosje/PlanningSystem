@@ -316,7 +316,9 @@
       "description": "Genereer een code en deel deze met je teamlid. De code is 24 uur geldig.",
       "submit": "Code genereren",
       "emailLabel": "E-mailadres (optioneel)",
-      "emailHint": "Vul een adres in om de uitnodiging direct te mailen. Laat leeg om alleen een code te krijgen."
+      "emailHint": "Vul een adres in om de uitnodiging direct te mailen. Laat leeg om alleen een code te krijgen.",
+      "titleFor": "{name} uitnodigen",
+      "descriptionFor": "De code koppelt het account van dit teamlid aan deze planning. De code is 24 uur geldig."
     },
     "emailFailed": "Uitnodiging aangemaakt, mail niet verstuurd",
     "emailFailedDescription": "Deel de code hieronder handmatig."
@@ -351,7 +353,7 @@
     "loading": "Team laden...",
     "searchPlaceholder": "Zoeken op naam, e-mail, rol of status...",
     "empty": "Nog geen teamleden.",
-    "emptyManage": "Nog geen teamleden. Nodig iemand uit via een code.",
+    "emptyManage": "Nog geen teamleden. Voeg iemand toe op naam, of nodig uit met een code.",
     "noResults": "Geen teamleden gevonden.",
     "active": "Actief",
     "inactive": "Inactief",
@@ -359,7 +361,8 @@
       "name": "Naam",
       "email": "E-mail",
       "role": "Rol",
-      "status": "Status"
+      "status": "Status",
+      "account": "Account"
     },
     "loadingOne": "Teamlid laden...",
     "modules": {
@@ -382,6 +385,22 @@
     },
     "requiresApproval": {
       "description": "Beschikbaarheid en verlof van deze medewerker wachten op goedkeuring van een planner."
+    },
+    "addMember": "Teamlid toevoegen",
+    "inviteWithCode": "Uitnodigen met code",
+    "created": "Teamlid toegevoegd",
+    "create": {
+      "title": "Teamlid toevoegen",
+      "description": "Je kunt dit teamlid direct inplannen. Een account voor inloggen koppel je later met een uitnodiging.",
+      "submit": "Toevoegen",
+      "emailLabel": "E-mailadres (optioneel)",
+      "emailHint": "Handig voor de uitnodiging straks. Laat leeg als je het niet weet."
+    },
+    "account": {
+      "linked": "Account gekoppeld",
+      "none": "Nog geen account",
+      "noneDescription": "Dit teamlid kan nog niet inloggen. Stuur een uitnodiging om een account te koppelen.",
+      "invite": "Uitnodigen"
     }
   },
   "planning": {

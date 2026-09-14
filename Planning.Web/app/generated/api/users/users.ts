@@ -6,6 +6,7 @@
  * OpenAPI spec version: v1
  */
 import type {
+  CreateUserRequest,
   ModuleSettingResponse,
   UpdateModulesRequest,
   UpdateUserApprovalRequest,
@@ -52,6 +53,27 @@ export const getApiUsers = async ( options?: RequestInit): Promise<UserResponse[
     method: 'GET'
     
     
+  }
+);}
+
+
+export const getPostApiUsersUrl = () => {
+
+
+  
+
+  return `/api/users`
+}
+
+export const postApiUsers = async (createUserRequest: CreateUserRequest, options?: RequestInit): Promise<UserResponse> => {
+  
+  return customFetch<UserResponse>(getPostApiUsersUrl(),
+  {      
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createUserRequest,)
   }
 );}
 

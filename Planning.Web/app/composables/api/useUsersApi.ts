@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
-import { getApiUsersId, putApiUsersIdApproval, putApiUsersIdModules, putApiUsersIdRole, putApiUsersIdStatus } from '~/generated/api/users/users';
+import { getApiUsersId, postApiUsers, putApiUsersIdApproval, putApiUsersIdModules, putApiUsersIdRole, putApiUsersIdStatus } from '~/generated/api/users/users';
 import type {
+  CreateUserRequest,
   UpdateModulesRequest,
   UpdateUserApprovalRequest,
   UpdateUserRoleRequest,
@@ -13,6 +14,8 @@ export function useUsersApi() {
 
   return {
     getById: (id: string) => getApiUsersId(id),
+
+    create: (request: CreateUserRequest) => postApiUsers(request),
 
     updateRole: (id: string, request: UpdateUserRoleRequest) =>
       putApiUsersIdRole(id, request),
