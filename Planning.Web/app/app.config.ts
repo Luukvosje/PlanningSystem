@@ -20,9 +20,11 @@ export default defineAppConfig({
       dark: 'i-lucide-moon',
     },
     /**
-     * One radius ladder, matching the timeline: controls at --ui-radius (6px), containers at
-     * rounded-lg (8px), shells and modals at rounded-xl (12px). Buttons and inputs deliberately
-     * carry no radius override - a hardcoded one here would bypass --ui-radius.
+     * One radius ladder, matching the timeline. Nuxt UI derives the whole Tailwind scale from
+     * --ui-radius (0.375rem here, see main.css): sm x1 = 6px, md x1.5 = 9px, lg x2 = 12px,
+     * xl x3 = 18px. So controls land on rounded-md, containers on rounded-lg, shells and modals
+     * on rounded-xl. Buttons and inputs deliberately carry no radius override - a hardcoded one
+     * here would bypass --ui-radius and make them sharper than the blocks beside them.
      */
     modal: {
       slots: {

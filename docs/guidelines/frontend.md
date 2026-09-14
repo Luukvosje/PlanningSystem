@@ -320,12 +320,6 @@ pnpm exec vitest run test/timelineMath.spec.ts
 Places where the codebase is inconsistent. Pick an existing variant, do not invent a third,
 and settle it in `docs/decisions.md`.
 
-- **`design.md` describes an older detail-page flow.** Its "Detailpagina" section (open in
-  read mode, click *Bewerken* to swap in the form) and rule 9 ("no cards inside a page") were
-  written on 2026-08-19 and are contradicted by `FormEditableSection`, `customer/Details.vue`
-  and `users/Details.vue`. The always-editable card in this document is what the code does.
-  The rest of `design.md` — tokens, radii, density, page anatomy, shared components — is
-  current.
 - **`onMounted(() => auth.fetchMe())` in pages.** Several pages re-fetch the session on mount
   even though `auth.global.ts` already validated it via `ensureSession`. Harmless but
   redundant; new pages should not copy it.

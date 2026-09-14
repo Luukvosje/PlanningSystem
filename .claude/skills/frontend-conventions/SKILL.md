@@ -17,8 +17,8 @@ writing or changing anything in `Planning.Web`. It is the authority on:
 - i18n, ESLint rules and the no-watchers rule
 
 Also read [docs/guidelines/design.md](../../../docs/guidelines/design.md) when the change is
-visual — tokens, radii, density, page anatomy, which shared component to reach for. Note the
-"Open questions" section of `frontend.md`: `design.md`'s detail-page section is outdated.
+visual — tokens, radii, density, the glass material, page anatomy, which shared component to
+reach for.
 
 Then check `CLAUDE.md` for the non-negotiables and `docs/decisions.md` for anything that
 looks arbitrary.
