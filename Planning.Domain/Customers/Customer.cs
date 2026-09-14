@@ -5,9 +5,17 @@ namespace Planning.Domain.Customers;
 
 public class Customer : TenantEntity
 {
+    public const string DefaultColor = HexColor.Default;
+
     public string Name { get; private set; } = string.Empty;
     public string? Email { get; private set; } = string.Empty;
     public string? Address { get; private set; }
+
+    /// <summary>
+    /// The colour a planning record for this customer starts with, so a week reads per customer
+    /// without anyone picking a colour by hand.
+    /// </summary>
+    public string Color { get; private set; } = DefaultColor;
 
     private Customer()
     {
@@ -19,12 +27,14 @@ public class Customer : TenantEntity
         string name,
         string email,
         string? address,
+        string color,
         DateTime utcNow)
         : base(id, organizationId, utcNow, utcNow)
     {
         Name = name;
         Email = email;
         Address = address;
+        Color = color;
     }
 
     public static Customer Create(
@@ -32,6 +42,7 @@ public class Customer : TenantEntity
         string name,
         string email,
         string? address,
+        string? color,
         DateTime utcNow)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -50,10 +61,11 @@ public class Customer : TenantEntity
             name.Trim(),
             email.Trim().ToLowerInvariant(),
             address?.Trim(),
+            HexColor.Normalize(color),
             utcNow);
     }
 
-    public void Update(string name, string email, string? address, DateTime utcNow)
+    public void Update(string name, string email, string? address, string? color, DateTime utcNow)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -68,6 +80,7 @@ public class Customer : TenantEntity
         Name = name.Trim();
         Email = email.Trim().ToLowerInvariant();
         Address = address?.Trim();
+        Color = HexColor.Normalize(color);
         Touch(utcNow);
     }
 }

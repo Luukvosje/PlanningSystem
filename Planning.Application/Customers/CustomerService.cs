@@ -29,6 +29,7 @@ public class CustomerService : TenantServiceBase, ICustomerService
                 request.Name,
                 request.Email,
                 request.Address,
+                request.Color,
                 DateTime.UtcNow);
 
             await _customerRepository.AddAsync(customer, cancellationToken);
@@ -50,7 +51,7 @@ public class CustomerService : TenantServiceBase, ICustomerService
 
         return await TranslateDomainErrorsAsync(async () =>
         {
-            customer.Update(request.Name, request.Email, request.Address, DateTime.UtcNow);
+            customer.Update(request.Name, request.Email, request.Address, request.Color, DateTime.UtcNow);
             await _customerRepository.UpdateAsync(customer, cancellationToken);
             return Result<CustomerResponse>.Success(CustomerMapper.ToResponse(customer));
         });

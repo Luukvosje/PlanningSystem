@@ -11,6 +11,7 @@ internal static class CustomerMapper
             customer.Name,
             customer.Email,
             customer.Address,
+            customer.Color,
             customer.CreatedAtUtc,
             customer.UpdatedAtUtc);
 }

@@ -1,11 +1,46 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-@theme {
+/* `static` is load-bearing: Tailwind only emits theme variables a utility actually uses, and
+   nothing here writes `teal-500`. Without it these two declarations vanish, Nuxt UI's
+   `--ui-color-brand-500: var(--color-teal-500, <default>)` falls through to Tailwind's own
+   teal, and the app renders #14b8a6 instead of the shades below - silently, no error. */
+@theme static {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --color-teal-500: #0d9488;
   --color-teal-600: #006a61;
+
+  /*
+   * The neutral ramp. `neutral` is mapped to `gray` in app.config.ts, so overriding the gray
+   * scale here is what moves every semantic token at once - surfaces, borders and the whole
+   * text ladder - rather than overriding a dozen `--ui-*` names one by one.
+   *
+   * Warm paper, cool ink. 50-300 carry a touch of red so the page behind a panel reads as
+   * paper instead of screen grey; 400-950 lean towards the brand's teal so text and borders
+   * belong to the same family as the accent. Tailwind's own gray is uniformly blue, which is
+   * what made three near-identical surfaces impossible to tell apart: the steps here are both
+   * bigger and differently tinted.
+   */
+  --color-gray-50: #faf9f8;
+  --color-gray-100: #f5f4f2;
+  --color-gray-200: #e6e4e1;
+  --color-gray-300: #d6d3ce;
+  --color-gray-400: #9aa0a1;
+  --color-gray-500: #646c6e;
+  --color-gray-600: #4b5254;
+  --color-gray-700: #2c3537;
+  --color-gray-800: #1d2628;
+  --color-gray-900: #121b1c;
+  --color-gray-950: #0b1112;
+
+  /*
+   * Weights cap at 590. Every `font-medium` and `font-semibold` in the app lands here, so the
+   * band moves without touching a component. 600 and 700 read as shouting at 13px, which is
+   * most of this interface.
+   */
+  --font-weight-medium: 510;
+  --font-weight-semibold: 590;
 }
 
 /* Unlayered on purpose: Nuxt UI declares these in `@layer theme`, and an override
@@ -13,6 +48,25 @@
 :root {
   --ui-border: var(--ui-color-neutral-300);
   --ui-radius: 0.375rem;
+
+  /* Nuxt UI resolves the accent to shade 500 on light. White label text on #0d9488 is 3.7:1,
+     which fails WCAG AA for the 14px labels our buttons use - and the same shade carries every
+     link. Shade 600 (#006a61) takes that to 6.5:1. Dark keeps 400, where the fill sits under
+     dark text and already has the contrast. */
+  --ui-brand: var(--ui-color-brand-600);
+
+  /*
+   * The same treatment for the four semantic colours, and for the same reason: Nuxt UI resolves
+   * them to shade 500 on light, where white label text sits at 2.2:1 (success) to 3.8:1 (error).
+   * Every one of them failed AA, and at that lightness they also shouted over a brand that had
+   * just been brought down to #006a61 - a green Active toggle was the loudest thing on a team
+   * page. Shade 700 is the first step where all four clear 4.5:1, so that is the rule: the
+   * lightest shade that passes, not a fixed number.
+   */
+  --ui-success: var(--ui-color-success-700);
+  --ui-info: var(--ui-color-info-700);
+  --ui-warning: var(--ui-color-warning-700);
+  --ui-error: var(--ui-color-error-700);
 
   /* The material floating chrome is cut from: the timeline ruler you scroll the grid
      under, the nav panel that hangs over the page. Saturation is pushed up because
@@ -31,6 +85,15 @@
 
 .dark {
   --ui-border: var(--ui-color-neutral-700);
+
+  /* Restates the Nuxt UI default. It has to be here: the `:root` override above is unlayered
+     and would otherwise beat `.dark` from inside `@layer theme`, dragging the dark accent down
+     with the light one. */
+  --ui-brand: var(--ui-color-brand-400);
+  --ui-success: var(--ui-color-success-400);
+  --ui-info: var(--ui-color-info-400);
+  --ui-warning: var(--ui-color-warning-400);
+  --ui-error: var(--ui-color-error-400);
 
   /* Dark glass brightens what is behind it instead of dimming it, the way a lit pane
      over a dark room does, and needs a deeper fill: the light alpha over an already
@@ -75,6 +138,31 @@
   backdrop-filter: var(--glass-filter);
 }
 
+/* Tabular figures everywhere. Almost every number in this app is one you compare against the
+   number above it - shift times in a block, hours in a week header, counts in a table column -
+   and proportional digits make those columns jitter as the data changes. */
+/*
+ * `cv01` and `ss03` are Inter's own alternates - a single-storey a and a straighter l - and
+ * they are what stops Inter looking like the default it is. The negative tracking is set on
+ * the body rather than per size because every reading size here sits between 11px and 15px,
+ * where Inter is drawn loose.
+ */
 body {
   font-family: var(--font-sans);
+  font-feature-settings: "cv01", "ss03";
+  font-variant-numeric: lining-nums tabular-nums;
+  letter-spacing: -0.011em;
+}
+
+/*
+ * Tracking is a function of size, and the body rule is calibrated for 11-15px. Anything
+ * genuinely large needs more of it, and the 10px labels inside a timeline block need none -
+ * at that size negative tracking closes the counters and the text stops being scannable.
+ */
+.text-\[10px\] {
+  letter-spacing: 0;
+}
+
+:is(h1, h2, .text-xl, .text-2xl, .text-3xl) {
+  letter-spacing: -0.018em;
 }

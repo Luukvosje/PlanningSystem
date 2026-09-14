@@ -96,6 +96,21 @@ export default defineAppConfig({
       },
     },
 
+    /**
+     * Ink is action, teal is state - decision 0011. A bare <UButton> is the page's primary
+     * action, and `solid neutral` resolves to `bg-inverted text-inverted`: near-black on light,
+     * near-white on dark. Teal stays for what a thing *is* (selected, today, confirmed, the
+     * active row mode), which is why those places pass `color="brand"` explicitly.
+     *
+     * This is a per-component default, so it beats the global `brand` in nuxt.config for
+     * buttons only - badges, alerts and form controls keep inheriting the accent.
+     */
+    button: {
+      defaultVariants: {
+        color: 'neutral',
+      },
+    },
+
     /** Pages used to render solid red error blocks while forms used subtle ones. */
     alert: {
       defaultVariants: {

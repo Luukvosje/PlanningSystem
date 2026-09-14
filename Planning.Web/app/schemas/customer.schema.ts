@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Composer } from 'vue-i18n';
+import { HEX_COLOR_PATTERN } from '~/types/planning';
 
 type Translate = Composer['t']
 
@@ -18,6 +19,9 @@ export function createCustomerSchema(t: Translate) {
     address: z
       .string()
       .max(500, t('validation.address.tooLong')),
+    color: z
+      .string()
+      .regex(HEX_COLOR_PATTERN, t('validation.color.invalid')),
   });
 }
 

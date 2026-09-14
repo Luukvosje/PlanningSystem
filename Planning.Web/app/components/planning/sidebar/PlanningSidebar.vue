@@ -14,6 +14,7 @@ const api = usePlanningApi();
 const toast = useToast();
 
 const { data: users } = useUsers();
+const { data: customers } = useCustomers();
 
 const form = reactive<PlanningFormData>({
   title: '',
@@ -26,6 +27,23 @@ const form = reactive<PlanningFormData>({
   startUtc: '',
   endUtc: '',
 });
+
+/** A customer carries the colour its records start with; without one we fall back to the default. */
+function colorForCustomer(customerId: string | null) {
+  return customers.value?.find((customer) => customer.id === customerId)?.color ?? null;
+}
+
+// Picking a customer carries its colour over, so a week reads per customer without anyone choosing
+// a colour by hand. Clearing the customer leaves the colour where it is.
+function onCustomerSelected(customerId: string | null) {
+  form.customerId = customerId;
+
+  const color = colorForCustomer(customerId);
+
+  if (color) {
+    form.color = color;
+  }
+}
 
 const schema = computed(() => createPlanningRecordSchema(t));
 
@@ -72,7 +90,7 @@ watch(() => store.createDraft, (draft) => {
   form.assignedUserId = draft.assignedUserId ?? OPEN_SHIFT_SELECT_VALUE;
   form.customerId = draft.customerId ?? null;
   form.status = draft.status ?? store.filters.statuses[0] ?? 'Confirmed';
-  form.color = DEFAULT_PLANNING_COLOR;
+  form.color = colorForCustomer(form.customerId) ?? DEFAULT_PLANNING_COLOR;
   form.startUtc = draft.startUtc;
   form.endUtc = draft.endUtc;
 }, { immediate: true });
@@ -346,11 +364,12 @@ async function onConfirm() {
 					name="customerId"
 				>
 					<UiEntitySelect
-						v-model:value="form.customerId"
+						:value="form.customerId"
 						kind="customer"
 						:disabled="!canManage"
 						:restrict-to="customerRestriction"
 						clearable
+						@update:value="onCustomerSelected"
 					/>
 				</UFormField>
 

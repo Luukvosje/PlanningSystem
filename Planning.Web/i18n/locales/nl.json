@@ -37,11 +37,15 @@
       "title": "Niet-opgeslagen wijzigingen",
       "description": "Je hebt niet-opgeslagen wijzigingen op deze pagina. Wil je deze opslaan voordat je verdergaat?",
       "save": "Opslaan en doorgaan",
-      "discard": "Wijzigingen negeren en doorgaan",
-      "cancel": "Op pagina blijven"
+      "discard": "Doorgaan",
+      "cancel": "Annuleren"
     },
     "yes": "Ja",
-    "no": "Nee"
+    "no": "Nee",
+    "color": {
+      "label": "Kleur",
+      "choose": "Kleur kiezen"
+    }
   },
   "nav": {
     "menu": "Menu",
@@ -143,6 +147,9 @@
     },
     "time": {
       "invalid": "Ongeldige tijd"
+    },
+    "color": {
+      "invalid": "Kies een geldige kleur."
     }
   },
   "availability": {
@@ -281,7 +288,8 @@
     "fields": {
       "name": "Naam",
       "email": "E-mail",
-      "address": "Adres"
+      "address": "Adres",
+      "color": "Kleur"
     },
     "create": {
       "title": "Nieuwe klant",
@@ -292,7 +300,8 @@
       "overview": "Overzicht",
       "details": "Gegevens",
       "planning": "Planning"
-    }
+    },
+    "colorDescription": "De kleur waarmee een nieuwe planning voor deze klant start."
   },
   "invites": {
     "code": "Uitnodigingscode",
@@ -407,8 +416,6 @@
     "overlap": "Overlap",
     "saved": "Opgeslagen",
     "bookingConfirmed": "Boeking bevestigd",
-    "chooseColor": "Kleur kiezen",
-    "color": "Kleur",
     "sidebar": {
       "createTitle": "Nieuwe planning",
       "detailsTitle": "Planning details"

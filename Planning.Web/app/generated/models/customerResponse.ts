@@ -14,6 +14,7 @@ export interface CustomerResponse {
   email?: string | null;
   /** @nullable */
   address?: string | null;
+  color: string;
   createdAtUtc: string;
   updatedAtUtc: string;
 }

@@ -14,6 +14,7 @@ public abstract class CustomerRequestValidator<T> : AbstractValidator<T>
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.Email).NotEmpty().EmailAddress().MaximumLength(320);
         RuleFor(x => x.Address).MaximumLength(500);
+        RuleFor(x => x.Color).MaximumLength(7);
     }
 }
 

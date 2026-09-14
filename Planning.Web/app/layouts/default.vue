@@ -189,7 +189,12 @@ const userMenuContent = computed(() => ({
 </script>
 
 <template>
-	<div class="flex h-svh flex-1 gap-2 overflow-hidden bg-muted p-2 max-lg:gap-2 max-lg:p-2 bg-linear-to-r from-neutral-50 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800">
+	<!--
+		Flat, and a token rather than `neutral-*`: the gradient that used to sit here reached past
+		the palette into Tailwind's own neutral scale, so it never moved with the theme. The ground
+		is the darkest surface in the light stack - panels float lighter on top of it.
+	-->
+	<div class="flex h-svh flex-1 gap-2 overflow-hidden bg-elevated p-2 max-lg:gap-2 max-lg:p-2">
 		<div
 			class="relative hidden h-full max-h-full shrink-0 lg:block"
 			@mouseenter="sidebarHovered = true"
@@ -197,7 +202,7 @@ const userMenuContent = computed(() => ({
 		>
 			<!-- The floating panel butts straight against this rail, so the seam between them loses its corners. -->
 			<aside
-				class="flex h-full w-14 shrink-0 flex-col items-center overflow-hidden bg-default shadow-sm ring ring-default transition-[border-radius] duration-150 ease-out motion-reduce:transition-none"
+				class="flex h-full w-14 shrink-0 flex-col items-center overflow-hidden bg-default ring ring-default transition-[border-radius] duration-150 ease-out motion-reduce:transition-none"
 				:class="floatingPanelOpen ? 'rounded-s-xl' : 'rounded-xl'"
 			>
 				<div class="flex h-(--ui-header-height) shrink-0 items-center justify-center">
@@ -336,7 +341,7 @@ const userMenuContent = computed(() => ({
 			floating nav panel and wins - the resource names paint straight over it. Contained here,
 			page-level z-indexes stay a page concern and the panel keeps the layer it asked for.
 		-->
-		<div class="isolate flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-default shadow-sm ring ring-default max-lg:rounded-lg">
+		<div class="isolate flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl bg-default ring ring-default max-lg:rounded-lg">
 			<div class="flex h-(--ui-header-height) shrink-0 items-center gap-2 border-b border-default px-4 max-lg:sticky max-lg:top-0 max-lg:z-10 max-lg:h-11 max-lg:gap-1.5 max-lg:bg-default max-lg:px-3">
 				<UButton
 					icon="i-lucide-panel-left"

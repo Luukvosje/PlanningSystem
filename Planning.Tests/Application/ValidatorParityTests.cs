@@ -36,8 +36,8 @@ public class ValidatorParityTests
     [Fact]
     public void Both_customer_validators_reject_the_same_invalid_request()
     {
-        var create = Failures(new CreateCustomerRequestValidator(), new CreateCustomerRequest("", "geen-email", null));
-        var update = Failures(new UpdateCustomerRequestValidator(), new UpdateCustomerRequest("", "geen-email", null));
+        var create = Failures(new CreateCustomerRequestValidator(), new CreateCustomerRequest("", "geen-email", null, "geen-kleur"));
+        var update = Failures(new UpdateCustomerRequestValidator(), new UpdateCustomerRequest("", "geen-email", null, "geen-kleur"));
 
         Assert.NotEmpty(create);
         Assert.Equal(create, update);

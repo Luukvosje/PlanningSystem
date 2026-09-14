@@ -12,14 +12,13 @@ const {
   weekRangeLabel,
   isCurrentWeek,
   days,
-  weekStart,
+  selectedDate,
   selectedDateKey,
   selectedDay,
   isLoading,
   navigatePrevious,
   navigateNext,
   goToToday,
-  selectWeekContaining,
   selectDay,
 } = useMyPlanningView();
 
@@ -60,7 +59,16 @@ function setViewMode(mode: MyPlanningViewMode) {
   viewMode.value = mode;
 }
 
+const todayAction: HeaderAction = {
+  type: 'button',
+  key: 'today',
+  label: t('dashboard.today'),
+  icon: 'i-lucide-calendar-check',
+  onSelect: goToToday,
+};
+
 const headerActions = computed<HeaderAction[]>(() => [
+  ...(isCurrentWeek.value ? [] : [todayAction]),
   {
     type: 'select',
     key: 'viewMode',
@@ -96,14 +104,11 @@ const headerActions = computed<HeaderAction[]>(() => [
 			<LayoutHeaderActions :items="headerActions">
 				<template #period>
 					<PlanningMyPeriodNav
+						v-model="selectedDate"
 						:label="periodLabel"
-						:week-start="weekStart"
-						:is-current-week="isCurrentWeek"
 						size="sm"
 						@previous="navigatePrevious"
 						@next="navigateNext"
-						@today="goToToday"
-						@select-date="selectWeekContaining"
 					/>
 				</template>
 			</LayoutHeaderActions>

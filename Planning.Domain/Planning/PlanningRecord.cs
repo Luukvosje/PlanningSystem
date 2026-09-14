@@ -6,7 +6,7 @@ namespace Planning.Domain.Planning;
 
 public class PlanningRecord : TenantEntity
 {
-    public const string DefaultColor = "#6366F1";
+    public const string DefaultColor = HexColor.Default;
     public static readonly TimeSpan MinimumDuration = TimeSpan.FromMinutes(15);
 
     public Guid? CustomerId { get; private set; }
@@ -215,27 +215,5 @@ public class PlanningRecord : TenantEntity
         }
     }
 
-    /// <summary>
-    /// Trims and upper-cases the colour, falling back to <see cref="DefaultColor"/> when none is
-    /// given. Validation happens on the normalized value, so surrounding whitespace is tolerated.
-    /// </summary>
-    private static string NormalizeColor(string? color)
-    {
-        if (string.IsNullOrWhiteSpace(color))
-        {
-            return DefaultColor;
-        }
-
-        var normalized = color.Trim().ToUpperInvariant();
-
-        if (!IsValidHexColor(normalized))
-        {
-            throw new ArgumentException("Color must be a valid hex color (e.g. #6366F1).", nameof(color));
-        }
-
-        return normalized;
-    }
-
-    private static bool IsValidHexColor(string color) =>
-        color.Length == 7 && color[0] == '#' && color[1..].All(Uri.IsHexDigit);
+    private static string NormalizeColor(string? color) => HexColor.Normalize(color);
 }

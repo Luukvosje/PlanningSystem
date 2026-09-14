@@ -86,3 +86,6 @@ export const PLANNING_COLORS = [
 ] as const;
 
 export type PlanningColor = typeof PLANNING_COLORS[number]
+
+/** Mirrors the server's colour rule (`HexColor` in the domain): a six-digit hex colour. */
+export const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{6}$/;

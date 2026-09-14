@@ -37,11 +37,15 @@
       "title": "Unsaved changes",
       "description": "You have unsaved changes on this page. Do you want to save them before leaving?",
       "save": "Save and leave",
-      "discard": "Discard and leave",
-      "cancel": "Stay on page"
+      "discard": "Continue",
+      "cancel": "Cancel"
     },
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "color": {
+      "label": "Color",
+      "choose": "Choose color"
+    }
   },
   "nav": {
     "menu": "Menu",
@@ -143,6 +147,9 @@
     },
     "time": {
       "invalid": "Invalid time"
+    },
+    "color": {
+      "invalid": "Choose a valid color."
     }
   },
   "availability": {
@@ -281,7 +288,8 @@
     "fields": {
       "name": "Name",
       "email": "Email",
-      "address": "Address"
+      "address": "Address",
+      "color": "Color"
     },
     "create": {
       "title": "New customer",
@@ -292,7 +300,8 @@
       "overview": "Overview",
       "details": "Details",
       "planning": "Planning"
-    }
+    },
+    "colorDescription": "The color a new planning record for this customer starts with."
   },
   "invites": {
     "code": "Invite code",
@@ -407,8 +416,6 @@
     "overlap": "Overlap",
     "saved": "Saved",
     "bookingConfirmed": "Booking confirmed",
-    "chooseColor": "Choose color",
-    "color": "Color",
     "sidebar": {
       "createTitle": "New planning",
       "detailsTitle": "Planning details"

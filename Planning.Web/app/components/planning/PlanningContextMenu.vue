@@ -92,7 +92,7 @@ onUnmounted(() => {
 				{{ t('planning.duplicate') }}
 			</button>
 			<button
-				class="w-full px-3 py-2 text-left text-sm hover:bg-muted text-red-500 flex items-center gap-2"
+				class="w-full px-3 py-2 text-left text-sm hover:bg-muted text-error flex items-center gap-2"
 				@click="() => { onDelete() }"
 			>
 				<UIcon
