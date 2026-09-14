@@ -1,31 +1,31 @@
-# Van niets naar productie
+# From nothing to production
 
-Draaiboek voor de eerste deploy. Werk het van boven naar beneden af; elke stap is te kopiëren.
-Reken op ongeveer twee uur, waarvan een half uur wachten op DNS.
+The runbook for the first deploy. Work top to bottom; every step is meant to be copied. Budget
+roughly two hours, half an hour of which is waiting for DNS.
 
-Bij elk `<...>` vul je je eigen waarde in.
+Fill in your own value wherever you see `<...>`.
 
 ---
 
-## 1. Server kiezen
+## 1. Choosing a server
 
-Aanbeveling: **Hetzner CX22** — 2 vCPU, 4 GB RAM, 40 GB SSD, ongeveer €4,50 per maand,
-datacenter Falkenstein of Neurenberg. EU-hosting, dus geen doorgifte buiten de EU om aan je
-klanten uit te leggen.
+Recommendation: **Hetzner CX22** — 2 vCPU, 4 GB RAM, 40 GB SSD, about €4.50 a month, datacenter
+Falkenstein or Nuremberg. EU hosting, so there is no transfer outside the EU to explain to your
+customers.
 
-Wat er straks draait en wat het kost aan geheugen:
+What will run there, and what it costs in memory:
 
-| Container | Geheugen |
-|-----------|----------|
+| Container | Memory |
+|-----------|--------|
 | PostgreSQL | ~150 MB |
 | API (.NET) | ~150 MB |
 | Frontend (Nuxt) | ~150 MB |
 | Caddy | ~20 MB |
 
-Ruim binnen 4 GB. Kies Ubuntu 24.04 LTS als besturingssysteem en voeg bij het aanmaken meteen
-je SSH-publieke sleutel toe, dan is wachtwoord-inloggen nooit aan geweest.
+Comfortably within 4 GB. Pick Ubuntu 24.04 LTS as the operating system and add your SSH public
+key while creating the machine, so password login was never enabled in the first place.
 
-Heb je nog geen sleutel, maak er dan één op je eigen machine:
+If you do not have a key yet, create one on your own machine:
 
 ```bash
 ssh-keygen -t ed25519 -C "planning-vps"
@@ -33,34 +33,34 @@ ssh-keygen -t ed25519 -C "planning-vps"
 
 ---
 
-## 2. Domein en DNS
+## 2. Domain and DNS
 
-Koop een domein en zet twee records klaar. `app` is de hele applicatie — frontend en API delen
-één domein, wat schuift langs een hele klasse CORS- en cookieproblemen heen.
+Buy a domain and prepare two records. `app` is the whole application — frontend and API share
+one domain, which sidesteps an entire class of CORS and cookie problems.
 
-| Type | Naam | Waarde |
-|------|------|--------|
-| A | `app` | het IPv4-adres van de VPS |
-| AAAA | `app` | het IPv6-adres van de VPS |
+| Type | Name | Value |
+|------|------|-------|
+| A | `app` | the VPS's IPv4 address |
+| AAAA | `app` | the VPS's IPv6 address |
 
-Controleer voordat je verdergaat — Let's Encrypt heeft een limiet op mislukte pogingen, dus
-te vroeg beginnen kost je een uur wachten:
+Check before continuing — Let's Encrypt limits failed attempts, so starting too early costs you
+an hour of waiting:
 
 ```bash
-dig +short app.<jouwdomein.nl>
+dig +short app.<yourdomain.com>
 ```
 
 ---
 
-## 3. Server dichtzetten
+## 3. Locking the server down
 
-Inloggen als root:
+Sign in as root:
 
 ```bash
 ssh root@<server-ip>
 ```
 
-Alles bijwerken en beveiligingsupdates automatisch maken:
+Update everything and make security updates automatic:
 
 ```bash
 apt update && apt upgrade -y
@@ -68,7 +68,7 @@ apt install -y unattended-upgrades ufw fail2ban restic
 dpkg-reconfigure -plow unattended-upgrades
 ```
 
-Een gebruiker zonder rootrechten voor de deploys:
+A non-root user for the deploys:
 
 ```bash
 adduser --disabled-password --gecos "" deploy
@@ -80,8 +80,8 @@ chmod 700 /home/deploy/.ssh
 chmod 600 /home/deploy/.ssh/authorized_keys
 ```
 
-Firewall: alleen SSH en web naar buiten. De database en de containers zitten op een intern
-Docker-netwerk en horen van buiten onbereikbaar te zijn.
+Firewall: only SSH and web from outside. The database and the containers sit on an internal
+Docker network and are meant to be unreachable externally.
 
 ```bash
 ufw default deny incoming
@@ -92,7 +92,7 @@ ufw allow 443/tcp
 ufw --force enable
 ```
 
-Wachtwoord- en root-login uitzetten:
+Disable password and root login:
 
 ```bash
 sed -i 's/^#*PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
@@ -100,21 +100,21 @@ sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_
 systemctl restart ssh
 ```
 
-> Open **nu** een tweede terminal en controleer `ssh deploy@<server-ip>` vóór je deze sessie
-> sluit. Klopt er iets niet aan de sleutels, dan sluit je jezelf anders buiten.
+> Open a second terminal **now** and verify `ssh deploy@<server-ip>` before closing this
+> session. If anything is wrong with the keys, this is where you would lock yourself out.
 
 ---
 
-## 4. Docker installeren
+## 4. Installing Docker
 
-Als `deploy`:
+As `deploy`:
 
 ```bash
 curl -fsSL https://get.docker.com | sudo sh
 sudo usermod -aG docker deploy
 ```
 
-Uitloggen en opnieuw inloggen, zodat je in de `docker`-groep zit. Controle:
+Sign out and back in so that you are in the `docker` group. Check:
 
 ```bash
 docker run --rm hello-world
@@ -122,7 +122,7 @@ docker run --rm hello-world
 
 ---
 
-## 5. De stack neerzetten
+## 5. Putting the stack in place
 
 ```bash
 sudo mkdir -p /opt/planning/backups
@@ -130,13 +130,13 @@ sudo chown -R deploy:deploy /opt/planning
 cd /opt/planning
 ```
 
-Kopieer vanaf je eigen machine drie bestanden uit de repository:
+From your own machine, copy four files out of the repository:
 
 ```bash
 scp deploy/docker-compose.yml deploy/Caddyfile deploy/backup.sh deploy/.env.example deploy@<server-ip>:/opt/planning/
 ```
 
-Op de server:
+On the server:
 
 ```bash
 cd /opt/planning
@@ -145,7 +145,7 @@ chmod 600 .env
 chmod +x backup.sh
 ```
 
-Genereer de geheimen en zet ze in `.env`. Voer ze één voor één uit en plak de uitvoer:
+Generate the secrets and put them in `.env`. Run them one at a time and paste the output:
 
 ```bash
 openssl rand -base64 32   # POSTGRES_PASSWORD
@@ -153,38 +153,38 @@ openssl rand -base64 64   # JWT_KEY
 openssl rand -base64 32   # RESTIC_PASSWORD
 ```
 
-> Bewaar `RESTIC_PASSWORD` ook érgens anders — in je wachtwoordmanager. Zonder die zin zijn je
-> back-ups wiskundig onherstelbaar, ook door jou.
+> Keep `RESTIC_PASSWORD` somewhere else as well — in your password manager. Without that
+> passphrase your backups are mathematically unrecoverable, including by you.
 
-Vul verder in: `APP_DOMAIN`, `ACME_EMAIL`, `GITHUB_REPOSITORY_OWNER`. De `EMAIL_*`-regels
-komen in stap 8.
+Also fill in `APP_DOMAIN`, `ACME_EMAIL` and `GITHUB_REPOSITORY_OWNER`. The `EMAIL_*` lines come
+in step 8.
 
 ---
 
-## 6. GitHub instellen
+## 6. Setting up GitHub
 
 **Secrets** — Settings → Secrets and variables → Actions → New repository secret:
 
-| Secret | Waarde |
-|--------|--------|
-| `VPS_HOST` | het IP-adres of `app.<jouwdomein.nl>` |
+| Secret | Value |
+|--------|-------|
+| `VPS_HOST` | the IP address or `app.<yourdomain.com>` |
 | `VPS_USER` | `deploy` |
-| `VPS_SSH_KEY` | de **private** sleutel, volledig, inclusief begin- en eindregel |
-| `VPS_SSH_HOST_KEY` | uitvoer van het commando hieronder |
+| `VPS_SSH_KEY` | the **private** key, in full, including its first and last line |
+| `VPS_SSH_HOST_KEY` | the output of the command below |
 
-De host key haal je zo op, op je eigen machine:
+Fetch the host key on your own machine:
 
 ```bash
 ssh-keyscan -t ed25519 <server-ip>
 ```
 
-Die pinning zorgt dat een deploy faalt in plaats van stilletjes doorgaat wanneer er ineens een
-andere server op dat adres antwoordt.
+That pinning makes a deploy fail rather than quietly continue when a different server suddenly
+answers on that address.
 
-**Environment** — Settings → Environments → New environment → `production`. Zet daar
-"Required reviewers" op jezelf als je elke productie-deploy met één klik wilt goedkeuren.
+**Environment** — Settings → Environments → New environment → `production`. Set "Required
+reviewers" to yourself there if you want to approve every production deploy with one click.
 
-**Test-branch** aanmaken:
+Create a **test branch**:
 
 ```bash
 git checkout main
@@ -192,21 +192,20 @@ git checkout -b test
 git push -u origin test
 ```
 
-**Branch protection** op `main` — Settings → Rules → New branch ruleset:
+**Branch protection** on `main` — Settings → Rules → New branch ruleset:
 - Require a pull request before merging
-- Require status checks to pass → `Backend` en `Frontend`
+- Require status checks to pass → `Backend` and `Frontend`
 
-Daarmee is de route vast: werken op een feature branch → PR → CI groen → merge naar `main` →
-productie.
+That fixes the route: work on a feature branch → PR → CI green → merge to `main` → production.
 
 ---
 
-## 7. Eerste deploy
+## 7. The first deploy
 
-De workflow schrijft `IMAGE_TAG` zelf, maar de allereerste keer moet er iets te pullen zijn.
-Push naar `main` (of Actions → Deploy to production → Run workflow) en volg het live mee.
+The workflow writes `IMAGE_TAG` itself, but the very first time there has to be something to
+pull. Push to `main` (or Actions → Deploy to production → Run workflow) and follow it live.
 
-Op de server controleren:
+Check on the server:
 
 ```bash
 cd /opt/planning
@@ -214,55 +213,54 @@ docker compose ps
 docker compose logs -f api
 ```
 
-Caddy vraagt bij de eerste start automatisch een certificaat aan. Open daarna
-`https://app.<jouwdomein.nl>` en maak via **Registreren** het eerste account aan — dat wordt de
-eigenaar van de eerste organisatie.
+Caddy requests a certificate automatically on first start. Then open
+`https://app.<yourdomain.com>` and create the first account through **Register** — that becomes
+the owner of the first organization.
 
 ---
 
-## 8. E-mail aanzetten
+## 8. Turning email on
 
-Kies een transactionele provider. Voor beginnen zonder kosten:
+Pick a transactional provider. To start without cost:
 
-| Provider | Gratis | Let op |
-|----------|--------|--------|
-| **Resend** | 3.000/maand | EU-regio beschikbaar, prettige interface |
-| **SMTP2GO** | 1.000/maand | EU-servers |
-| **Postmark** | geen gratis laag | beste bezorging, ~$15/maand |
+| Provider | Free tier | Note |
+|----------|-----------|------|
+| **Resend** | 3,000/month | EU region available, pleasant interface |
+| **SMTP2GO** | 1,000/month | EU servers |
+| **Postmark** | no free tier | best deliverability, about $15/month |
 
-Verifieer je domein bij de provider. Die geeft je drie DNS-records — zet ze **allemaal**:
+Verify your domain with the provider. They give you three DNS records — set **all** of them:
 
-| Type | Doel |
-|------|------|
-| TXT (SPF) | zegt welke servers namens jouw domein mogen verzenden |
-| CNAME/TXT (DKIM) | ondertekent je mail |
-| TXT (DMARC) | vertelt ontvangers wat te doen bij een mislukte controle |
+| Type | Purpose |
+|------|---------|
+| TXT (SPF) | says which servers may send on behalf of your domain |
+| CNAME/TXT (DKIM) | signs your mail |
+| TXT (DMARC) | tells recipients what to do when a check fails |
 
-Begin DMARC soepel en scherp later aan:
+Start DMARC leniently and tighten later:
 
 ```
-_dmarc.<jouwdomein.nl>  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@<jouwdomein.nl>"
+_dmarc.<yourdomain.com>  TXT  "v=DMARC1; p=none; rua=mailto:dmarc@<yourdomain.com>"
 ```
 
-Zonder SPF en DKIM accepteert je provider de mail en gooien Gmail en Outlook hem weg zonder
-melding. Dat is precies het probleem dat je met een eigen mailserver óók zou hebben, alleen dan
-in je eentje.
+Without SPF and DKIM your provider accepts the mail and Gmail and Outlook throw it away without
+telling anyone. That is exactly the problem you would have running your own mail server, only
+then you would be facing it alone.
 
-Vul daarna in `.env` op de server de `EMAIL_*`-waarden in en herstart:
+Then fill in the `EMAIL_*` values in `.env` on the server and restart:
 
 ```bash
 docker compose up -d api
 ```
 
-Controleer met **Wachtwoord vergeten** op de inlogpagina. Zolang `EMAIL_SMTP_HOST` leeg is,
-verstuurt de app niets en schrijft hij de mail naar het log — handig, maar geen bewijs dat
-bezorging werkt.
+Verify with **Forgot password** on the sign-in page. As long as `EMAIL_SMTP_HOST` is empty the
+app sends nothing and writes the mail to the log — useful, but not proof that delivery works.
 
 ---
 
-## 9. Back-ups
+## 9. Backups
 
-Initialiseer de off-site opslag (bijvoorbeeld een Hetzner Storage Box) en zet de dagelijkse taak:
+Initialise the off-site storage (a Hetzner Storage Box, for example) and set the daily job:
 
 ```bash
 cd /opt/planning
@@ -271,70 +269,71 @@ restic init
 crontab -e
 ```
 
-Toevoegen:
+Add:
 
 ```
 0 3 * * * /opt/planning/backup.sh >> /var/log/planning-backup.log 2>&1
 ```
 
-Draai hem één keer met de hand en kijk of er iets uitkomt:
+Run it once by hand and see whether anything comes out:
 
 ```bash
 /opt/planning/backup.sh
 ls -lh /opt/planning/backups
 ```
 
-### De hersteloefening
+### The restore drill
 
-**Doe dit één keer vóór je eerste klant.** Een back-up die je nooit hebt teruggezet is een
-aanname, geen zekerheid.
+**Do this once before your first customer.** A backup you have never restored is an assumption,
+not a certainty.
 
 ```bash
-# Zet de laatste dump terug in een wegwerp-database.
-gunzip -c /opt/planning/backups/planning-<tijdstempel>.sql.gz \
+# Restore the latest dump into a throwaway database.
+gunzip -c /opt/planning/backups/planning-<timestamp>.sql.gz \
   | docker compose exec -T db psql -U "$POSTGRES_USER" -d postgres \
     -c "CREATE DATABASE restoretest;" -d restoretest
 
-# Kijk of de tabellen er zijn.
+# Check the tables are there.
 docker compose exec -T db psql -U "$POSTGRES_USER" -d restoretest -c '\dt'
 
-# Opruimen.
+# Clean up.
 docker compose exec -T db psql -U "$POSTGRES_USER" -d postgres -c "DROP DATABASE restoretest;"
 ```
 
 ---
 
-## 10. Terugrollen
+## 10. Rolling back
 
-Elke image draagt de commit-SHA als tag, dus terug is één regel:
+Every image carries the commit SHA as a tag, so going back is one line:
 
 ```bash
 cd /opt/planning
-cat .previous_tag              # de vorige versie
-nano .env                      # zet IMAGE_TAG op die SHA
+cat .previous_tag              # the previous version
+nano .env                      # set IMAGE_TAG to that SHA
 docker compose pull api web && docker compose up -d
 ```
 
-Let op: een migratie die al gedraaid heeft, draait niet vanzelf terug. Heeft de mislukte versie
-het schema veranderd, zet dan eerst de database terug uit de back-up van die nacht.
+Note: a migration that has already run does not roll itself back. If the failed version changed
+the schema, restore the database from that night's backup first. See
+[deploy-and-rollback.md](deploy-and-rollback.md).
 
 ---
 
-## Dagelijks gebruik
+## Day-to-day use
 
 ```bash
-docker compose ps                     # wat draait er
-docker compose logs -f api            # meekijken met de API
-docker compose logs --tail 100 caddy  # certificaatproblemen
-docker system prune -af --volumes=false   # oude images opruimen (volumes blijven)
-docker compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"   # de database in
+docker compose ps                     # what is running
+docker compose logs -f api            # follow the API
+docker compose logs --tail 100 caddy  # certificate problems
+docker system prune -af --volumes=false   # clear out old images (volumes stay)
+docker compose exec db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"   # into the database
 ```
 
-## Als er iets misgaat
+## When something goes wrong
 
-| Symptoom | Waar je begint |
-|----------|----------------|
-| Geen certificaat | `docker compose logs caddy` — bijna altijd DNS dat nog niet klopt |
-| API blijft herstarten | `docker compose logs api` — meestal `.env` of de database |
-| Deploy hangt op "waiting for ready" | migratie faalt; zie de API-logs |
-| 502 van Caddy | `docker compose ps` — draait `web` of `api` wel |
+| Symptom | Where to start |
+|---------|----------------|
+| No certificate | `docker compose logs caddy` — almost always DNS that is not right yet |
+| The API keeps restarting | `docker compose logs api` — usually `.env` or the database |
+| The deploy hangs on "waiting for ready" | a migration is failing; see the API logs |
+| 502 from Caddy | `docker compose ps` — is `web` or `api` actually running |
