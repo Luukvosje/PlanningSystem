@@ -1,29 +1,29 @@
 # Modules
 
-Eén codebase, per organisatie in te schakelen onderdelen. Dit is het mechanisme waarmee een
-klantwens een *configuratie* kan worden in plaats van een klantspecifieke tak in de code — zie
-[my-company.md](../../my-company.md), "Bewaken".
+One codebase, with parts that can be switched on per organization. This is the mechanism that
+lets a customer request become *configuration* instead of a customer-specific branch in the
+code — see [my-company.md](../../my-company.md), "What to guard".
 
-## De drie modules
+## The three modules
 
-| Module | Inhoud | Per organisatie aan/uit? |
+| Module | Contains | Toggleable per organization? |
 |---|---|---|
-| `Planning` | planning-records, tijdlijn, beschikbaarheid, aanvragen | ja |
-| `Klant` | klantbeheer | ja |
-| `Beheer` | organisatie, gebruikers, uitnodigingen, rollen, moduletoewijzing | **nee, altijd aan** |
+| `Planning` | planning records, timeline, availability, requests | yes |
+| `Klant` | customer management | yes |
+| `Beheer` | organization, users, invites, roles, module assignment | **no, always on** |
 
-`AppModule` staat in `Planning.Domain/Modules/AppModule.cs`. De enum wordt op naam
-geserialiseerd, dus hernoemen is een breaking change voor zowel de API als de frontend.
+`AppModule` lives in `Planning.Domain/Modules/AppModule.cs`. The enum is serialized by name, so
+renaming a member is a breaking change for both the API and the frontend.
 
-## Twee niveaus, en hoe ze samenkomen
+## Two levels, and how they combine
 
-Een module wordt op twee plekken aangezet:
+A module is switched on in two places:
 
-- **`OrganizationModule`** — heeft deze organisatie de module afgenomen?
-- **`UserModule`** — mag deze medewerker erbij?
+- **`OrganizationModule`** — has this organization bought the module?
+- **`UserModule`** — may this employee use it?
 
-De regels staan op één plek, `Planning.Application/Modules/ModulePermissions.cs`, en het zijn
-er maar drie:
+The rules live in exactly one place, `Planning.Application/Modules/ModulePermissions.cs`, and
+there are only three:
 
 ```csharp
 IsAdminRole(role)                       => role is Owner or Admin
@@ -31,29 +31,29 @@ GetOrganizationEffectiveEnabled(m, org) => m is Beheer || org
 HasEffectiveAccess(role, org, user)     => org && (IsAdminRole(role) || user)
 ```
 
-Daaruit volgt:
+From which it follows:
 
-- **Beheer staat altijd aan op organisatieniveau.** Anders zou een organisatie zichzelf kunnen
-  uitsluiten van het scherm waarmee je modules aanzet.
-- **De organisatie is een harde poort.** Staat de module daar uit, dan heeft niemand toegang —
-  ook een Owner niet.
-- **Owner en Admin hebben binnen die poort altijd toegang**, ongeacht hun `UserModule`. Dat is
-  waarom de moduleschakelaars op de gebruikerspagina bij een admin vastgezet worden getoond in
-  plaats van verborgen: zichtbaar maar `disabled`, met een tooltip.
+- **Beheer is always on at organization level.** Otherwise an organization could lock itself
+  out of the very screen that switches modules on.
+- **The organization is a hard gate.** If the module is off there, nobody has access — not even
+  an Owner.
+- **Owner and Admin always have access inside that gate**, regardless of their `UserModule`.
+  That is why the module switches on the user page are shown fixed rather than hidden for an
+  admin: visible but `disabled`, with a tooltip.
 
-## Waar het wordt afgedwongen
+## Where it is enforced
 
-**Backend — `ModuleAuthorizationHandler`.** De policies `RequirePlanningModule`,
-`RequireKlantModule` en `RequireBeheerModule` (gedeclareerd in `Program.cs`) dragen elk een
-`ModuleRequirement`. De handler roept `IModuleService.HasEffectiveModuleAsync` aan, die
-organisatie- en gebruikersmodules ophaalt en door `ModulePermissions` haalt.
+**Backend — `ModuleAuthorizationHandler`.** The policies `RequirePlanningModule`,
+`RequireKlantModule` and `RequireBeheerModule` (declared in `Program.cs`) each carry a
+`ModuleRequirement`. The handler calls `IModuleService.HasEffectiveModuleAsync`, which fetches
+the organization and user modules and runs them through `ModulePermissions`.
 
-Elke controller declareert zijn module-policy op klasseniveau. Meerdere `[Authorize]`-attributen
-stapelen als EN — `UsersController` eist bij een rolwijziging zowel `RequireOwnerOrAdmin` als
-`RequireBeheerModule`.
+Every controller declares its module policy at class level. Multiple `[Authorize]` attributes
+stack as AND — `UsersController` requires both `RequireOwnerOrAdmin` and `RequireBeheerModule`
+on a role change.
 
-**Frontend — `ROUTE_MODULE_MAP`.** In `Planning.Web/app/utils/modules.ts` staat een tabel van
-routeprefix naar module:
+**Frontend — `ROUTE_MODULE_MAP`.** In `Planning.Web/app/utils/modules.ts` sits a table from
+route prefix to module:
 
 | Prefix | Module |
 |---|---|
@@ -61,26 +61,26 @@ routeprefix naar module:
 | `/customers` | Klant |
 | `/users`, `/organization` | Beheer |
 
-`middleware/module.global.ts` blokkeert een route die daar niet doorheen komt. Daarnaast staat
-er `PLANNER_ONLY_ROUTE_PREFIXES = ['/timeline']` voor routes die bovenop de module ook een
-plannerrol eisen — zie [besluit 0010](../decisions/0010-tijdlijn-is-plannertool.md).
+`middleware/module.global.ts` blocks a route that does not pass. Alongside it sits
+`PLANNER_ONLY_ROUTE_PREFIXES` for routes that need a planner role on top of the module — see
+[decision 0010](../decisions/0010-timeline-is-a-planner-tool.md).
 
-**Een nieuwe pagina onder een afgeschermd gebied moet in `ROUTE_MODULE_MAP`.** Het menu-item
-weghalen is beveiliging via het menu; de URL blijft open. Dat is precies hoe `/timeline` ooit
-bereikbaar was zonder de Planning-module.
+**A new page in a gated area must be added to `ROUTE_MODULE_MAP`.** Removing the menu item is
+security by menu; the URL stays open. That is exactly how `/timeline` was once reachable
+without the Planning module at all.
 
-## De twee helften moeten kloppen
+## Both halves have to agree
 
-De backend beslist wie erbij mag; de frontend beslist wat je te zien krijgt. Ze delen geen
-code. Een nieuwe module aanzetten betekent dus altijd twee kanten aanpassen:
+The backend decides who may get in; the frontend decides what you are shown. They share no
+code. Adding a module therefore always means touching both sides:
 
-1. `AppModule` uitbreiden, plus een migratie voor bestaande organisaties
-2. een `Require<X>Module`-policy in `Program.cs`
-3. die policy op de betrokken controllers
-4. `ALL_MODULES` en `ROUTE_MODULE_MAP` in `utils/modules.ts`
-5. labels in `i18n/locales/nl.json` én `en.json`
-6. `pnpm generate:api`, want de enum verandert
+1. extend `AppModule`, plus a migration for existing organizations
+2. a `Require<X>Module` policy in `Program.cs`
+3. that policy on the controllers involved
+4. `ALL_MODULES` and `ROUTE_MODULE_MAP` in `utils/modules.ts`
+5. labels in `i18n/locales/nl.json` **and** `en.json`
+6. `pnpm generate:api`, because the enum changed
 
-Vergeet je stap 4, dan is de pagina bereikbaar terwijl de API 403 geeft — zichtbaar kapot.
-Vergeet je stap 3, dan is de API open terwijl het menu netjes oogt — onzichtbaar kapot. Dat
-laatste is de gevaarlijke.
+Miss step 4 and the page is reachable while the API returns 403 — visibly broken. Miss step 3
+and the API is open while the menu looks tidy — invisibly broken. The second one is the
+dangerous one.

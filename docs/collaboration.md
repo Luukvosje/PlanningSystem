@@ -1,97 +1,89 @@
-# Claude als teamlid — Planning SaaS
+# Claude as a team member — Planning SaaS
 
-Dit document is **geen** vervanging van `CLAUDE.md` (dat blijft de technische bijbel
-voor Claude Code / coding-sessies). Dit is het bredere kader: hoe ik (Claude) met jou
-meedenk over dev **en** marketing, zodat elke sessie — of we nu code, copy, of strategie
-bespreken — vanuit dezelfde context en principes vertrekt.
+This document does **not** replace `CLAUDE.md` (that stays the technical authority for coding
+sessions). This is the wider frame: how Claude thinks along on dev **and** marketing, so that
+every session — code, copy or strategy — starts from the same context and principles.
 
 ---
 
-## 1. Product-kern (niet aanpassen zonder expliciet gesprek)
+## 1. Product core (not to be changed without an explicit conversation)
 
-- **Wie:** kleine bedrijven die nu met Word/WhatsApp/Excel plannen. Eerste klant: een
-  sportschoolketen.
-- **Belofte:** binnen 5 minuten een volledige weekplanning maken en delen.
-- **Niet-doelen (bewust):** salarisadministratie, contractbeheer, verlof, declaraties,
-  facturatie, HR-dossiers, AI-planning, urenregistratie, klok in/uit, certificaten.
-  Elke feature-suggestie — van mij of van jou — wordt hieraan getoetst: draagt dit bij
-  aan *sneller plannen, minder fouten, beter overzicht, minder WhatsApp*? Zo niet: hoort
-  het niet in de MVP, punt.
-- **Mogelijke toekomst:** groei naar bredere bedrijfs-SaaS (het `Modules`-systeem in de
-  code is hier al op voorbereid), plus een aparte medewerker-app. Dit is een richting,
-  geen belofte — niet op vooruitlopen in code of marketing-teksten totdat je dat expliciet
-  aangeeft.
-- **Verdienmodel:** hybride — planner-seats zijn de kernprijs, medewerker-seats gratis tot
-  een grens, plus Starter/Groei/Premium als alles-in-één-optie. Bedragen staan nog open.
-  Zie [besluit 0006](decisions/0006-pricing-model.md).
+- **Who:** small companies currently planning with Word, WhatsApp and Excel. First customer: a
+  chain of gyms.
+- **Promise:** build and share a complete week's planning in under five minutes.
+- **Non-goals (deliberate):** payroll, contract management, leave, expenses, invoicing, HR
+  files, AI planning, time tracking, clock in/out, certificates. Every feature suggestion —
+  from either side — is tested against this: does it contribute to *planning faster, fewer
+  mistakes, better overview, less WhatsApp*? If not, it does not belong in the MVP. Full
+  version: [decision 0001](decisions/0001-product-scope-and-non-goals.md).
+- **Possible future:** growth into a broader business SaaS (the `Modules` system in the code is
+  already prepared for it), plus a separate employee app. That is a direction, not a promise —
+  not to be anticipated in code or marketing copy until you say so explicitly.
+- **Revenue model:** hybrid — planner seats are the core price, employee seats free up to a
+  limit, plus Starter/Groei/Premium as an all-in option. Amounts still open. See
+  [decision 0006](decisions/0006-pricing-model.md).
 
-## 2. Hoe ik met dev omga
+## 2. How Claude handles dev
 
-- Volg `CLAUDE.md` in de repo-root voor alle technische regels (architectuur,
-  multi-tenancy, security-checklist, conventions). Dat document wint bij conflicten
-  over code-stijl.
-- Grote features (schema-wijzigingen, nieuwe modules) plan ik eerst in gewone taal —
-  wat, waarom, wat het raakt, open vragen — voordat er code komt. Pas na jouw akkoord
-  ga ik daadwerkelijk bestanden aanpassen.
-- Ik heb geen push-toegang tot je GitHub repo. Concrete code lever ik als bestanden/patch
-  die je zelf reviewt en toepast — nooit alsof het al in productie staat.
-- Ik kan de .NET-kant niet lokaal builden in mijn omgeving (geen dotnet SDK
-  beschikbaar) — reken dus op jouw build/tests als laatste check, niet op mijn "het
-  compileert".
+- Follow `CLAUDE.md` in the repo root for every technical rule (architecture, multi-tenancy,
+  security checklist, conventions). That document wins on questions of code style.
+- Large features (schema changes, new modules) get planned in plain language first — what, why,
+  what it touches, open questions — before any code. Files change only after you agree.
+- Direction (architecture, scope, approach) is discussed first; implementation details are
+  decided on the spot.
+- Nothing is pushed and no PR is opened unless you ask. Work happens on a feature branch, one
+  commit per logical step.
 
-## 3. Hoe ik met marketing omga
+> **Note (2026-09-14):** this section used to say Claude had no push access to the repository
+> and could not build the .NET side locally. Neither is true in Claude Code — the repository is
+> read and written directly and `dotnet build` runs here. "It should compile" is therefore not
+> an acceptable answer; the build is run and the output shown.
 
-Nog open (vul in zodra bekend):
+## 3. How Claude handles marketing
 
-- Merknaam/domeinnaam vastgesteld?
-- Toon: zakelijk-nuchter of juist laagdrempelig/informeel (past bij sportschool-manager
-  die geen zin heeft in IT-jargon)?
-- Belangrijkste concurrenten/alternatieven (naast Word/WhatsApp/Excel zelf) om tegen af
-  te zetten in copy?
+Still open (fill in once known):
 
-### Kanaal: Meta Ads (eerste richting, 16 aug 2026)
+- Brand name and domain name settled?
+- Tone: businesslike and sober, or deliberately informal (fitting a gym manager with no
+  appetite for IT jargon)?
+- Main competitors and alternatives (besides Word, WhatsApp and Excel themselves) to position
+  against in copy?
 
-- Doelgroep is smal en lokaal (sportscholen, later bredere kleine bedrijven) — dit past
-  bij Meta Ads mits scherp getarget (interesse/gedrag + geo-radius), niet breed.
-  Lookalike audiences pas zinvol zodra er 1-2 betalende klanten zijn om op te bouwen.
-  Video die het "Word → chaos" probleem toont + de oplossing in actie presteert
-  waarschijnlijk beter dan statische tekst voor een product dat je moet zien werken.
-- Kleine testbudgetten (~€10-20/dag) volstaan om te valideren of de boodschap landt,
-  gezien de kleine totale doelgroep — pas daarna opschalen.
-- **Let op:** ik heb geen live web-toegang gebruikt voor deze inschatting (advertentie-
-  kosten/beleid kunnen gedateerd zijn) — check actuele CPM/targeting-opties bij
-  Meta zelf voor je gaat schalen.
+### Channel: Meta Ads
+
+The decision and its reasoning are in
+[decision 0005](decisions/0005-marketing-channel-meta-ads.md): narrowly targeted Meta Ads,
+€10–20 a day, video over static text, lookalike audiences only once there are one or two paying
+customers.
+
+**Note:** that estimate was made without live web access — advertising costs and policies may
+have moved. Check current CPM and targeting options at Meta before scaling.
 
 ### Pricing
 
-Het model en de afweging staan in [besluit 0006](decisions/0006-pricing-model.md): hybride,
-planner-seats als kernprijs, medewerkers gratis tot een grens, pakketten ernaast, geen credits
-voor het plannen zelf.
+The model and its reasoning are in [decision 0006](decisions/0006-pricing-model.md): hybrid,
+planner seats as the core price, employees free up to a limit, packages alongside, no credits
+for the planning itself.
 
-Dat stond hier ooit uitgeschreven én in `my-company.md` én in de PRD, met drie verschillende
-uitkomsten. Eén bron nu — vul hem daar aan, niet hier.
+That used to be written out here *and* in `my-company.md` *and* in the PRD, with three
+different outcomes. One source now — extend it there, not here.
 
-Wat er aan jouw kant nog moet gebeuren voordat de prijs vastligt, staat als "Nog open" in dat
-besluit. Het punt dat ik niet voor je kan invullen: toets bij een paar potentiële klanten hoe
-€19–29 landt. Bij B2B-tools is ondergeprijsd vaker het probleem dan overgeprijsd.
+What still has to happen on your side before the price is fixed is listed under "Still open" in
+that decision. The one item Claude cannot fill in for you: test with a few prospects how €19–29
+lands. With B2B tools, underpricing is more often the problem than overpricing.
 
-## 4. Beslissingenlogboek
+## 4. Decision log
 
-Zie [`docs/decisions/`](decisions/) voor het volledige, actuele logboek — dat is de
-centrale plek voor alle genomen besluiten (product, technisch, marketing). Nieuwe
-besluiten komen daar bij, niet hier, zodat er geen twee documenten uit sync raken.
+See [`docs/decisions/`](decisions/) for the full, current log — the central place for every
+decision taken (product, technical, marketing). New decisions go there, not here, so that two
+documents cannot drift apart.
 
-## 5. Werkwijze per sessie
+## 5. How a session runs
 
-- Nieuw gesprek dat over dit project gaat? Begin met: "we werken aan PlanningSystem" en
-  ik lees dit bestand + `CLAUDE.md` + de PRD erbij voordat ik aan de slag ga.
-- Grote scope-vragen ("moeten we dit wel bouwen?") toets ik expliciet aan sectie 1
-  hierboven, niet aan wat technisch leuk of makkelijk is.
-- Ik geef liever een kort, concreet plan met 1-2 open vragen dan een lang document met
-  aannames — jij beslist, ik lever de opties en een advies.
-
----
-
-*Dit bestand hoort in de repo-root naast `CLAUDE.md`, bijvoorbeeld als
-`AI_COLLABORATION.md`, zodat het meegroeit met git-historie en niet los in een chat
-blijft hangen.*
+- A new conversation about this project starts with "we are working on PlanningSystem"; Claude
+  then reads this file, `CLAUDE.md` and the PRD before starting. The decisions index arrives
+  automatically through the `SessionStart` hook.
+- Large scope questions ("should we build this at all?") are tested explicitly against section
+  1 above, not against what is technically fun or easy.
+- A short, concrete plan with one or two open questions beats a long document full of
+  assumptions — you decide, Claude supplies the options and a recommendation.

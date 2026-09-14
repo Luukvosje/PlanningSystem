@@ -1,15 +1,15 @@
 # Runbooks
 
-Wat je doet als er iets moet gebeuren op de productieserver. Van boven naar beneden af te
-werken, elke stap te kopiëren.
+What to do when something has to happen on the production server. Work top to bottom; every
+step is meant to be copied as-is.
 
-| Document | Wanneer |
+| Document | When |
 |---|---|
-| [first-deploy.md](first-deploy.md) | van niets naar productie — server, DNS, Docker, TLS, e-mail, back-ups |
-| [deploy-en-rollback.md](deploy-en-rollback.md) | de dagelijkse gang van zaken, en wat je doet als een deploy faalt |
+| [first-deploy.md](first-deploy.md) | from nothing to production — server, DNS, Docker, TLS, email, backups |
+| [deploy-and-rollback.md](deploy-and-rollback.md) | the day-to-day, and what to do when a deploy fails |
 
-Twee dingen die in beide documenten terugkomen, omdat ze het duurst zijn om te vergeten:
+Two things recur in both documents, because they are the most expensive to forget:
 
-- **Terugrollen draait de database niet terug.** Images gaan terug, het schema niet.
-- **Een back-up die nooit hersteld is, is een gok.** Doe de hersteloefening één keer vóór de
-  eerste klant, niet na het eerste incident.
+- **Rolling back does not roll back the database.** Images go back, the schema does not.
+- **A backup that has never been restored is a guess.** Do the restore drill once before the
+  first customer, not after the first incident.

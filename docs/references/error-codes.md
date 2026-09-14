@@ -1,36 +1,37 @@
-# Foutcodes
+# Error codes
 
-Elke verwachte fout reist als `Result.Failure(message, errorCode)` door de application-laag.
-`Planning.Api/Extensions/ResultExtensions.cs` vertaalt die code naar een HTTP-status. Een code
-die dáár niet in de `switch` staat valt door naar **400**, wat vrijwel nooit is wat je bedoelde.
+Every expected failure travels through the application layer as
+`Result.Failure(message, errorCode)`. `Planning.Api/Extensions/ResultExtensions.cs` translates
+that code into an HTTP status. A code that is *not* in that `switch` falls through to **400**,
+which is almost never what you meant.
 
-Schrijfwijze: `SCREAMING_SNAKE_CASE`.
+Spelling: `SCREAMING_SNAKE_CASE`.
 
-## De mapping
+## The mapping
 
-| Code | HTTP | Wanneer |
+| Code | HTTP | When |
 |---|---|---|
-| `NOT_FOUND` | 404 | bestaat niet, óf hoort bij een andere organisatie — die twee geven bewust hetzelfde antwoord |
-| `VALIDATION_ERROR` | 400 | een domeininvariant is geschonden (`ArgumentException` opgevangen door `TranslateDomainErrorsAsync`) |
-| `NO_ORGANIZATION` | 400 | geen organisatiecontext; het account heeft er meerdere en koos er geen, of geen enkele actieve |
-| `UNAUTHORIZED` | 401 | inloggegevens kloppen niet |
-| `FORBIDDEN` | 403 | mag wel bestaan, mag jij niet doen |
-| `CONFLICT` | 409 | botst met bestaande staat (dubbel e-mailadres, al beslist verzoek) |
-| `EXPIRED` | 410 | uitnodiging of resetlink is verlopen |
-| `MODULE_DISABLED` | 403 | staat in de mapping, wordt nergens geproduceerd — zie hieronder |
-| `INTERNAL_ERROR` | 500 | door `GlobalExceptionMiddleware`, met `traceId`; het exception-bericht alleen in Development |
+| `NOT_FOUND` | 404 | does not exist, *or* belongs to another organization — those two deliberately give the same answer |
+| `VALIDATION_ERROR` | 400 | a domain invariant was violated (`ArgumentException` caught by `TranslateDomainErrorsAsync`) |
+| `NO_ORGANIZATION` | 400 | no organization context; the account has several and chose none, or has no active one |
+| `UNAUTHORIZED` | 401 | credentials do not match |
+| `FORBIDDEN` | 403 | may exist, you may not do this to it |
+| `CONFLICT` | 409 | clashes with existing state (duplicate email, request already decided) |
+| `EXPIRED` | 410 | invite or reset link has expired |
+| `MODULE_DISABLED` | 403 | present in the mapping, produced nowhere — see below |
+| `INTERNAL_ERROR` | 500 | from `GlobalExceptionMiddleware`, with a `traceId`; the exception message only in Development |
 
 ## `NOT_FOUND` versus `FORBIDDEN`
 
-De belangrijkste regel. Vraagt iemand een record op dat van een andere tenant is, dan is het
-antwoord `NOT_FOUND`. Met `FORBIDDEN` bevestig je dat het id bestaat, en dat is al een lek.
-`FORBIDDEN` is voor het geval waarin de caller de rij wél mag zien maar de handeling niet mag
-uitvoeren. Zie [architecture/multi-tenancy.md](../architecture/multi-tenancy.md).
+The most important rule. If somebody requests a record belonging to another tenant, the answer
+is `NOT_FOUND`. With `FORBIDDEN` you confirm the id exists, and that is already a leak.
+`FORBIDDEN` is for the case where the caller *may* see the row but may not perform the action.
+See [architecture/multi-tenancy.md](../architecture/multi-tenancy.md).
 
-## Constanten
+## Constants
 
-De vier meest gebruikte codes staan als constante op `Failures`
-(`Planning.Application/Common/TenantServiceBase.cs`) met bijbehorende helpers:
+The four most-used codes are constants on `Failures`
+(`Planning.Application/Common/TenantServiceBase.cs`) with matching helpers:
 
 ```csharp
 Failures.NoOrganizationContext<T>()
@@ -38,43 +39,41 @@ Failures.NotFoundFor<T>("Customer")
 Failures.ForbiddenFor<T>("...")
 ```
 
-Gebruik die in plaats van de string. `CONFLICT`, `EXPIRED` en `UNAUTHORIZED` hebben nog geen
-constante en worden als literal geschreven.
+Use those rather than the string. `CONFLICT`, `EXPIRED` and `UNAUTHORIZED` have no constant yet
+and are written as literals.
 
-## Berichten zijn Engels en statisch
+## Messages are English and static
 
-De backend heeft geen i18n. Elk `Result.Failure`-bericht en elk `ArgumentException`-bericht is
-een vaste Engelse string; de frontend vertaalt ze op exacte match in
+The backend has no i18n. Every `Result.Failure` message and every `ArgumentException` message
+is a fixed English string; the frontend translates them by exact match in
 `Planning.Web/app/utils/backendMessages.ts`.
 
-Gevolgen:
+Consequences:
 
-- **Een bericht met geïnterpoleerde data is niet te vertalen.** Bijvoorbeeld
-  `Module '{module}' is disabled at organization level.` — die valt terug op Engels.
-- **Een bestaand bericht wijzigen breekt stilzwijgend de vertaling.** Pas
-  `backendMessages.ts` in dezelfde commit aan.
-- **Een nieuw bericht zonder entry is niet kapot**, alleen nog niet vertaald.
+- **A message with interpolated data cannot be translated.** For example
+  `Module '{module}' is disabled at organization level.` — that one falls back to English.
+- **Changing an existing message silently breaks its translation.** Update
+  `backendMessages.ts` in the same commit.
+- **A new message without an entry is not broken**, just not translated yet.
 
-Uitzondering: de *standaard*-meldingen van FluentValidation (`'{Field}' must not be empty.`)
-worden wél door de backend gelokaliseerd, via `UseRequestLocalization` in `Program.cs`,
-gestuurd door de `Accept-Language`-header die `apiClient.ts` meestuurt. Eigen
-`.WithMessage(...)`-teksten vallen daar níet onder.
+Exception: FluentValidation's *default* messages (`'{Field}' must not be empty.`) *are*
+localized by the backend, through `UseRequestLocalization` in `Program.cs`, driven by the
+`Accept-Language` header `apiClient.ts` sends. Custom `.WithMessage(...)` text is not covered.
 
-## Validatiefouten van FluentValidation
+## FluentValidation failures
 
-Die gaan niet via `Result` maar via `ApiControllerBase.ValidateAndExecuteAsync`, die een
-`ValidationProblemDetails` teruggeeft (400) met de fouten gegroepeerd per veldnaam. De
-frontend leest ze uit `useApiError(err).validationErrors` en zet ze op de bijbehorende
-formuliervelden.
+Those do not travel as a `Result` but through
+`ApiControllerBase.ValidateAndExecuteAsync`, which returns a `ValidationProblemDetails` (400)
+with the errors grouped per field name. The frontend reads them from
+`useApiError(err).validationErrors` and puts them on the matching form fields.
 
-## Openstaand
+## Open
 
-- **`MODULE_DISABLED` wordt nergens geproduceerd.** De branch in `ResultExtensions` is dood;
-  moduletoegang wordt afgewezen door `ModuleAuthorizationHandler`, wat een kale 403 van
-  ASP.NET oplevert zonder body. Ofwel de branch weg, ofwel de handler die code laten
-  teruggeven.
-- **De mapping matcht op stringliteralen**, niet op `Failures.NotFound`. Een hernoemde
-  constante breekt de build dus niet.
-- **De foutbody is een anoniem object** (`new { error, errorCode }`) terwijl
-  `Planning.Api/Models/ApiErrorResponse.cs` bestaat en in `[ProducesResponseType]` wordt
-  geadverteerd. Ze serialiseren toevallig hetzelfde.
+- **`MODULE_DISABLED` is produced nowhere.** The branch in `ResultExtensions` is dead; module
+  access is refused by `ModuleAuthorizationHandler`, which yields a bare ASP.NET 403 with no
+  body. Either drop the branch, or have the handler return that code.
+- **The mapping matches on string literals**, not on `Failures.NotFound`. A renamed constant
+  therefore does not break the build.
+- **The error body is an anonymous object** (`new { error, errorCode }`) while
+  `Planning.Api/Models/ApiErrorResponse.cs` exists and is what `[ProducesResponseType]`
+  advertises. They happen to serialize identically.

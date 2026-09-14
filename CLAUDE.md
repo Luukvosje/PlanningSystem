@@ -138,9 +138,9 @@ the only extra edge. `Planning.Domain` references nothing.
   rewriting what was decided.
 - Open questions that are not yet decided stay in their plan document under
   [docs/plans/](docs/plans/) until there is a choice, then move to `docs/decisions/`.
-- Documentation is Dutch where it is about the product or the business, English where it is
-  about the code. `docs/help/` is always Dutch. Code, commits, identifiers and log messages
-  are always English.
+- **All documentation is written in English**, with exactly one exception: `docs/help/` is
+  customer-facing and therefore Dutch, its README included. Code, commits, identifiers and log
+  messages are always English.
 
 ## Conventions
 

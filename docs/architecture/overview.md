@@ -1,102 +1,102 @@
-# Systeemoverzicht
+# System overview
 
-Wat het systeem *is*. Hoe je er code in schrijft staat in [guidelines/](../guidelines/); dit
-document beschrijft de onderdelen, hun afhankelijkheden en de weg die één request aflegt.
+What the system *is*. How you write code in it lives in [guidelines/](../guidelines/); this
+document describes the parts, their dependencies, and the path one request takes.
 
-## Projecten en afhankelijkheden
+## Projects and dependencies
 
 ```
 Planning.Api ──────────► Planning.Application ──────────► Planning.Domain
      │                            ▲                              ▲
      └──────────────────► Planning.Infrastructure ───────────────┘
                                   │
-                                  └──► implementeert de ports uit Application
+                                  └──► implements the ports declared in Application
 ```
 
-| Project | Verantwoordelijk voor | Mag afhangen van |
+| Project | Responsible for | May depend on |
 |---|---|---|
-| `Planning.Domain` | entiteiten, enums, invarianten, repository-interfaces | **niets** |
+| `Planning.Domain` | entities, enums, invariants, repository interfaces | **nothing** |
 | `Planning.Application` | DTOs, application services, validators, `Result<T>`, ports | Domain |
-| `Planning.Infrastructure` | EF Core, repository-implementaties, PostgreSQL, SMTP, BCrypt, logo-opslag | Domain, Application |
+| `Planning.Infrastructure` | EF Core, repository implementations, PostgreSQL, SMTP, BCrypt, logo storage | Domain, Application |
 | `Planning.Api` | controllers, middleware, JWT, policies, Swagger | Application, Infrastructure |
-| `Planning.Tests` | xUnit + NSubstitute, geen externe afhankelijkheden | Domain, Application |
-| `Planning.Web` | Nuxt 4 frontend | de API via de gegenereerde client |
+| `Planning.Tests` | xUnit + NSubstitute, no external dependencies | Domain, Application |
+| `Planning.Web` | Nuxt 4 frontend | the API through the generated client |
 
-De extra pijl van Infrastructure naar Application is bewust: daar staan de ports
-(`IEmailSender`, `IPasswordHasher`, `IOrganizationLogoStorage`, `ICurrentUserContext`) die
-Infrastructure en Api invullen. Dat is de enige toegestane extra rand.
+The extra arrow from Infrastructure to Application is deliberate: that is where the ports live
+(`IEmailSender`, `IPasswordHasher`, `IOrganizationLogoStorage`, `ICurrentUserContext`) which
+Infrastructure and Api implement. It is the only permitted extra edge.
 
-**Geen CQRS, geen MediatR, geen event sourcing.** Eén service per feature, geregistreerd in
-`Planning.Application/DependencyInjection.cs`. Dat is een expliciete keuze, geen omissie.
+**No CQRS, no MediatR, no event sourcing.** One service per feature, registered in
+`Planning.Application/DependencyInjection.cs`. That is an explicit choice, not an omission.
 
-## De weg van één request
+## The path of one request
 
-Een medewerker opent de weekplanning:
+An employee opens the week planning:
 
-1. **Browser → Nuxt.** `middleware/auth.global.ts` valideert de sessie tegen `/api/auth/me`
-   (met stille refresh) vóór elke routebeslissing, daarna gaat `module.global.ts` na of de
-   route bij een module hoort die deze gebruiker heeft.
-2. **Query-composable.** `usePlanningRange()` vraagt TanStack Vue Query om de data, met een
-   key uit `utils/queryKeys.ts` en `enabled` op sessiestatus.
-3. **`apiClient.ts`.** Zet de base URL, het `Authorization: Bearer`-token, de
-   `X-Organization-Id`-header en `Accept-Language`. Bij een 401 doet hij één refresh en
-   herhaalt hij het request — met deduplicatie, want twee gelijktijdige refreshes zouden
-   hetzelfde eenmalige refresh-token uitgeven.
-4. **Caddy → API-container.** In productie is alles één origin: `/api/*` en `/img/*` gaan
-   naar de API, de rest naar Nuxt. Daarom is er in productie geen CORS-preflight.
-5. **Middleware-keten.** `UseForwardedHeaders` → `GlobalExceptionMiddleware` →
-   localisatie → rate limiter → CORS → statische bestanden → `UseAuthentication` →
-   `OrganizationContextMiddleware` → `UseAuthorization` → controller.
-6. **Controller.** Valideert het request met FluentValidation en roept één servicemethode aan.
-7. **Application service.** Haalt de organisatie uit `ICurrentUserContext`, laadt de entiteit,
-   controleert eigendom, roept de domeinmethode aan, slaat op via de repository en mapt naar
-   een response-DTO. Zie [multi-tenancy.md](multi-tenancy.md).
-8. **Repository → PostgreSQL.** LINQ over `ApplicationDbContext`; de repository roept zelf
-   `SaveChangesAsync` aan.
-9. **Terug omhoog.** `Result<T>` wordt door `ResultExtensions` een `IActionResult`; de
-   foutcode bepaalt de statuscode.
+1. **Browser → Nuxt.** `middleware/auth.global.ts` validates the session against
+   `/api/auth/me` (with a silent refresh) before any routing decision; then
+   `module.global.ts` checks whether the route belongs to a module this user has.
+2. **Query composable.** `usePlanningRange()` asks TanStack Vue Query for the data, with a key
+   from `utils/queryKeys.ts` and `enabled` guarded on session state.
+3. **`apiClient.ts`.** Sets the base URL, the `Authorization: Bearer` token, the
+   `X-Organization-Id` header and `Accept-Language`. On a 401 it refreshes once and retries —
+   with deduplication, because two concurrent refreshes would spend the same single-use
+   refresh token.
+4. **Caddy → API container.** In production everything is one origin: `/api/*` and `/img/*` go
+   to the API, the rest to Nuxt. That is why production has no CORS preflight at all.
+5. **Middleware chain.** `UseForwardedHeaders` → `GlobalExceptionMiddleware` → localisation →
+   rate limiter → CORS → static files → `UseAuthentication` → `OrganizationContextMiddleware`
+   → `UseAuthorization` → controller.
+6. **Controller.** Validates the request with FluentValidation and calls one service method.
+7. **Application service.** Resolves the organization from `ICurrentUserContext`, loads the
+   entity, checks ownership, calls the domain method, persists through the repository and maps
+   to a response DTO. See [multi-tenancy.md](multi-tenancy.md).
+8. **Repository → PostgreSQL.** LINQ over `ApplicationDbContext`; the repository calls
+   `SaveChangesAsync` itself.
+9. **Back up.** `ResultExtensions` turns `Result<T>` into an `IActionResult`; the error code
+   decides the status.
 
-## Identiteit en tenant
+## Identity and tenant
 
-Kort: het JWT draagt alleen `accountId`. Wélke organisatie je bent, wordt per request bepaald
-door `OrganizationContextMiddleware` op basis van je lidmaatschappen. Het volledige verhaal
-staat in [multi-tenancy.md](multi-tenancy.md) — dat is de belangrijkste pagina in deze map.
+Short version: the JWT carries only `accountId`. *Which* organization you are is decided per
+request by `OrganizationContextMiddleware`, based on your memberships. The full story is in
+[multi-tenancy.md](multi-tenancy.md) — the most important page in this folder.
 
 ## Modules
 
-Planning, Klant en Beheer worden per organisatie én per gebruiker aangezet. Backend en
-frontend hebben elk hun eigen helft van die poort; zie [modules.md](modules.md).
+Planning, Klant and Beheer are enabled per organization *and* per user. Backend and frontend
+each own half of that gate; see [modules.md](modules.md).
 
-## Productie-topologie
+## Production topology
 
-Vier containers op één VPS, `docker compose` in `/opt/planning`:
+Four containers on one VPS, `docker compose` in `/opt/planning`:
 
 ```
 internet ──443──► caddy ──┬── /api/*, /img/*  ──► api  :8080 ──► db :5432
-                          └── al het overige  ──► web  :3000
+                          └── everything else ──► web  :3000
 ```
 
-- **Alleen Caddy publiceert poorten** (80, 443, 443/udp). API, frontend en database praten over
-  het interne netwerk en zijn van buiten onbereikbaar — daarom mag de API platte HTTP serveren
-  en zijn eigen https-redirect overslaan.
-- **Nuxt draait server-side**, anders dan een statische build: SSR praat met `http://api:8080`,
-  de browser met `https://<domein>`.
-- **De API migreert zichzelf bij het opstarten.** Veilig omdat er precies één API-instantie
-  draait; een tweede zou hierop racen.
-- **Images zijn getagd op commit-SHA**, niet alleen `latest`. Daarom is terugrollen één regel
-  in `.env` — zie [runbooks/deploy-en-rollback.md](../runbooks/deploy-en-rollback.md).
-- **Persistente data**: `db-data` (PostgreSQL), `logo-data` (geüploade organisatielogo's — de
-  enige gebruikersdata buiten de database) en `caddy-data` (de uitgegeven certificaten; kwijt
-  betekent opnieuw aanvragen en tegen Let's Encrypt-limieten aanlopen).
+- **Only Caddy publishes ports** (80, 443, 443/udp). API, frontend and database talk over the
+  internal network and are unreachable from outside — which is also why the API may serve
+  plain HTTP and skip its own https redirect.
+- **Nuxt runs server-side**, unlike a static build: SSR talks to `http://api:8080`, the browser
+  to `https://<domain>`.
+- **The API migrates itself at startup.** Safe because exactly one API instance runs; a second
+  would race it.
+- **Images are tagged by commit SHA**, not only `latest`. That is what makes a rollback one
+  line in `.env` — see [runbooks/deploy-and-rollback.md](../runbooks/deploy-and-rollback.md).
+- **Persistent data**: `db-data` (PostgreSQL), `logo-data` (uploaded organization logos — the
+  only user data outside the database) and `caddy-data` (the issued certificates; losing it
+  means re-requesting them and hitting Let's Encrypt rate limits).
 
-## Omgevingen
+## Environments
 
 | | Development | Test | Production |
 |---|---|---|---|
-| Database | lokale Postgres via `docker-compose.dev.yml` | idem | container `db` |
-| Migraties | handmatig `dotnet ef database update` | **niet** automatisch | automatisch bij boot |
-| Seed-data | nee | ja, `TestDataSeeder` | nee |
-| Swagger | ja | ja | nee |
-| E-mail | naar de console (`LogOnlyEmailSender`) | idem | SMTP |
-| Foutdetails in responses | ja | nee | nee |
-| Secrets uit | `dotnet user-secrets` | user-secrets | environment variables |
+| Database | local Postgres via `docker-compose.dev.yml` | same | container `db` |
+| Migrations | manual `dotnet ef database update` | **not** automatic | automatic at boot |
+| Seed data | no | yes, `TestDataSeeder` | no |
+| Swagger | yes | yes | no |
+| Email | to the console (`LogOnlyEmailSender`) | same | SMTP |
+| Exception detail in responses | yes | no | no |
+| Secrets from | `dotnet user-secrets` | user-secrets | environment variables |

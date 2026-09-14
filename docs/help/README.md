@@ -16,7 +16,7 @@ Wat er dan nodig is, ongeveer in deze volgorde — geleid door wat iemand op dag
 3. **Open diensten** — wat een gestreepte dienst is en hoe je hem vult
 4. **Beschikbaarheid en afwezigheid** — wat een medewerker zelf doet en wat de planner doet
 5. **Rollen en rechten** — wie mag wat, in gewone taal
-6. **Je planning delen** — zodra [besluit 0003](../decisions/0003-planning-delen-frontend-wame.md) gebouwd is
+6. **Je planning delen** — zodra [besluit 0003](../decisions/0003-sharing-a-planning-frontend-only.md) gebouwd is
 
 ## Regels voor deze map
 

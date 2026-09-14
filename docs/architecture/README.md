@@ -1,13 +1,13 @@
-# Architectuur
+# Architecture
 
-Hoe het systeem in elkaar zit en waarom. Niet hoe je er code in schrijft — dat staat in
+How the system fits together and why. Not how you write code in it — that is
 [../guidelines/](../guidelines/).
 
-| Document | Beantwoordt |
+| Document | Answers |
 |---|---|
-| [overview.md](overview.md) | Welke projecten zijn er, wat mag waarvan afhangen, welke weg legt een request af, hoe ziet productie eruit? |
-| [multi-tenancy.md](multi-tenancy.md) | Hoe weet het systeem wélke klant je bent, en waar wordt die grens bewaakt? |
-| [modules.md](modules.md) | Hoe worden Planning, Klant en Beheer per organisatie en per gebruiker aan- en uitgezet? |
+| [overview.md](overview.md) | Which projects exist, what may depend on what, which path a request takes, what production looks like |
+| [multi-tenancy.md](multi-tenancy.md) | How does the system know *which* customer you are, and where is that boundary enforced? |
+| [modules.md](modules.md) | How are Planning, Klant and Beheer switched on and off per organization and per user? |
 
-Begin bij `multi-tenancy.md` als je iets aan de API gaat doen. Dat is de plek waar een fout
-geen bug is maar een datalek.
+Start with `multi-tenancy.md` if you are about to touch the API. That is where a mistake is
+not a bug but a data leak.

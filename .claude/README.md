@@ -1,51 +1,51 @@
 # .claude
 
-Claude Code configuration for this repository. Everything here is tooling — the actual
-documentation lives in [`docs/`](../docs/README.md) and the rules in
-[`CLAUDE.md`](../CLAUDE.md).
+Claude Code configuration for this repository. Everything here is tooling — the documentation
+itself lives in [`docs/`](../docs/README.md) and the rules in [`CLAUDE.md`](../CLAUDE.md).
 
-| Bestand | Wat het doet |
+| File | What it does |
 |---|---|
-| `settings.json` | gedeelde projectinstellingen: toegestane en geweigerde commando's, MCP-servers, en de `SessionStart`-hook. Ingecheckt. |
-| `settings.local.json` | jouw persoonlijke overrides. **Niet** ingecheckt, niet delen — er staan sessiespecifieke tokens in. |
-| `launch.json` | dev-server voor de Browser-pane (`npm run dev` in `Planning.Web`, poort 3000). Er staat een tweede in `Planning.Web/.claude/` op poort 3100. |
-| `skills/` | procedures die Claude kan laden in plaats van ze opnieuw af te leiden. |
+| `settings.json` | shared project settings: allowed and denied commands, MCP servers, and the `SessionStart` hook. Checked in. |
+| `settings.local.json` | your personal overrides. **Not** checked in, not to be shared — it holds session-specific tokens. |
+| `launch.json` | dev server for the Browser pane (`npm run dev` in `Planning.Web`, port 3000). There is a second one in `Planning.Web/.claude/` on port 3100. |
+| `skills/` | procedures Claude can load instead of deriving them again. |
 
 ## Skills
 
-| Skill | Wanneer |
+| Skill | When |
 |---|---|
-| `backend-conventions` | vóór het schrijven van C# — laadt `docs/guidelines/api.md` |
-| `frontend-conventions` | vóór het schrijven van Vue/TS — laadt `docs/guidelines/frontend.md` en `design.md` |
-| `tenant-endpoint` | nieuw of gewijzigd endpoint op tenant-data, van domain tot orval |
-| `db-schema-change` | entity- of kolomwijziging plus de EF-migratie |
-| `form-card` | bewerkbare entiteitskaart: schema → `use*Edit` → `FormEditableSection` |
-| `query-slice` | endpoint naar de frontend trekken: `use*Api` → `queryKeys` → `useQuery` → invalidatie |
+| `backend-conventions` | before writing C# — loads `docs/guidelines/api.md` |
+| `frontend-conventions` | before writing Vue or TypeScript — loads `docs/guidelines/frontend.md` and `design.md` |
+| `tenant-endpoint` | a new or changed endpoint on tenant data, from domain method to orval |
+| `db-schema-change` | an entity or column change plus its EF migration |
+| `form-card` | an editable entity card: schema → `use*Edit` → `FormEditableSection` |
+| `query-slice` | pulling an endpoint into the frontend: `use*Api` → `queryKeys` → `useQuery` → invalidation |
 
-Aanroepen met `/backend-conventions`, `/tenant-endpoint`, enzovoort. Claude pakt ze ook zelf
-op wanneer de beschrijving bij de taak past.
+Invoke with `/backend-conventions`, `/tenant-endpoint`, and so on. Claude also picks them up on
+its own when the description matches the task.
 
-Een skill is één map met een `SKILL.md` met frontmatter (`name`, `description`). De
-`description` bepaalt wanneer Claude de skill oppakt — schrijf hem in termen van de taak, niet
-van de inhoud.
+A skill is one folder with a `SKILL.md` carrying frontmatter (`name`, `description`). The
+`description` decides when Claude reaches for it — write it in terms of the task, not the
+contents.
 
-## De SessionStart-hook
+## The SessionStart hook
 
-`settings.json` bevat één hook. Bij elke sessiestart wordt `docs/decisions/README.md` in de
-context geladen, zodat genomen besluiten er zijn zonder dat iemand eraan hoeft te denken:
+`settings.json` carries one hook. At every session start `docs/decisions/README.md` is loaded
+into context, so decisions already made are present without anyone having to remember them:
 
 ```
 node -e "try{process.stdout.write(require('fs').readFileSync('docs/decisions/README.md','utf8'))}catch(e){}"
 ```
 
-Het is `node -e` en geen `cat`, omdat `cat` niet bestaat onder `cmd.exe` — dit commando is in
-Git Bash, PowerShell en cmd getest. De `try/catch` zorgt dat een ontbrekend bestand de sessie
-niet laat struikelen.
+It is `node -e` rather than `cat` because `cat` does not exist under `cmd.exe`, and there is no
+guarantee which shell runs a hook on Windows — this command was tested in Git Bash, PowerShell
+and cmd. The `try/catch` means a missing file degrades to silence instead of tripping the
+session.
 
-Daarom moet die index **kort** blijven: hij kost context bij elke start. De motivatie hoort in
-de losse besluitbestanden, niet in de tabel.
+That is also why the index has to stay **short**: it costs context at every start. The
+reasoning belongs in the individual decision files, not in the table.
 
-## Wat hier niet hoort
+## What does not belong here
 
-Plannen, besluiten en specificaties. Die staan in `docs/`; ze zijn niet voor Claude alleen en
-horen niet in een tooling-map te verstoppen.
+Plans, decisions and specifications. Those live in `docs/`; they are not for Claude alone and
+should not be hidden in a tooling folder.

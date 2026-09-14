@@ -1,46 +1,46 @@
-# Documentatie
+# Documentation
 
-Ingedeeld naar het soort vraag dat een document beantwoordt. Eén onderwerp heeft één plek —
-staat het ergens anders ook, dan is een van de twee fout.
+Organised by the kind of question a document answers. One subject has one home — if it is
+written down in two places, one of them is wrong.
 
-| Map | Beantwoordt |
+| Folder | Answers |
 |---|---|
-| [decisions/](decisions/) | "Waarom is dit zo?" — genomen keuzes, niet opnieuw ter discussie |
-| [architecture/](architecture/) | "Hoe zit het in elkaar?" — projecten, tenancy, modules, productie |
-| [guidelines/](guidelines/) | "Hoe schrijf ik hier code?" — conventies per laag |
-| [references/](references/) | "Hoe heet dat ook alweer?" — configuratie, policies, foutcodes |
-| [runbooks/](runbooks/) | "Hoe zet ik dit live, en wat doe ik als het stukgaat?" |
-| [help/](help/) | "Hoe gebruik ik dit?" — voor de klant, in het Nederlands |
-| [plans/](plans/) | "Wat gaan we bouwen en wat raakt het?" — werk dat nog niet bestaat |
+| [decisions/](decisions/) | "Why is it like this?" — choices already made, not up for re-litigation |
+| [architecture/](architecture/) | "How does it fit together?" — projects, tenancy, modules, production |
+| [guidelines/](guidelines/) | "How do I write code here?" — conventions per layer |
+| [references/](references/) | "What was that called again?" — configuration, policies, error codes |
+| [runbooks/](runbooks/) | "How do I ship this, and what do I do when it breaks?" |
+| [help/](help/) | "How do I use this?" — for the customer, in Dutch |
+| [plans/](plans/) | "What are we building and what does it touch?" — work that does not exist yet |
 
-Losse bestanden:
+Loose files:
 
-| Bestand | Beantwoordt |
+| File | Answers |
 |---|---|
-| [prd.md](prd.md) | Wat is het product? De MVP-specificatie |
-| [collaboration.md](collaboration.md) | Hoe werken Luuk en Claude samen, buiten code om? |
-| [testplan.md](testplan.md) | Wat moet ik met de hand nalopen? |
-| [../my-company.md](../my-company.md) | Waar werken we deze week aan? Bedrijfskern en weekfocus |
-| [../marketing.md](../marketing.md) | Positionering, kanalen, budget |
+| [prd.md](prd.md) | What is the product? The MVP specification |
+| [collaboration.md](collaboration.md) | How do Luuk and Claude work together, outside of code? |
+| [testplan.md](testplan.md) | What do I have to check by hand? |
+| [../my-company.md](../my-company.md) | What are we working on this week? Company core and weekly focus |
+| [../marketing.md](../marketing.md) | Positioning, channels, budget |
 
-## Waar begin je
+## Where to start
 
-- **Iets aan de API doen** → [architecture/multi-tenancy.md](architecture/multi-tenancy.md),
-  daarna [guidelines/api.md](guidelines/api.md)
-- **Iets aan de frontend doen** → [guidelines/frontend.md](guidelines/frontend.md), en
-  [guidelines/design.md](guidelines/design.md) als het zichtbaar is
-- **Iets wat willekeurig lijkt veranderen** → eerst [decisions/](decisions/)
-- **Productie** → [runbooks/](runbooks/)
+- **Touching the API** → [architecture/multi-tenancy.md](architecture/multi-tenancy.md), then
+  [guidelines/api.md](guidelines/api.md)
+- **Touching the frontend** → [guidelines/frontend.md](guidelines/frontend.md), plus
+  [guidelines/design.md](guidelines/design.md) if it is visible
+- **Changing something that looks arbitrary** → [decisions/](decisions/) first
+- **Production** → [runbooks/](runbooks/)
 
-## Regels
+## Rules
 
-- **Een besluit hoort in [decisions/](decisions/).** Sta je op het punt ergens anders "we
-  besloten om…" te schrijven, schrijf het daar. Die index wordt bij elke sessiestart
-  ingeladen, dus hij moet kort blijven.
-- **Een open vraag hoort in het bijbehorende plan** onder [plans/](plans/), niet in
-  `decisions/`. Zodra er een keuze is, verhuist hij.
-- **Een document dat de code tegenspreekt is erger dan geen document.** Wijk je bewust af,
-  pas het dan aan in dezelfde commit. Haalt de code een besluit in, zet er dan een
-  `## Stand van zaken (datum)` onder in plaats van de geschiedenis te herschrijven.
-- **Nederlands waar het over het product of het bedrijf gaat, Engels waar het over de code
-  gaat.** `help/` is altijd Nederlands. Code, commits en identifiers altijd Engels.
+- **A decision belongs in [decisions/](decisions/).** If you are about to write "we decided
+  to…" anywhere else, write it there instead. That index is loaded at every session start, so
+  it has to stay short.
+- **An undecided question belongs in its plan** under [plans/](plans/), not in `decisions/`.
+  Once there is a choice, it moves.
+- **A document that contradicts the code is worse than no document.** If you deviate on
+  purpose, update it in the same commit. When the code overtakes a decision, add a
+  `## Where this stands (date)` section instead of rewriting history.
+- **Everything is written in English, except `docs/help/`**, which is customer-facing and
+  therefore Dutch — including its README. Code, commits and identifiers are always English.

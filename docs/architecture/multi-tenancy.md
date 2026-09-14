@@ -1,62 +1,61 @@
 # Multi-tenancy
 
-De belangrijkste pagina in deze map. Eén fout hier is geen bug maar een datalek: de ene klant
-ziet de planning van de andere.
+The most important page in this folder. One mistake here is not a bug but a data leak: one
+customer sees another customer's planning.
 
-## Het model
+## The model
 
-Een **Account** is een persoon met een e-mailadres en een wachtwoord. Een **User** is het
-lidmaatschap van dat account in één organisatie, met een rol. Eén account kan meerdere
-lidmaatschappen hebben — dat is hoe iemand voor twee bedrijven kan plannen.
+An **Account** is a person with an email address and a password. A **User** is that account's
+membership of one organization, with a role. One account can hold several memberships — that
+is how somebody plans for two companies.
 
 ```
 Account ──1:n──► User ──n:1──► Organization
- (inloggen)   (rol, actief)     (de tenant)
+ (signing in)  (role, active)    (the tenant)
 ```
 
-Alles wat aan een organisatie toebehoort erft van `TenantEntity`
+Everything owned by an organization derives from `TenantEntity`
 (`Planning.Domain/Common/TenantEntity.cs`): `OrganizationId`, `CreatedAtUtc`, `UpdatedAtUtc`.
 
-## De keten: van token naar organisatie
+## The chain: from token to organization
 
-Dit is het stuk dat je moet begrijpen voordat je een endpoint schrijft.
+This is the part to understand before writing an endpoint.
 
-**1. Het JWT draagt `accountId`, niet de organisatie.**
-`JwtTokenService` zet `sub`, `accountId` en `email` in het token. Bewust géén organisatie:
-een token dat een organisatie vastlegt, moet opnieuw uitgegeven worden als je wisselt, en
-blijft geldig als je lidmaatschap wordt ingetrokken.
+**1. The JWT carries `accountId`, not the organization.**
+`JwtTokenService` puts `sub`, `accountId` and `email` in the token. Deliberately no
+organization: a token that pinned one would have to be reissued on every switch, and would
+stay valid after the membership was revoked.
 
-**2. `OrganizationContextMiddleware` bepaalt per request wélke organisatie.**
-Hij leest `accountId` uit het token en zoekt het lidmaatschap:
+**2. `OrganizationContextMiddleware` decides per request which organization it is.**
+It reads `accountId` from the token and resolves the membership:
 
-- Staat er een `X-Organization-Id`-header? Dan wordt die alléén gehonoreerd als er een
-  lidmaatschap voor dat account in die organisatie bestaat **en** dat lidmaatschap actief is.
-  De header is dus een *verzoek*, geen bewering.
-- Geen bruikbare header? Dan het enige actieve lidmaatschap.
-- Meerdere actieve lidmaatschappen en geen header? Dan **geen** organisatiecontext. Er wordt
-  bewust niet gegokt: één van de twee kiezen zou stilzwijgend bepalen welke tenant de caller
-  leest en schrijft. Die keuze blijft bij de client, via `GET /api/organizations/mine`.
+- Is there an `X-Organization-Id` header? It is honoured **only** if a membership exists for
+  that account in that organization **and** that membership is active. The header is a
+  *request*, not an assertion.
+- No usable header? The single active membership.
+- Several active memberships and no header? Then **no** organization context. It deliberately
+  does not guess: picking one would silently decide which tenant the caller reads and writes.
+  That choice stays with the client, via `GET /api/organizations/mine`.
 
-Slaagt het, dan worden `userId`, `organizationId` en de rol als claims aan de identity
-toegevoegd — pas dáár, in deze request, niet in het token.
+When it succeeds, `userId`, `organizationId` and the role are added as claims on the identity —
+there, in this request, not in the token.
 
-**3. `ICurrentUserContext` leest die claims.**
-`CurrentUserContext` (in `Planning.Api/Services/`) is de enige plek waar de application-laag
-aan de identiteit komt. `HasOrganization` is waar zodra er zowel een `organizationId` als een
-`userId` is.
+**3. `ICurrentUserContext` reads those claims.**
+`CurrentUserContext` (in `Planning.Api/Services/`) is the only place the application layer
+touches identity. `HasOrganization` is true once there is both an `organizationId` and a
+`userId`.
 
-**4. De middleware staat tussen authenticatie en autorisatie.**
-Dat is geen detail: de `Require*Module`-policies lezen de claims die deze middleware toevoegt.
-Verplaats hem en elke module-policy faalt — zonder duidelijke foutmelding.
+**4. The middleware sits between authentication and authorization.**
+That is not a detail: the `Require*Module` policies read the claims this middleware adds. Move
+it and every module policy fails — without a clear error.
 
-## Waar de grens bewaakt wordt
+## Where the boundary is enforced
 
-**Repositories filteren niet op organisatie.** `GetByIdAsync(id)` geeft de entiteit terug,
-van wie hij ook is. Dat is opzettelijk: als de repository stilletjes zou filteren, zou een
-ontbrekende controle in de service *werken* in plaats van opvallen, en zou niemand ooit leren
-dat de controle nodig is.
+**Repositories do not filter on organization.** `GetByIdAsync(id)` returns the entity, whoever
+owns it. That is on purpose: if the repository filtered quietly, a missing check in the service
+would *work* instead of standing out, and nobody would ever learn the check is needed.
 
-**De application service is het enige controlepunt.** Het patroon, uit `PlanningService`:
+**The application service is the only enforcement point.** The pattern, from `PlanningService`:
 
 ```csharp
 var record = await _planningRecordRepository.GetByIdAsync(id, cancellationToken);
@@ -67,50 +66,50 @@ if (record is null || !Owns(record))
 }
 ```
 
-Twee dingen dragen hier het gewicht:
+Two things carry the weight here:
 
-1. **`null` en "van een andere tenant" geven hetzelfde antwoord.** `NOT_FOUND`, nooit
-   `FORBIDDEN`. Met `FORBIDDEN` bevestig je dat het id bestaat, en dat is al een lek.
-2. **Het geldt ook voor reads.** Een `GET` die de controle overslaat is precies zo erg als een
-   `DELETE` die dat doet.
+1. **`null` and "belongs to another tenant" give the same answer.** `NOT_FOUND`, never
+   `FORBIDDEN`. With `FORBIDDEN` you confirm the id exists, and that is already a leak.
+2. **It applies to reads too.** A `GET` that skips the check is exactly as bad as a `DELETE`
+   that does.
 
-`TenantServiceBase` levert het gereedschap: `TryGetOrganizationId` (organisatie of
-`NO_ORGANIZATION`), `Owns(entity)` en `TranslateDomainErrorsAsync`.
+`TenantServiceBase` supplies the tools: `TryGetOrganizationId` (organization or
+`NO_ORGANIZATION`), `Owns(entity)` and `TranslateDomainErrorsAsync`.
 
-## Vreemde verwijzingen tellen ook mee
+## Foreign references count as well
 
-Een planning-record verwijst naar een klant en naar een medewerker. Beide id's komen uit het
-request en zijn dus door de aanvaller te kiezen. `PlanningService.ValidateReferencesAsync`
-laadt ze en controleert ze tegen dezelfde organisatie vóór het opslaan. Zonder die stap kan
-iemand zijn eigen dienst aan de klant van een andere tenant hangen.
+A planning record points at a customer and at an employee. Both ids come from the request and
+are therefore attacker-chosen. `PlanningService.ValidateReferencesAsync` loads them and checks
+them against the same organization before persisting. Without that step, somebody can attach
+their own shift to another tenant's customer.
 
-Hetzelfde geldt voor elke nieuwe verwijzing die je toevoegt.
+The same holds for every new reference you add.
 
-## Lijstquery's
+## List queries
 
-Die filteren wél in de repository — `GetByOrganizationIdAsync(organizationId, ...)` — met een
-id dat uit `TryGetOrganizationId` komt, nooit uit het request.
+Those *do* filter in the repository — `GetByOrganizationIdAsync(organizationId, ...)` — with an
+id that comes from `TryGetOrganizationId`, never from the request.
 
-## Hoe je het test
+## How to test it
 
-`Planning.Tests/Application/PlanningServiceTests.cs` is het model. Vaste GUID's voor
-`OwnOrganizationId` en `OtherOrganizationId`, zodat een gefaalde test meteen zegt wélke tenant
-het betrof. Drie tests per tenant-entiteit zijn genoeg:
+`Planning.Tests/Application/PlanningServiceTests.cs` is the model. Fixed GUIDs for
+`OwnOrganizationId` and `OtherOrganizationId`, so a failing test says immediately which tenant
+it was about. Three tests per tenant entity are enough:
 
-- lezen van een record van een andere organisatie geeft `NOT_FOUND`
-- verwijderen ervan geeft `NOT_FOUND`
-- muteren ervan geeft `NOT_FOUND`
+- reading another organization's record gives `NOT_FOUND`
+- deleting it gives `NOT_FOUND`
+- mutating it gives `NOT_FOUND`
 
-Dit is de plek waar wij wél tests schrijven, ondanks het "standaard geen tests"-uitgangspunt.
-Ze zijn goedkoop en ze vangen de duurste soort fout.
+This is where we *do* write tests, despite the "no tests by default" rule. They are cheap and
+they catch the most expensive class of mistake.
 
-## De checklist bij elk nieuw endpoint
+## The checklist for every new endpoint
 
-- [ ] organisatie komt uit `ICurrentUserContext`, nooit uit body of query
-- [ ] na elke load-by-id een `Owns`-controle
-- [ ] `NOT_FOUND`, niet `FORBIDDEN`
-- [ ] elke vreemde verwijzing gecontroleerd tegen dezelfde organisatie
-- [ ] lijstquery's filteren op `organizationId`
-- [ ] module-policy op de controller, actie-policy op elke mutatie
+- [ ] the organization comes from `ICurrentUserContext`, never from body or query
+- [ ] an `Owns` check after every load-by-id
+- [ ] `NOT_FOUND`, not `FORBIDDEN`
+- [ ] every foreign reference checked against the same organization
+- [ ] list queries filtered on `organizationId`
+- [ ] module policy on the controller, action policy on every mutation
 
-Zie de skill `tenant-endpoint` voor de volledige procedure.
+See the `tenant-endpoint` skill for the full procedure.

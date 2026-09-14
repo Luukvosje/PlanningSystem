@@ -1,65 +1,65 @@
-# 0006 — Pricing: hybride seats plus pakketten
+# 0006 — Pricing: hybrid seats plus packages
 
-- **Datum:** 2026-08-16
-- **Status:** voorlopig — het model staat, de bedragen niet
-- **Raakt:** verdienmodel, [prd.md](../prd.md), [collaboration.md](../collaboration.md),
+- **Date:** 2026-08-16
+- **Status:** provisional — the model stands, the amounts do not
+- **Touches:** revenue model, [prd.md](../prd.md), [collaboration.md](../collaboration.md),
   [my-company.md](../../my-company.md)
 
-## Besluit
+## Decision
 
-Een hybride model. **Planner-seats zijn de kernprijs**; medewerker-seats zijn gratis tot een
-grens en daarboven een klein bedrag per stuk. Daarnaast blijft het totaalpakket bestaan als
-alles-in-één-optie voor wie niet met seats wil puzzelen.
+A hybrid model. **Planner seats are the core price**; employee seats are free up to a limit and
+a small amount each above it. Alongside that, the all-in package stays as a simple alternative
+for anyone who does not want to puzzle over seats.
 
-| Onderdeel | Richting |
+| Component | Direction |
 |---|---|
-| Planner-seat — maakt en wijzigt roosters | hoofdprijs, hier zit de waarde |
-| Medewerker-seat — ziet eigen rooster, geeft beschikbaarheid door | gratis tot een grens (10–15), daarna klein bedrag per stuk |
-| Totaalpakket Starter / Groei / Premium | blijft bestaan als alles-in-één-optie |
+| Planner seat — creates and changes rosters | the main price, this is where the value is |
+| Employee seat — sees own roster, submits availability | free up to a limit (10–15), small amount each above it |
+| All-in package Starter / Groei / Premium | stays as the all-in option |
 
-De pakkettarieven zoals ze vandaag in de [PRD](../prd.md) staan:
+The package rates as they stand today in the [PRD](../prd.md):
 
-| Pakket | Voor | Prijs |
+| Package | For | Price |
 |---|---|---|
-| Starter | ±15 medewerkers | €19–29 per maand |
-| Groei | meer medewerkers, meerdere planners | €49–69 per maand |
-| Premium | meerdere vestigingen, uitgebreide functies | €99+ per maand |
+| Starter | ±15 employees | €19–29 per month |
+| Groei | more employees, several planners | €49–69 per month |
+| Premium | several locations, extended features | €99+ per month |
 
-## Waarom
+## Why
 
-De waarde zit bij de planner, niet bij de medewerker die alleen zijn eigen rooster bekijkt.
-Een model dat per medewerker afrekent straft precies de groei die je wilt: een klant die er
-vijf mensen bij neemt, gebruikt de tool niet vijf keer intensiever.
+The value sits with the planner, not with the employee who only looks at their own roster. A
+model that bills per employee punishes exactly the growth you want: a customer who hires five
+more people is not using the tool five times as intensively.
 
-## Alternatief overwogen: credits
+## Alternative considered: credits
 
-Credits per dienst of per actie. Verworpen.
+Credits per shift or per action. Rejected.
 
-Credits passen bij sporadisch gebruik — AI-beeldgeneratie bijvoorbeeld. Bij een planningstool
-wil je juíst frequent gebruik; credits per actie zetten een prikkel neer om de tool *minder*
-te gebruiken, precies tegen het doel in (minder WhatsApp, meer overzicht).
+Credits suit sporadic use — AI image generation, for instance. With a planning tool you *want*
+frequent use; credits per action create an incentive to use the tool *less*, directly against
+the goal (less WhatsApp, more overview).
 
-Voor latere, optionele extra's zijn credits wél denkbaar — niet voor het plannen zelf.
+For later, optional extras credits are conceivable — not for the planning itself.
 
-## Nog open
+## Still open
 
-Geen van deze vier is vastgesteld:
+None of these four is settled:
 
-- Exacte bedragen per planner-seat en per medewerker-seat.
-- Vanaf welk aantal medewerkers de toeslag begint: 10 of 15?
-- Blijven de pakkettarieven hierboven staan nu er een seat-model naast komt, of gaan ze mee
-  omhoog?
-- Toets bij een paar potentiële klanten of €19–29 leest als "te goedkoop om serieus te nemen"
-  of als "eindelijk betaalbaar". Bij B2B-tools is ondergeprijsd vaker het probleem dan
-  overgeprijsd.
+- Exact amounts per planner seat and per employee seat.
+- At what number of employees the surcharge starts: 10 or 15?
+- Do the package rates above stay as they are now that a seat model sits beside them, or do
+  they move up?
+- Test with a few prospects whether €19–29 reads as "too cheap to take seriously" or as
+  "finally affordable". With B2B tools, underpricing is more often the problem than
+  overpricing.
 
-Te beslissen vóór het eerste prijsgesprek met een klant — niet eerder, wel op tijd.
+To be decided before the first pricing conversation with a customer — not earlier, but in time.
 
-## Stand van zaken (2026-09-14)
+## Where this stands (2026-09-14)
 
-Dit bestand is nu de enige plek waar het verdienmodel wordt uitgelegd. `collaboration.md`,
-`my-company.md` en de `prd.md` verwijzen ernaar in plaats van het opnieuw te beschrijven; ze
-zeiden alle drie iets anders, tot en met "nog niet bepaald" in `my-company.md`.
+This file is now the only place the revenue model is explained. `collaboration.md`,
+`my-company.md` and `prd.md` point here instead of describing it again; all three used to say
+something different, down to "not yet decided" in `my-company.md`.
 
-De PRD houdt de pakkettarieven, want dat is waar ze vandaan komen — maar noemt er nu bij dat
-ze de pakket-helft van dit model zijn en niet het hele verhaal.
+The PRD keeps the package rates, since that is where they come from — but now says alongside
+them that they are the package half of this model and not the whole story.

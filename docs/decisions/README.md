@@ -1,51 +1,51 @@
-# Besluiten
+# Decisions
 
-Genomen keuzes, zodat een nieuwe sessie niet opnieuw dezelfde discussie voert. **Wijk hier
-niet vanaf zonder het besluit expliciet te herzien** — en herzien betekent: het bestand
-aanpassen, niet er omheen werken.
+Choices already made, so a new session does not re-run the same discussion. **Do not deviate
+from these without explicitly revising the decision** — and revising means editing the file,
+not working around it.
 
-Deze index wordt bij elke sessiestart ingeladen (`SessionStart`-hook in
-`.claude/settings.json`). Houd hem kort; de motivatie staat in de losse bestanden.
+This index is loaded at every session start (`SessionStart` hook in `.claude/settings.json`).
+Keep it short; the reasoning lives in the individual files.
 
-| # | Besluit | Status |
+| # | Decision | Status |
 |---|---|---|
-| [0001](0001-product-scope-en-niet-doelen.md) | MVP doet géén salaris, verlof, facturatie, HR, AI-planning, urenregistratie. Toets elke feature aan: sneller plannen, minder fouten, beter overzicht, minder WhatsApp | definitief |
-| [0002](0002-open-diensten-nullable-assigneduserid.md) | Open dienst = `AssignedUserId` is null. Geen aparte status of tabel | definitief, gebouwd |
-| [0003](0003-planning-delen-frontend-wame.md) | Planning delen is puur frontend: tekstformat + clipboard + `wa.me`. Geen API-wijziging, geen PDF nu | voorlopig, **niet gebouwd** |
-| [0004](0004-notities-per-dienst-geen-bouwwerk.md) | Notities per dienst bestaan al — alleen UX testen, niets bouwen | definitief |
-| [0005](0005-marketingkanaal-meta-ads.md) | Eerste kanaal is smal getargete Meta Ads, €10–20/dag, video | eerste richting |
-| [0006](0006-pricing-model.md) | Hybride: planner-seats als kernprijs, medewerkers gratis tot een grens, plus pakketten. Geen credits | voorlopig, bedragen open |
-| [0007](0007-open-diensten-vormgeving.md) | Open dienst = gestreepte rand plus i18n-label. API stuurt `assignedUserName: null` | definitief, gebouwd |
-| [0008](0008-hosting-vps-docker-compose.md) | VPS met Docker Compose en Caddy, niet Azure. Database is PostgreSQL | definitief, gebouwd |
-| [0009](0009-geen-ai-companion.md) | Geen LLM in de planningsflow. Conflictsignalering blijft deterministische regels | definitief |
-| [0010](0010-tijdlijn-is-plannertool.md) | `/timeline` vereist een plannerrol; medewerker ziet alleen zijn eigen week | definitief, gebouwd |
+| [0001](0001-product-scope-and-non-goals.md) | The MVP does no payroll, leave, invoicing, HR or AI planning. Test every feature against: planning faster, fewer mistakes, better overview, less WhatsApp | final |
+| [0002](0002-open-shifts-nullable-assigneduserid.md) | An open shift is `AssignedUserId` being null. No separate status or table | final, built |
+| [0003](0003-sharing-a-planning-frontend-only.md) | Sharing a planning is frontend only: text format + clipboard + `wa.me`. No API change, no PDF for now | provisional, **not built** |
+| [0004](0004-shift-notes-no-build-needed.md) | Notes per shift already exist — test the UX, build nothing | final |
+| [0005](0005-marketing-channel-meta-ads.md) | First channel is narrowly targeted Meta Ads, €10–20/day, video | first direction |
+| [0006](0006-pricing-model.md) | Hybrid: planner seats as the core price, employees free up to a limit, packages alongside. No credits | provisional, amounts open |
+| [0007](0007-open-shifts-visual-design.md) | An open shift is a dashed border plus an i18n label. The API sends `assignedUserName: null` | final, built |
+| [0008](0008-hosting-vps-docker-compose.md) | A VPS with Docker Compose and Caddy, not Azure. The database is PostgreSQL | final, built |
+| [0009](0009-no-ai-companion.md) | No LLM in the planning flow. Conflict detection stays deterministic rules | final |
+| [0010](0010-timeline-is-a-planner-tool.md) | `/timeline` requires a planner role; an employee sees only their own week | final, built |
 
-## Nog open — hier is nog géén besluit over
+## Still open — no decision here yet
 
-- Exacte pricing-bedragen, de medewerkersgrens (10 of 15), en of de pakkettarieven blijven
-  staan nu er een seat-model naast komt. Zie [0006](0006-pricing-model.md).
-- Tekstformat voor "Planning delen": per medewerker of per dag gegroepeerd?
-- Merknaam, domeinnaam, tone-of-voice en een concurrentievergelijking voor marketing-copy.
+- Exact pricing amounts, the employee limit (10 or 15), and whether the package rates stay as
+  they are now that a seat model sits beside them. See [0006](0006-pricing-model.md).
+- Text format for "sharing a planning": grouped per employee or per day?
+- Brand name, domain name, tone of voice, and a competitor comparison for marketing copy.
 
-## Een besluit toevoegen
+## Adding a decision
 
-Nieuw bestand `NNNN-korte-titel.md`, oplopend genummerd, met deze kop:
+A new file `NNNN-short-title.md`, numbered upwards, with this header:
 
 ```markdown
-# NNNN — Titel
+# NNNN — Title
 
-- **Datum:** YYYY-MM-DD
-- **Status:** definitief | voorlopig
-- **Raakt:** welke bestanden of onderdelen
+- **Date:** YYYY-MM-DD
+- **Status:** final | provisional
+- **Touches:** which files or parts
 
-## Besluit
-## Waarom
-## Alternatief overwogen
+## Decision
+## Why
+## Alternative considered
 ```
 
-Daarna één regel in de tabel hierboven. Een besluit dat de code inhaalt krijgt er een
-`## Stand van zaken (datum)` bij in plaats van een herschreven geschiedenis — wat je toen
-besloot blijft staan, wat er sindsdien gebeurd is komt eronder.
+Then one row in the table above. A decision the code has overtaken gets a
+`## Where this stands (date)` section rather than a rewritten history — what you decided then
+stays, what has happened since goes underneath.
 
-Een vraag die nog niet beslist is hoort **niet** hier maar in het bijbehorende plan onder
-[../plans/](../plans/), tot er een keuze is.
+A question that is not yet decided belongs **not** here but in the matching plan under
+[../plans/](../plans/), until there is a choice.

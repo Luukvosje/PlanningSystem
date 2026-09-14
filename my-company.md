@@ -1,105 +1,118 @@
-# My company — kern
+# My company — the core
 
-De kern van het bedrijf achter dit product. Statisch bovenin, wekelijkse focus onderin.
-Werk de sectie **Focus deze week** elke maandag bij; verplaats de vorige week naar het log.
+The core of the business behind this product. Static at the top, the weekly focus at the
+bottom. Update **Focus this week** every Monday and move the previous week into the log.
 
-> Bedrijfsnaam: _nog invullen_
+> Company name: _to be filled in_
 
-## Wat we zijn
+## What we are
 
-Een **multi-tenant planning-SaaS voor het MKB**, branche-onafhankelijk: elk bedrijf dat
-mensen inplant bij klanten. Gebouwd en gerund door één persoon (Luuk), **naast een baan**,
-op ~5–10 uur per week.
+A **multi-tenant planning SaaS for small and medium businesses**, industry-independent: any
+company that schedules people at customers. Built and run by one person (Luuk), **alongside a
+job**, at roughly 5–10 hours a week.
 
-## Waarom wij
+## Why us
 
-1. **Simpeler dan de rest.** Bestaande planningspakketten zijn te log en te duur voor kleine
-   bedrijven. Elke feature moet die belofte overeind houden — complexiteit is hier geen
-   neutraal iets, het is verlies van de belangrijkste reden om voor ons te kiezen.
-2. **Persoonlijk contact en snel schakelen.** Ik ken de klant en bouw wensen snel. Grote
-   leveranciers doen dat niet.
+1. **Simpler than the rest.** Existing planning packages are too heavy and too expensive for
+   small companies. Every feature has to keep that promise standing — complexity is not
+   neutral here, it is the loss of the main reason to choose us.
+2. **Personal contact and quick turnaround.** I know the customer and build requests fast.
+   Large vendors do not.
 
-Die twee bijten elkaar: snel klantwensen bouwen is precies hoe een simpel product log wordt.
-Zie *Bewaken* hieronder.
+Those two bite each other: building customer requests fast is exactly how a simple product
+becomes a heavy one. See *What to guard* below.
 
 ## Product
 
-Eén codebase, per organisatie in te schakelen modules:
+One codebase, with modules that can be switched on per organization:
 
-| Module   | Inhoud |
-|----------|--------|
-| Planning | Planning-records aanmaken, verplaatsen, bevestigen, weekoverzicht |
-| Klant    | Klantbeheer |
-| Beheer   | Organisatie, gebruikers, uitnodigingen, rollen, module-toewijzing |
+| Module   | Contains |
+|----------|----------|
+| Planning | create, move and confirm planning records, week overview |
+| Klant    | customer management |
+| Beheer   | organization, users, invites, roles, module assignment |
 
-Stack: .NET 10 (Clean Architecture) + Nuxt/Vue 3. Zie `CLAUDE.md` voor de regels.
+Stack: .NET 10 (Clean Architecture) + Nuxt/Vue 3. See `CLAUDE.md` for the rules.
 
-## Fase en doel
+## Phase and goal
 
-- **Fase:** bouwen, nog geen klanten.
-- **Doel komende 3 maanden:** het product werkend genoeg krijgen voor de eerste klant.
+- **Phase:** building, no customers yet.
+- **Goal for the next 3 months:** get the product working well enough for the first customer.
 
-"Werkend genoeg" = alle vier af:
-- [ ] Planning maken en inzien (aanmaken, verplaatsen, bevestigen, weekoverzicht)
-- [ ] Klanten en medewerkers beheren (CRUD, uitnodigen, rollen, modules)
-- [ ] Beschikbaarheid van medewerkers, inclusief conflictsignalering bij inplannen
-- [ ] Live te zetten met echte data (hosting, login, backups)
+"Working well enough" = all four done:
+- [ ] Create and view a planning (create, move, confirm, week overview)
+- [ ] Manage customers and employees (CRUD, invites, roles, modules)
+- [ ] Employee availability, including conflict detection while scheduling
+- [ ] Deployable with real data (hosting, login, backups)
 
-Alles wat hier niet in staat is **niet nu**.
+Anything not on this list is **not now**.
 
-## Verdienmodel
+## Revenue model
 
-Hybride: **planner-seats zijn de kernprijs**, medewerker-seats gratis tot een grens en
-daarboven een klein bedrag per stuk, met Starter/Groei/Premium ernaast als alles-in-één-optie.
-Geen credits voor het plannen zelf — die zetten een prikkel om de tool minder te gebruiken.
+Hybrid: **planner seats are the core price**, employee seats free up to a limit and a small
+amount each above it, with Starter/Groei/Premium alongside as the all-in option. No credits for
+the planning itself — those create an incentive to use the tool less.
 
-De bedragen en de medewerkersgrens (10 of 15) staan nog open. Te beslissen vóór het eerste
-prijsgesprek met een klant — niet eerder, wel op tijd.
+The amounts and the employee limit (10 or 15) are still open. To be decided before the first
+pricing conversation with a customer — not earlier, but in time.
 
-Volledige afweging: [besluit 0006](docs/decisions/0006-pricing-model.md).
+Full reasoning: [decision 0006](docs/decisions/0006-pricing-model.md).
 
-## Bewaken
+## What to guard
 
-- **Simpel blijven.** Bij elke feature: maakt dit het product moeilijker uit te leggen?
-- **Klantwensen generiek oplossen.** Eerst per-organisatie configuratie of een module,
-  pas daarna maatwerk. Hardcoded klantnamen of `if (organizationId == ...)` zijn een red flag.
-- **Scope.** 5–10 uur per week. Elke week die niet aan de vier MVP-punten hierboven werkt,
-  is een week uitstel van de eerste klant.
-- **Tenant-isolatie en secrets.** Zie de security-checklist in `CLAUDE.md`.
+- **Stay simple.** For every feature: does this make the product harder to explain?
+- **Solve customer requests generically.** Per-organization configuration or a module first,
+  bespoke work only after that. Hardcoded customer names or `if (organizationId == ...)` are a
+  red flag.
+- **Scope.** 5–10 hours a week. Every week not spent on the four MVP points above is a week of
+  delay before the first customer.
+- **Tenant isolation and secrets.** See the security checklist in `CLAUDE.md`.
 
 ## Marketing
 
-Positionering, kanalen, budget, ads en resultaten staan in `marketing.md`. Eén bestand,
-maandelijks bijwerken.
+Positioning, channels, budget, ads and results live in `marketing.md`. One file, updated
+monthly.
 
 ---
 
-# Focus deze week
+# Focus this week
 
-**Week van: 2026-08-17**
+**Week of:** _to be filled in_
 
-**Doel deze week:**
-- Beschikbaarheid-refactor afmaken: conflictsignalering werkend via `availabilityMath.ts`
-  en `usePlanningAvailabilityPeriods` (de oude `AvailabilityOverlapChecker` is al verwijderd).
-- Frontend lint schoon: `npm run lint:fix`, daarna de resterende echte errors handmatig
-  (o.a. één `no-explicit-any`).
-- De 170 ongecommitte bestanden opsplitsen in logische commits op een feature branch.
+**Goal this week:**
+- _to be filled in_
 
-**Blokkades:**
-- Geen.
+**Blockers:**
+- _to be filled in_
 
-**Bewust niet deze week:**
-- Hosting en deployment (MVP-punt 4, staat op 0%) — schuift naar volgende week.
-- Pricing-bedragen bepalen — het model staat (besluit 0006), alleen de bedragen nog niet.
-
-**Stand van de code bij aanvang (woensdag 2026-08-19):**
-- Backend bouwt schoon (0 warnings, 0 errors).
-- Laatste commit 2026-08-16; 170 gewijzigde bestanden in de working tree.
-- Datamodel compleet voor alle vier MVP-punten; laatste migratie 2026-07-18.
-- Geen Dockerfile, geen CI, `.github` leeg.
+**Deliberately not this week:**
+- _to be filled in_
 
 ---
 
-# Weeklog
+# Week log
 
-_(afgeronde weken komen hier, nieuwste bovenaan)_
+_(completed weeks go here, newest first)_
+
+## Week of 2026-08-17
+
+**Goal that week:**
+- Finish the availability refactor: conflict detection working through `availabilityMath.ts`
+  and `usePlanningAvailabilityPeriods` (the old `AvailabilityOverlapChecker` was already gone).
+- Frontend lint clean: `pnpm lint:fix`, then the remaining real errors by hand (including one
+  `no-explicit-any`).
+- Split the 170 uncommitted files into logical commits on a feature branch.
+
+**Blockers:** none.
+
+**Deliberately not:** hosting and deployment — moved to the following week.
+
+**State of the code at the start of that week (2026-08-19):**
+- Backend built clean (0 warnings, 0 errors).
+- Last commit 2026-08-16; 170 changed files in the working tree.
+- Data model complete for all four MVP points; last migration 2026-07-18.
+- No Dockerfile, no CI, `.github` empty.
+
+> Since then MVP point 4 has largely landed: PostgreSQL, two Dockerfiles, the production
+> compose file with Caddy, a backup script, and CI plus deploy workflows — see
+> [decision 0008](docs/decisions/0008-hosting-vps-docker-compose.md).

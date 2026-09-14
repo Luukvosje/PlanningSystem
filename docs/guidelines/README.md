@@ -1,21 +1,21 @@
 # Guidelines
 
-Hoe je in dit project code schrijft. Wat het systeem ís staat in
+How to write code in this project. What the system *is* lives in
 [../architecture/](../architecture/).
 
-| Document | Voor | Skill |
+| Document | For | Skill |
 |---|---|---|
-| [api.md](api.md) | de vijf .NET-projecten | `backend-conventions` |
-| [frontend.md](frontend.md) | `Planning.Web` — architectuur en code | `frontend-conventions` |
-| [design.md](design.md) | `Planning.Web` — ontwerptaal, pagina-anatomie, gedeelde componenten | `frontend-conventions` |
+| [api.md](api.md) | the five .NET projects | `backend-conventions` |
+| [frontend.md](frontend.md) | `Planning.Web` — architecture and code | `frontend-conventions` |
+| [design.md](design.md) | `Planning.Web` — visual language, page anatomy, shared components | `frontend-conventions` |
 
-Deze documenten staan bewust **niet** in `CLAUDE.md`: samen zijn ze te groot om elke sessie mee
-te laden, en een frontend-sessie heeft niets aan de backend-helft. `CLAUDE.md` houdt alleen de
-non-negotiables.
+These documents are deliberately **not** in `CLAUDE.md`: together they are too large to load
+every session, and a frontend session has no use for the backend half. `CLAUDE.md` carries
+only the non-negotiables.
 
-`api.md` en `frontend.md` sluiten elk af met **Open questions** — plekken waar de codebase
-zichzelf tegenspreekt. Kies daar een bestaande variant, verzin geen derde, en beslecht het in
-[../decisions/](../decisions/) in plaats van in dat lijstje.
+`api.md` and `frontend.md` each close with **Open questions** — places where the codebase
+contradicts itself. Pick an existing variant there, do not invent a third, and settle it in
+[../decisions/](../decisions/) rather than in that list.
 
-Een guideline die de code tegenspreekt is erger dan geen guideline. Wijk je bewust af, pas dan
-het document aan in dezelfde commit.
+A guideline that contradicts the code is worse than no guideline. If you deviate on purpose,
+update the document in the same commit.
