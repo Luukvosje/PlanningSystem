@@ -6,7 +6,6 @@ import { getMonday } from '~/utils/planning/dateUtils';
 const props = withDefaults(defineProps<{
   label: string
   weekStart: Date
-  isCurrentWeek: boolean
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
 }>(), {
   size: 'md',
@@ -63,21 +62,13 @@ function goToTodayAndClose() {
 			/>
 		</UFieldGroup>
 
-		<UButton
-			v-if="!isCurrentWeek"
-			variant="outline"
-			color="neutral"
-			:label="t('dashboard.today')"
-			class="shrink-0"
-			:size="size"
-			@click="emit('today')"
-		/>
-
 		<UPopover v-model:open="calendarOpen">
 			<UButton
-				variant="ghost"
+				variant="outline"
 				color="neutral"
-				class="min-w-0 px-2 font-medium text-default hover:bg-elevated"
+				icon="i-lucide-calendar"
+				trailing-icon="i-lucide-chevron-down"
+				class="min-w-0 font-medium"
 				:size="size"
 			>
 				<span class="truncate">{{ label }}</span>

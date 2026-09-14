@@ -60,7 +60,16 @@ function setViewMode(mode: MyPlanningViewMode) {
   viewMode.value = mode;
 }
 
+const todayAction: HeaderAction = {
+  type: 'button',
+  key: 'today',
+  label: t('dashboard.today'),
+  icon: 'i-lucide-calendar-check',
+  onSelect: goToToday,
+};
+
 const headerActions = computed<HeaderAction[]>(() => [
+  ...(isCurrentWeek.value ? [] : [todayAction]),
   {
     type: 'select',
     key: 'viewMode',
@@ -98,7 +107,6 @@ const headerActions = computed<HeaderAction[]>(() => [
 					<PlanningMyPeriodNav
 						:label="periodLabel"
 						:week-start="weekStart"
-						:is-current-week="isCurrentWeek"
 						size="sm"
 						@previous="navigatePrevious"
 						@next="navigateNext"
