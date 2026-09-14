@@ -11,7 +11,7 @@ Multi-tenant Planning SaaS. .NET 10 (Clean Architecture) backend + Nuxt/Vue 3 fr
 Planning.Api            Controllers, middleware, JWT, authorization policies
 Planning.Application    DTOs, application services, FluentValidation validators, Result<T>
 Planning.Domain          Entities, enums, repository interfaces (no EF Core, no framework refs)
-Planning.Infrastructure  EF Core, repository implementations, SQL Server
+Planning.Infrastructure  EF Core, repository implementations, PostgreSQL
 Planning.Web             Nuxt/Vue 3 frontend
 ```
 

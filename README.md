@@ -9,7 +9,7 @@ Planning/
 ├── Planning.Api/              # Controllers, middleware, JWT, Swagger
 ├── Planning.Application/      # DTOs, application services, validators, Result pattern
 ├── Planning.Domain/           # Entities, enums, repository interfaces
-└── Planning.Infrastructure/   # EF Core, repositories, SQL Server
+└── Planning.Infrastructure/   # EF Core, repositories, PostgreSQL
 ```
 
 ## Architecture flow
@@ -28,7 +28,7 @@ API → Application Services → Domain ← Infrastructure
 ### Prerequisites
 
 - .NET 10 SDK
-- SQL Server or LocalDB
+- PostgreSQL 17 (`docker compose -f docker-compose.dev.yml up -d` starts one on 127.0.0.1:5432)
 
 ### Secrets (local development)
 
@@ -37,6 +37,7 @@ The JWT signing key is **not** committed. Set it once via `dotnet user-secrets` 
 
 ```bash
 dotnet user-secrets set "Jwt:Key" "<a long random string, 32+ chars>"
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=PlanningDb;Username=planning;Password=planning_dev"
 ```
 
 This applies to both the `Development` and `Test` environments. In CI/production, set the
@@ -59,11 +60,12 @@ Open Swagger at `/swagger`.
 
 ### Authentication
 
-1. Create an organization via `POST /api/organizations` (anonymous)
-2. Request a development JWT via `POST /api/auth/token`
-3. Authorize in Swagger with `Bearer {token}`
+1. Register an account via `POST /api/auth/register` (anonymous)
+2. Create an organization via `POST /api/organizations`
+3. Sign in via `POST /api/auth/login` and authorize in Swagger with `Bearer {accessToken}`
 
-See [EXAMPLES.md](./EXAMPLES.md) for full request/response samples.
+`EXAMPLES.md` still documents the removed `POST /api/auth/token` development endpoint and
+needs a rewrite.
 
 ## Domain model
 
