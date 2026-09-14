@@ -18,6 +18,12 @@
   --ui-border: var(--ui-color-neutral-300);
   --ui-radius: 0.375rem;
 
+  /* Nuxt UI resolves the accent to shade 500 on light. White label text on #0d9488 is 3.7:1,
+     which fails WCAG AA for the 14px labels our buttons use - and the same shade carries every
+     link. Shade 600 (#006a61) takes that to 6.5:1. Dark keeps 400, where the fill sits under
+     dark text and already has the contrast. */
+  --ui-brand: var(--ui-color-brand-600);
+
   /* The material floating chrome is cut from: the timeline ruler you scroll the grid
      under, the nav panel that hangs over the page. Saturation is pushed up because
      blur washes colour out, and the coloured blocks passing under the ruler are
@@ -35,6 +41,11 @@
 
 .dark {
   --ui-border: var(--ui-color-neutral-700);
+
+  /* Restates the Nuxt UI default. It has to be here: the `:root` override above is unlayered
+     and would otherwise beat `.dark` from inside `@layer theme`, dragging the dark accent down
+     with the light one. */
+  --ui-brand: var(--ui-color-brand-400);
 
   /* Dark glass brightens what is behind it instead of dimming it, the way a lit pane
      over a dark room does, and needs a deeper fill: the light alpha over an already
