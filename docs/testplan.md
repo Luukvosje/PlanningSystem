@@ -1,212 +1,220 @@
-# Handmatige testlijst — na de opruimronde
+# Manual test list — after the cleanup round
 
-Niets hiervan is in een browser gedraaid. Deze lijst dekt wat er in fase 1 t/m 5 is gewijzigd,
-gesorteerd op risico: **A** eerst, dat is waar een fout het meest kost.
+None of this has been run in a browser. This list covers what changed in phases 1 to 5, sorted
+by risk: **A** first, because that is where a mistake costs the most.
 
-Voorbereiding:
+Preparation:
 
 ```bash
 dotnet ef database update --project Planning.Infrastructure --startup-project Planning.Api
 ```
 
 ```bash
-cd Planning.Web && npm run dev
+cd Planning.Web && pnpm dev
 ```
 
-Je hebt minimaal drie accounts nodig in één organisatie: een **Owner/Admin**, een **Planner** en
-een **Employee**. Voor punt 2 en 12 heb je een tweede organisatie nodig.
+You need at least three accounts in one organization: an **Owner/Admin**, a **Planner** and an
+**Employee**. For items 2 and 12 you need a second organization.
 
 ---
 
-## A. Hoogste risico — hier kan het stil fout gaan
+## A. Highest risk — this is where it can go wrong silently
 
-### 1. Tijden staan op de juiste plek ⚠️ belangrijkste test
+### 1. Times are in the right place ⚠️ the most important test
 
-De backend stuurde tijdstempels zonder `Z`, waarna JavaScript ze als lokale tijd las. Dat is
-opgelost in de database-laag, en de frontend-workaround die het maskeerde is verwijderd. Zit hier
-een fout, dan schuift **alles** met je UTC-offset (nu 2 uur).
+The backend used to send timestamps without a `Z`, after which JavaScript read them as local
+time. That was fixed in the database layer, and the frontend workaround that masked it has been
+removed. If there is a mistake here, **everything** shifts by your UTC offset (currently 2
+hours).
 
-- [ ] Maak een boeking van **10:00 tot 11:00**. Sluit de sidebar. Staat het blok op 10:00?
-- [ ] Herlaad de pagina (F5). Staat het er nog steeds op 10:00, niet op 12:00 of 08:00?
-- [ ] Open de boeking opnieuw — staat er 10:00–11:00 in het formulier?
-- [ ] Check de rode "nu"-lijn: staat die op de werkelijke huidige tijd?
-- [ ] Maak een boeking rond **middernacht** (23:30–00:30) en kijk of die over de dagrand loopt
-      zoals verwacht.
-- [ ] Kijk in de netwerktab naar de respons van `GET /api/planning`. Eindigen `startUtc` en
-      `endUtc` op een **`Z`**? Zo niet, stop en meld het.
+- [ ] Create a booking from **10:00 to 11:00**. Close the sidebar. Is the block at 10:00?
+- [ ] Reload the page (F5). Is it still at 10:00, not 12:00 or 08:00?
+- [ ] Open the booking again — does the form say 10:00–11:00?
+- [ ] Check the red "now" line: is it at the actual current time?
+- [ ] Create a booking around **midnight** (23:30–00:30) and see whether it crosses the day
+      boundary as expected.
+- [ ] In the network tab, look at the response of `GET /api/planning`. Do `startUtc` and
+      `endUtc` end in a **`Z`**? If not, stop and report it.
 
-### 2. Tenant-isolatie
+### 2. Tenant isolation
 
-- [ ] Log in bij organisatie A, kopieer een planning-id uit de URL of netwerktab.
-- [ ] Wissel naar organisatie B en roep `GET /api/planning/{dat-id}` aan.
-      Verwacht: **404**, met de tekst "Planningsregel niet gevonden" — niet 403, en zeker geen data.
-- [ ] Idem voor een klant-id en een beschikbaarheidsregel-id.
+- [ ] Sign in to organization A, copy a planning id from the URL or the network tab.
+- [ ] Switch to organization B and call `GET /api/planning/{that-id}`.
+      Expected: **404**, with the text "Planning record not found" — not 403, and certainly no
+      data.
+- [ ] Same for a customer id and an availability rule id.
 
-### 3. Beschikbaarheid lekt niet meer
+### 3. Availability no longer leaks
 
-Dit was een echt lek: elke medewerker kon de vakantie- en ziekteredenen van alle collega's zien.
+This was a real leak: every employee could see the holiday and sickness reasons of all their
+colleagues.
 
-- [ ] Log in als **Employee**. Open de planning. Zie je in de netwerktab bij
-      `GET /api/availability/rules/for-planning` alleen je **eigen** periodes?
-- [ ] Als Employee: roep dat endpoint aan met `?EmployeeIds=<id-van-een-collega>`.
-      Verwacht: **403**.
-- [ ] Als Employee: met je **eigen** id → wel toegestaan.
-- [ ] Log in als **Planner**. Zonder filter: zie je het hele team?
+- [ ] Sign in as **Employee**. Open the planning. In the network tab, does
+      `GET /api/availability/rules/for-planning` return only **your own** periods?
+- [ ] As Employee: call that endpoint with `?EmployeeIds=<a colleague's id>`.
+      Expected: **403**.
+- [ ] As Employee: with your **own** id → allowed.
+- [ ] Sign in as **Planner**. Without a filter: do you see the whole team?
 
-### 4. Modules aan/uit zetten blijft werken
+### 4. Switching modules on and off still works
 
-Hier ging ik zelf bijna de fout in: een `AsNoTracking()` op de verkeerde query zou wijzigingen
-zonder foutmelding hebben laten vallen.
+This is where I nearly got it wrong myself: an `AsNoTracking()` on the wrong query would have
+dropped changes without an error.
 
-- [ ] Als Owner/Admin: zet een module **uit** voor de organisatie. Bevestig. **Herlaad de pagina.**
-      Staat hij nog uit?
-- [ ] Zet hem weer aan. Herlaad. Staat hij aan?
-- [ ] Idem per gebruiker, als je die UI kunt bereiken (die is grotendeels uitgeschakeld).
+- [ ] As Owner/Admin: switch a module **off** for the organization. Confirm. **Reload the
+      page.** Is it still off?
+- [ ] Switch it back on. Reload. Is it on?
+- [ ] Same per user, if you can reach that UI (it is largely disabled).
 
 ---
 
-## B. Gewijzigd gedrag — dit hóórt anders te zijn dan voorheen
+## B. Changed behaviour — this is *supposed* to differ from before
 
-### 5. Statusovergangen worden nu bewaakt
+### 5. Status transitions are now guarded
 
-- [ ] Zet een boeking op **Geannuleerd**. Probeer hem daarna op **Bevestigd** te zetten.
-      Verwacht: geweigerd, met de Nederlandse melding
+- [ ] Set a booking to **Cancelled**. Then try to set it to **Confirmed**.
+      Expected: refused, with the Dutch message
       *"Een afgeronde of geannuleerde boeking kan niet meer van status wijzigen."*
-- [ ] Idem vanuit **Voltooid**.
-- [ ] Gepland → Bevestigd: **moet gewoon werken**.
-- [ ] Bevestigd → Voltooid: moet werken. Bevestigd → Geannuleerd: moet werken.
-- [ ] **Let hier op:** wijzig van een boeking alleen de *titel* en sla op, zonder de status aan te
-      raken. Dat moet slagen. Een status die gelijk blijft is geen overgang.
-- [ ] Zet de app op Engels en herhaal de eerste stap — komt de melding dan in het Engels?
+- [ ] Same from **Completed**.
+- [ ] Planned → Confirmed: **must simply work**.
+- [ ] Confirmed → Completed: must work. Confirmed → Cancelled: must work.
+- [ ] **Watch out here:** change only the *title* of a booking and save, without touching the
+      status. That has to succeed. A status that stays the same is not a transition.
+- [ ] Switch the app to English and repeat the first step — does the message come out in
+      English?
 
-### 6. Openingstijden-venster is veranderd
+### 6. The opening-hours window has changed
 
-Er stonden zes verschillende defaults in de code. Nu is er één: **de hele dag**. Voor een
-organisatie **zonder** ingestelde openingstijden zag je eerst 07:00–19:00.
+There were six different defaults in the code. Now there is one: **the whole day**. For an
+organization **without** configured opening hours you used to see 07:00–19:00.
 
-- [ ] Organisatie **zonder** openingstijden: de tijdlijn toont nu de volledige dag. Verwacht.
-- [ ] Organisatie **mét** openingstijden (bijv. 08:00–18:00): venster volgt die instelling.
-- [ ] Vind je de hele dag te breed als default? Zeg het — dan draaien we het terug.
+- [ ] Organization **without** opening hours: the timeline now shows the full day. Expected.
+- [ ] Organization **with** opening hours (say 08:00–18:00): the window follows that setting.
+- [ ] Do you find the whole day too wide as a default? Say so — we can put it back.
 
-### 7. Grijze arcering ligt op de blokken (A4)
+### 7. The grey shading lines up with the blocks (A4)
 
-De arcering "buiten openingstijden" werd met andere wiskunde getekend dan de blokken, dus die
-liep bij de standaardinstellingen niet gelijk.
+The "outside opening hours" shading was drawn with different arithmetic than the blocks, so
+under the default settings the two did not line up.
 
-- [ ] Zet openingstijden op bijv. **09:00–17:00**. Standaardinstellingen laten staan
-      (rij-layout *ruim*, "hele dag" **uit**).
-- [ ] Begint de grijze band precies waar 09:00 op de tijdlijn ligt, en eindigt hij op 17:00?
-- [ ] Maak een boeking van 08:00–10:00: valt de linkerhelft binnen de grijze zone en de
-      rechterhelft erbuiten, netjes op de grens?
-- [ ] Wissel de rij-layout naar **compact** en terug. Blijft de arcering kloppen?
-- [ ] Zet "hele dag" **aan**: arcering verdwijnt of dekt de dag, en blokken blijven kloppen.
+- [ ] Set opening hours to, say, **09:00–17:00**. Leave the defaults (row layout *spacious*,
+      "whole day" **off**).
+- [ ] Does the grey band start exactly where 09:00 sits on the timeline, and end at 17:00?
+- [ ] Create a booking from 08:00–10:00: does the left half fall inside the grey zone and the
+      right half outside, neatly on the boundary?
+- [ ] Switch the row layout to **compact** and back. Does the shading still line up?
+- [ ] Switch "whole day" **on**: the shading disappears or covers the day, and the blocks stay
+      correct.
 
-### 8. Overlap-markering
+### 8. Overlap marking
 
-- [ ] Twee overlappende boekingen bij dezelfde medewerker → beide krijgen de rode rand.
-- [ ] Twee boekingen die precies op elkaar aansluiten (10:00–11:00 en 11:00–12:00) → **geen** rand.
-- [ ] Overlappende boekingen bij **verschillende** medewerkers → geen rand.
-- [ ] **Nieuw gedrag:** annuleer een van twee overlappende boekingen. De rode rand op de
-      andere moet **verdwijnen**.
+- [ ] Two overlapping bookings for the same employee → both get the red border.
+- [ ] Two bookings that touch exactly (10:00–11:00 and 11:00–12:00) → **no** border.
+- [ ] Overlapping bookings for **different** employees → no border.
+- [ ] **New behaviour:** cancel one of two overlapping bookings. The red border on the other one
+      must **disappear**.
 
-### 9. Beschikbaarheidsregels: wie mag wat
+### 9. Availability rules: who may do what
 
-- [ ] Als **Employee**: maak je eigen vakantie/ziekmelding aan → moet werken.
-- [ ] Als **Employee**: probeer je eigen regel te **wijzigen** → geweigerd.
-- [ ] Als **Employee**: probeer je eigen regel te **verwijderen** → geweigerd.
-- [ ] Als **Planner**: wijzigen en verwijderen → moet werken.
+- [ ] As **Employee**: create your own holiday or sick note → must work.
+- [ ] As **Employee**: try to **change** your own rule → refused.
+- [ ] As **Employee**: try to **delete** your own rule → refused.
+- [ ] As **Planner**: changing and deleting → must work.
 
-*(Dit was jouw keuze "zelf aanmaken, planner verwijdert". Wijzigen valt daar bewust onder
-verwijderen: anders kort je je eigen regel in tot een minuut en heb je hem effectief weggehaald.)*
+*(This was your choice: "create it yourself, the planner deletes it". Changing deliberately
+falls under deleting: otherwise you shorten your own rule to a minute and have effectively
+removed it.)*
 
-### 10. Foutieve URL geeft 400, geen 500
+### 10. A malformed URL gives 400, not 500
 
 - [ ] `GET /api/planning?StartUtc=2026-08-01T00:00:00Z&EndUtc=2026-08-31T00:00:00Z&UserIds=abc`
-      → **400** met een veldfout op `UserIds`. Voorheen een 500.
-- [ ] Idem met `&Statuses=Vergeten` → 400.
+      → **400** with a field error on `UserIds`. Previously a 500.
+- [ ] Same with `&Statuses=Forgotten` → 400.
 
 ---
 
-## C. Werkt alles nog — de hele planning-flow
+## C. Does everything still work — the whole planning flow
 
-De twee handgeschreven API-clients zijn verwijderd en vervangen door de gegenereerde client.
-Elke actie hieronder loopt nu over een andere codepad dan voorheen.
+The two hand-written API clients have been removed and replaced by the generated client. Every
+action below now runs over a different code path than before.
 
 ### 11. Planning CRUD
 
-- [ ] Boeking **aanmaken** via de sidebar
-- [ ] Boeking **openen** en **wijzigen** (titel, omschrijving, notities, klant, medewerker, kleur)
-- [ ] Boeking **verplaatsen** door te slepen naar een andere tijd
-- [ ] Boeking **verplaatsen** naar een andere rij (andere medewerker)
-- [ ] Boeking **verlengen/inkorten** aan de rand slepen
-- [ ] Boeking **bevestigen**
-- [ ] Boeking **dupliceren**
-- [ ] Boeking **verwijderen**
-- [ ] Na elke actie: verschijnt de wijziging direct, en blijft die staan na F5?
+- [ ] **Create** a booking from the sidebar
+- [ ] **Open** and **change** a booking (title, description, notes, customer, employee, colour)
+- [ ] **Move** a booking by dragging it to another time
+- [ ] **Move** a booking to another row (another employee)
+- [ ] **Extend/shorten** a booking by dragging its edge
+- [ ] **Confirm** a booking
+- [ ] **Duplicate** a booking
+- [ ] **Delete** a booking
+- [ ] After every action: does the change appear immediately, and does it survive F5?
 
-### 12. Rest van de app
+### 12. The rest of the app
 
-- [ ] In-/uitloggen; laat een sessie lang genoeg open staan dat de token verlengd wordt
-      (de refresh-call is bewust níet gemigreerd — controleer dat je niet uitgegooid wordt)
-- [ ] Meerdere organisaties: de keuzelijst toont de **juiste namen** (die worden nu in één
-      query opgehaald in plaats van één per lidmaatschap)
-- [ ] Gebruikerslijst laadt en toont per gebruiker de juiste modules (idem, batch-query)
-- [ ] Klanten: lijst, aanmaken, wijzigen, verwijderen, zoeken
-- [ ] Gebruikers: lijst, rol wijzigen, zoeken
-- [ ] Uitnodiging aanmaken en accepteren
-- [ ] **Logo uploaden** bij organisatie-instellingen (nieuw codepad) — en verschijnt het daarna?
-- [ ] Planning-instellingen opslaan (openingstijden + belangrijke werktijden)
-- [ ] "Mijn planning"-weergave
-- [ ] Dashboard: "volgende dienst"
+- [ ] Sign in and out; leave a session open long enough for the token to be refreshed (the
+      refresh call was deliberately *not* migrated — check you are not thrown out)
+- [ ] Multiple organizations: the picker shows the **right names** (these are now fetched in one
+      query instead of one per membership)
+- [ ] The user list loads and shows the right modules per user (same, a batch query)
+- [ ] Customers: list, create, change, delete, search
+- [ ] Users: list, change role, search
+- [ ] Create and accept an invite
+- [ ] **Upload a logo** in the organization settings (a new code path) — and does it then appear?
+- [ ] Save the planning settings (opening hours plus important working times)
+- [ ] The "My planning" view
+- [ ] Dashboard: "next shift"
 
-### 13. Formulieren
+### 13. Forms
 
-`components/form/Control.vue` is herschreven — **de productie-build was hierdoor al kapot**
-(`npm run build` faalde vóór deze ronde). Alle veldtypes moeten opnieuw langs.
+`components/form/Control.vue` was rewritten — **this had already broken the production build**
+(`pnpm build` failed before this round). Every field type needs checking again.
 
-- [ ] Tekstveld, e-mailveld, **wachtwoordveld**, tekstvlak, keuzelijst — typen en opslaan
-- [ ] Validatiefouten verschijnen onder het juiste veld
-- [ ] Aanmaak-modal en wijzig-modal openen, opslaan en sluiten (de interne registratie van
-      formulieren is samengevoegd)
+- [ ] Text field, email field, **password field**, textarea, select — type into them and save
+- [ ] Validation errors appear under the right field
+- [ ] The create modal and the edit modal open, save and close (their internal form registration
+      was merged)
 
-### 14. Vertalingen
+### 14. Translations
 
-13 hardgecodeerde Nederlandse teksten zijn naar i18n verplaatst.
+13 hard-coded Dutch strings were moved into i18n.
 
-- [ ] Beschikbaarheidsregel opslaan/wijzigen/verwijderen → toast in het **Nederlands**
-- [ ] Zet de app op **Engels** → dezelfde toasts in het Engels
-- [ ] Organisatie bijwerken, planning-instellingen opslaan, logo opslaan, profiel bijwerken → beide talen
-- [ ] Navigeer naar een module waar je geen toegang tot hebt → "Geen toegang" / "No access"
-
----
-
-## D. Wat weg is — hier hoort niets te missen
-
-- [ ] Er was een "mixed"-tijdlijnweergave in de code. Die verwees naar niet-bestaande
-      store-velden en werd nergens gerenderd. **Zie je nergens iets missen?**
-- [ ] `GET /api/planning/week` is verwijderd; niets gebruikte het.
-- [ ] Kleurkiezer bij een boeking: staan alle 10 kleuren er nog?
+- [ ] Save, change and delete an availability rule → toast in **Dutch**
+- [ ] Switch the app to **English** → the same toasts in English
+- [ ] Update the organization, save planning settings, save a logo, update a profile → both
+      languages
+- [ ] Navigate to a module you have no access to → "Geen toegang" / "No access"
 
 ---
 
-## Bekend en bewust niet opgelost
+## D. What has gone — nothing should be missing here
 
-Geen bugs om te melden — dit weten we al:
+- [ ] There was a "mixed" timeline view in the code. It referenced store fields that do not
+      exist and was never rendered. **Do you notice anything missing?**
+- [ ] `GET /api/planning/week` has been removed; nothing used it.
+- [ ] The colour picker on a booking: are all 10 colours still there?
 
-| Wat | Waarom |
+---
+
+## Known and deliberately not fixed
+
+No bugs to report here — we already know about these:
+
+| What | Why |
 |---|---|
-| **Er is geen uitlog-endpoint.** Refresh-tokens worden bij uitloggen nooit ingetrokken. | Buiten deze ronde gehouden. |
-| Overlap wordt per query berekend, dus overlap over een **maandgrens** wordt niet gezien. | Echt oplossen vraagt een aparte query. |
-| Tijdzone in **beschikbaarheid**: backend rekent in UTC-achtige tijd, frontend in lokale tijd. | Dit is A7 — die doen we samen. |
-| Een dienst **over middernacht** mist de regels van de volgende dag. | Hoort bij A7. |
-| Modulebeheer-UI is uitgeschakeld (uitgecommentarieerd). | Jouw keuze: onafgemaakt, niet dood. |
-| `AvailabilityRuleStatus.Preferred` / `.Available` zijn onbereikbaar. | Laten staan, jouw keuze. |
-| 10 typecheck-fouten in `npx nuxi typecheck`. | Allemaal van vóór deze ronde. |
-| Veel `Missing semicolon`-lintfouten. | Bestaande stijlsplitsing in de codebase. |
+| **There is no sign-out endpoint.** Refresh tokens are never revoked on sign-out. | Kept outside this round. |
+| Overlap is calculated per query, so overlap across a **month boundary** is not seen. | Fixing it properly needs a separate query. |
+| Time zones in **availability**: the backend calculates in UTC-like time, the frontend in local time. | This is A7 — we do that together. |
+| A shift **across midnight** misses the next day's rules. | Belongs to A7. |
+| The module management UI is disabled (commented out). | Your choice: unfinished, not dead. |
+| `AvailabilityRuleStatus.Preferred` / `.Available` are unreachable. | Left as is, your choice. |
+| 10 typecheck errors in `nuxi typecheck`. | All of them predate this round. |
+| Many `Missing semicolon` lint errors. | An existing style split in the codebase. |
 
-## Nog te bespreken
+## Still to discuss
 
-- **A7** (tijdzone in beschikbaarheid) — samen
-- `useCreate`/`useEdit` en de twee modals samenvoegen — bewust uitgesteld tot na het UI-gesprek
-- `customers/index.vue` en `users/index.vue` zijn dezelfde pagina — idem
-- Drie losse implementaties van hetzelfde opslaan/annuleren-knoppenpaar — idem
+- **A7** (time zones in availability) — together
+- Merging `useCreate`/`useEdit` and the two modals — deliberately postponed until after the UI
+  conversation
+- `customers/index.vue` and `users/index.vue` are the same page — same
+- Three separate implementations of the same save/cancel button pair — same

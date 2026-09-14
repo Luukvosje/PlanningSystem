@@ -1,75 +1,77 @@
-# Planning SaaS - MVP Specificatie
+# Planning SaaS - MVP specification
 
-## Doel
+## Goal
 
-Bouw een eenvoudige planning SaaS waarmee kleine bedrijven (zoals sportscholen) eenvoudig medewerkers kunnen inplannen.
+Build a simple planning SaaS that lets small companies (gyms, for instance) schedule their
+staff easily.
 
-De eerste doelgroep werkt momenteel met:
+The first audience currently works with:
 - Microsoft Word
 - WhatsApp
-- Excel (optioneel)
+- Excel (optional)
 
-Het doel is **niet** om direct een volledige HR-oplossing te bouwen, maar om het huidige proces aanzienlijk eenvoudiger te maken.
-
----
-
-# Doelgroep
-
-## Eerste klant
-
-Sportschool
-
-Probleem:
-- Planning wordt gemaakt in Word.
-- Planning wordt gedeeld via WhatsApp.
-- Wijzigingen kosten veel tijd.
-- Er is geen centraal overzicht.
-- Iedereen werkt met verschillende versies.
-
-Doel:
-
-> Binnen 5 minuten een complete weekplanning kunnen maken en direct kunnen delen.
+The goal is **not** to build a full HR solution straight away, but to make the current process
+considerably simpler.
 
 ---
 
-# MVP Functionaliteiten
+# Audience
 
-## 1. Medewerkers
+## First customer
 
-Een medewerker bevat minimaal:
+A gym.
+
+The problem:
+- The planning is made in Word.
+- The planning is shared over WhatsApp.
+- Changes cost a lot of time.
+- There is no central overview.
+- Everybody works from a different version.
+
+The goal:
+
+> Build a complete week's planning in under 5 minutes and share it immediately.
+
+---
+
+# MVP features
+
+## 1. Employees
+
+An employee holds at least:
 
 - id
-- naam
-- telefoonnummer
-- kleur
-- actief/inactief
+- name
+- phone number
+- colour
+- active/inactive
 
-Voorbeeld:
+Example:
 
 ```text
 Kevin
 +31 6 12345678
-Blauw
-Actief
+Blue
+Active
 ```
 
 ---
 
-## 2. Diensten (Shifts)
+## 2. Shifts
 
-Een dienst bestaat uit:
+A shift consists of:
 
-- datum
-- begintijd
-- eindtijd
-- medewerker
-- locatie (optioneel)
-- notitie
+- date
+- start time
+- end time
+- employee
+- location (optional)
+- note
 
-Voorbeeld:
+Example:
 
 ```text
-Maandag
+Monday
 
 08:00 - 12:00 Kevin
 12:00 - 17:00 Lisa
@@ -78,74 +80,74 @@ Maandag
 
 ---
 
-## 3. Weekplanning
+## 3. Week planning
 
-Dit is het belangrijkste scherm van de applicatie.
+This is the most important screen in the application.
 
-Weergave:
+Layout:
 
 ```text
-Ma | Di | Wo | Do | Vr | Za | Zo
+Mon | Tue | Wed | Thu | Fri | Sat | Sun
 ```
 
-Per dag worden alle diensten weergegeven.
+Every shift is shown under its day.
 
-Gewenste interacties:
+Required interactions:
 
-- Nieuwe dienst toevoegen
-- Dienst aanpassen
-- Dienst verwijderen
-- Dienst slepen naar andere dag
-- Medewerker wijzigen
-- Tijd wijzigen
+- add a new shift
+- change a shift
+- delete a shift
+- drag a shift to another day
+- change the employee
+- change the time
 
-Drag & Drop is de standaard interactie.
+Drag and drop is the default interaction.
 
 ---
 
-## 4. Beschikbaarheid
+## 4. Availability
 
-Een medewerker kan aangeven wanneer hij beschikbaar is.
+An employee can say when they are available.
 
-Bijvoorbeeld:
+For example:
 
 ```text
-Maandag
+Monday
 
-✓ Ochtend
-✓ Middag
-✗ Avond
+✓ Morning
+✓ Afternoon
+✗ Evening
 ```
 
-Of:
+Or:
 
 ```text
-Vrijdag
+Friday
 
-Niet beschikbaar
+Unavailable
 19:00 - 22:00
 ```
 
-De planner ziet deze informatie tijdens het plannen.
+The planner sees this while scheduling.
 
 ---
 
-## 5. Planning delen
+## 5. Sharing a planning
 
-Een planner kan de volledige planning delen.
+A planner can share the whole planning.
 
-Opties:
+Options:
 
-- Kopiëren als tekst
-- Delen via WhatsApp
+- copy as text
+- share over WhatsApp
 - PDF export (later)
 
-Voorbeeld:
+Example:
 
 ```text
 Planning week 31
 
-Maandag
+Monday
 
 Kevin
 08:00 - 16:00
@@ -156,63 +158,63 @@ Lisa
 
 ---
 
-## 6. Open diensten
+## 6. Open shifts
 
-Wanneer geen medewerker is ingepland:
+When no employee is scheduled:
 
 ```text
-Vrijdag
+Friday
 
 18:00 - 22:00
 
-Open dienst
+Open shift
 ```
 
-Later kan een medewerker deze dienst accepteren.
+Later an employee can accept that shift.
 
 ---
 
-## 7. Notities
+## 7. Notes
 
-Elke dienst kan een notitie bevatten.
+Every shift can carry a note.
 
-Voorbeeld:
+Example:
 
 ```text
 Kevin
 
-- Sleutel meenemen
-- Nieuwe medewerker inwerken
+- bring the key
+- show the new colleague around
 ```
 
 ---
 
-# Wat bouwen we bewust NIET?
+# What we deliberately do NOT build
 
-De eerste versie bevat geen:
+The first version contains no:
 
-- Salarisadministratie
-- Contractbeheer
-- Verlofadministratie
-- Declaraties
-- Facturatie
-- HR-dossiers
+- payroll
+- contract management
+- leave administration
+- expenses
+- invoicing
+- HR files
 - AI planning
-- Urenregistratie
-- Klok in/uit
-- Certificaten
+- time tracking
+- clock in/out
+- certificates
 
-Focus ligt volledig op plannen.
+The focus is entirely on planning.
 
 ---
 
-# SaaS Architectuur
+# SaaS architecture
 
-## Multi Tenant
+## Multi-tenant
 
-Elke klant krijgt zijn eigen omgeving.
+Every customer gets their own environment.
 
-Structuur:
+Structure:
 
 ```text
 Tenant
@@ -223,190 +225,189 @@ Tenant
     Settings
 ```
 
-Data van klanten mag nooit zichtbaar zijn voor andere klanten.
+One customer's data must never be visible to another.
 
 ---
 
-# Rollen
+# Roles
 
-## Eigenaar
+## Owner
 
-Mag alles.
+May do everything.
 
 ---
 
 ## Planner
 
-Kan:
+Can:
 
-- medewerkers beheren
-- planning maken
-- planning wijzigen
+- manage employees
+- create a planning
+- change a planning
 
 ---
 
-## Medewerker
+## Employee
 
-Kan alleen:
+Can only:
 
-- eigen planning bekijken
-- beschikbaarheid aanpassen
-- open diensten accepteren
+- view their own planning
+- change their availability
+- accept open shifts
 
 ---
 
 # Dashboard
 
-Voorbeeld:
+Example:
 
 ```text
-Vandaag
+Today
 
-3 medewerkers aanwezig
+3 employees present
 
-2 open diensten
+2 open shifts
 
-1 ziekmelding
+1 sick note
 
-Planning volgende week
-85% gevuld
+Planning next week
+85% filled
 ```
 
-Dashboard moet in één oogopslag duidelijk zijn.
+The dashboard has to be clear at a glance.
 
 ---
 
-# Mobiele App
+# Mobile app
 
-Een medewerker ziet alleen zijn eigen gegevens.
+An employee sees only their own data.
 
-Voorbeeld:
+Example:
 
 ```text
-Mijn diensten
+My shifts
 
-Maandag
+Monday
 08:00 - 16:00
 
-Woensdag
+Wednesday
 17:00 - 22:00
 
-Vrijdag
+Friday
 12:00 - 18:00
 ```
 
-Functies:
+Features:
 
-- planning bekijken
-- beschikbaarheid wijzigen
-- notities lezen
-- open diensten bekijken
+- view the planning
+- change availability
+- read notes
+- view open shifts
 
 ---
 
 # Roadmap
 
-## Fase 1 (MVP)
+## Phase 1 (MVP)
 
-- Medewerkers
-- Planning
-- Weekoverzicht
-- Drag & Drop
-- Planning delen
-- Mobiele planning
+- employees
+- planning
+- week overview
+- drag and drop
+- sharing a planning
+- planning on mobile
 
-Doel:
+Goal:
 
-**Eerste betalende klant.**
-
----
-
-## Fase 2
-
-- Herhalende diensten
-- Weektemplates
-- Planning kopiëren
-- Open diensten
-- Beschikbaarheid
+**The first paying customer.**
 
 ---
 
-## Fase 3
+## Phase 2
 
-- Vakantie
-- Meerdere locaties
-- Certificaten
-- Pauzes
-
----
-
-## Fase 4
-
-- Urenregistratie
-- Klok in/uit
-- Loonexport
-- API koppelingen
+- recurring shifts
+- week templates
+- copying a planning
+- open shifts
+- availability
 
 ---
 
-# UX Principes
+## Phase 3
 
-De applicatie moet:
-
-- extreem snel zijn
-- mobiel werken
-- weinig klikken vereisen
-- overzichtelijk blijven
-- drag & drop als primaire interactie gebruiken
-
-Een planner moet binnen **5 minuten** een volledige weekplanning kunnen maken.
+- holidays
+- multiple locations
+- certificates
+- breaks
 
 ---
 
-# Niet het doel
+## Phase 4
 
-We bouwen geen compleet HR-pakket.
-
-We bouwen de snelste en eenvoudigste planner voor kleine bedrijven.
+- time tracking
+- clock in/out
+- payroll export
+- API integrations
 
 ---
 
-# Verdienmodel
+# UX principles
 
-> Dit zijn de pakkettarieven: de alles-in-één-helft van het model. De kernprijs zijn
-> planner-seats — zie [besluit 0006](decisions/0006-pricing-model.md) voor het geheel.
-> De bedragen hieronder liggen nog niet vast.
+The application has to:
+
+- be extremely fast
+- work on mobile
+- require few clicks
+- stay readable
+- use drag and drop as the primary interaction
+
+A planner has to be able to build a complete week's planning within **5 minutes**.
+
+---
+
+# Not the goal
+
+We are not building a complete HR package.
+
+We are building the fastest and simplest planner for small companies.
+
+---
+
+# Revenue model
+
+> These are the package rates: the all-in half of the model. The core price is planner seats —
+> see [decision 0006](decisions/0006-pricing-model.md) for the whole picture. The amounts below
+> are not settled.
 
 Starter
 
-- ±15 medewerkers
-- €19 - €29 / maand
+- ±15 employees
+- €19 - €29 per month
 
 Groei
 
-- Meer medewerkers
-- Meerdere planners
-- €49 - €69 / maand
+- more employees
+- several planners
+- €49 - €69 per month
 
 Premium
 
-- Meerdere vestigingen
-- Uitgebreide functies
-- €99+ / maand
+- several locations
+- extended features
+- €99+ per month
 
 ---
 
-# Visie
+# Vision
 
-De beste planningsoftware is niet degene met de meeste functies.
+The best planning software is not the one with the most features.
 
-De beste planningsoftware is degene waarbij een planner zonder uitleg direct begrijpt hoe hij een volledige weekplanning maakt.
+The best planning software is the one where a planner immediately understands, without
+explanation, how to build a complete week's planning.
 
-Elke nieuwe functie moet bijdragen aan:
+Every new feature has to contribute to:
 
-- sneller plannen
-- minder fouten
-- beter overzicht
-- minder communicatie via WhatsApp
-
-Als een functie hier niet aan bijdraagt, hoort deze niet in de MVP.
+- planning faster
+- fewer mistakes
+- a better overview
+- less communication over WhatsApp

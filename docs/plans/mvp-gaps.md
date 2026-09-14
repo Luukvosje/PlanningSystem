@@ -1,100 +1,106 @@
-# MVP-gaten — Plan (geen code, alleen besluiten)
+# MVP gaps — plan (no code, decisions only)
 
-Status van de 3 punten uit `../prd.md`, gecheckt tegen de huidige codebase (16 aug 2026):
+Status of the three points from [../prd.md](../prd.md), checked against the codebase.
 
 | Feature | Status |
 |---|---|
-| Notities per dienst | ✅ Al gebouwd (domain, DTOs, frontend tooltip/sidebar) — alleen nog verifiëren of UX goed genoeg is |
-| Open diensten | ✅ Gebouwd 22 aug 2026 (branch `feature/open-shifts`) |
-| Planning delen (tekst + WhatsApp) | ❌ Nog niet gebouwd |
+| Notes per shift | ✅ already built (domain, DTOs, frontend tooltip/sidebar) — only the UX still needs verifying |
+| Open shifts | ✅ built 2026-08-22, now on `main` |
+| Sharing a planning (text + WhatsApp) | ❌ not built |
 
 ---
 
-## 1. Open diensten
+## 1. Open shifts
 
-**Besluit:** `AssignedUserId` wordt nullable. Geen apart status-veld — een dienst zonder
-medewerker ís de open dienst. Simpelste optie, past bij "geen functie bouwen die niet
-bijdraagt aan sneller plannen."
+**Decision:** `AssignedUserId` becomes nullable. No separate status field — a shift without an
+employee *is* the open shift. The simplest option, and it fits "build no feature that does not
+contribute to planning faster".
 
-**Wat dit raakt (voor als we gaan coderen):**
+**What this touches:**
 
-- **Domain** — `PlanningRecord`: `AssignedUserId` → `Guid?`, plus een `IsOpenShift`
-  gemaksproperty. `Create`/`Update`/`Move` accepteren `Guid?`.
-- **Infrastructure** — EF-configuratie: kolom nullable maken → nieuwe migratie nodig.
-  Foreign key naar `User` blijft `Restrict`, werkt vanzelf met nullable FK.
+- **Domain** — `PlanningRecord`: `AssignedUserId` → `Guid?`, plus an `IsOpenShift` convenience
+  property. `Create`/`Update`/`Move` accept `Guid?`.
+- **Infrastructure** — EF configuration: make the column nullable → a new migration. The
+  foreign key to `User` stays `Restrict`, which works as-is with a nullable FK.
 - **Application** — DTOs (`CreatePlanningRequest`, `UpdatePlanningRequest`,
-  `MovePlanningRequest`, `PlanningResponse`) → `AssignedUserId` nullable,
-  `AssignedUserName` → `"Open dienst"` als er niemand is toegewezen. Validators: geen
-  `NotEmpty`-check meer op `AssignedUserId`. Service: user-referentie alleen valideren
-  als er een waarde is; overlap-detectie (`BuildOverlapLookup`) moet open diensten
-  overslaan (die kunnen niet met zichzelf overlappen op een persoon die niet bestaat).
-- **Frontend** — orval-modellen hergenereren na backend-wijziging; timeline-blok toont
-  "Open dienst" state (bv. gestreepte rand, geen medewerkerkleur); form voor nieuwe
-  dienst: medewerker-veld mag leeg; dashboard-teller "X open diensten" (staat al in de
-  PRD-dashboard-mockup) kan hier bovenop.
+  `MovePlanningRequest`, `PlanningResponse`) → `AssignedUserId` nullable. Validators: no more
+  `NotEmpty` check on `AssignedUserId`. Service: only validate the user reference when there is
+  a value; overlap detection (`BuildOverlapLookup`) has to skip open shifts, which cannot
+  overlap with themselves on a person who does not exist.
+- **Frontend** — regenerate the orval models after the backend change; the timeline block shows
+  an "open shift" state (dashed border, no employee colour); the new-shift form allows an empty
+  employee field; the dashboard counter "X open shifts" (already in the PRD dashboard mockup)
+  can be built on top.
 
-**Bewust niet nu:** de "medewerker accepteert open dienst"-flow (staat in PRD als
-*later*). Dat is een aparte actie/endpoint en hoort bij een volgende fase, niet bij het
-mogelijk maken van open diensten zelf.
+**Deliberately not now:** the "employee accepts an open shift" flow (the PRD marks it *later*).
+That is a separate action and endpoint, and belongs to a later phase rather than to making open
+shifts possible at all.
 
-**Beslist (22 aug 2026):** gestreepte rand in de omtrek-stijl, label "Open dienst" in het
-blok, en een rij "Open diensten" bovenaan de medewerker-modus waar je naartoe kunt slepen om
-iemand van een dienst af te halen. Zie `../decisions/`.
+**Decided 2026-08-22:** a dashed border in the outline style, the label "Open dienst" inside the
+block, and an "Open diensten" row at the top of employee mode that you can drag onto to remove
+somebody from a shift. See
+[decision 0007](../decisions/0007-open-shifts-visual-design.md).
+
+**Deviation from this plan:** the API sends `assignedUserName: null` rather than the literal
+text "Open dienst" — the label comes from i18n, so the backend carries no UI text.
 
 ---
 
-## 2. Planning delen (tekst + WhatsApp)
+## 2. Sharing a planning (text + WhatsApp)
 
-**Besluit:** puur frontend, geen backend-wijziging nodig — de weekplanning-data is al
-beschikbaar via de bestaande query composables.
+**Decision:** frontend only, no backend change needed — the week planning data is already
+available through the existing query composables.
 
-**Aanpak:**
+**Approach:**
 
-1. **Tekstformat-functie** — zet de al-geladen weekplanning (per dag, per medewerker,
-   sorted op tijd) om naar het PRD-format:
+1. **Text-format function** — turn the already-loaded week planning (per day, per employee,
+   sorted by time) into the PRD format:
    ```
    Planning week 31
 
-   Maandag
+   Monday
    Kevin
    08:00 - 16:00
 
    Lisa
    16:00 - 22:00
    ```
-   Open diensten expliciet vermelden als "Open dienst" (sluit aan op punt 1).
-2. **Kopiëren als tekst** — clipboard API, knop in de week-header naast de bestaande
-   acties.
-3. **WhatsApp-share** — `https://wa.me/?text=<url-encoded tekst>` in een nieuw tabblad/
-   deep link. Werkt zowel desktop (WhatsApp Web) als mobiel (native app) zonder
-   extra dependency.
-4. **PDF-export** — expliciet *later* volgens PRD, niet nu meenemen.
+   Open shifts named explicitly, which ties into point 1.
+2. **Copy as text** — clipboard API, a button in the week header next to the existing actions.
+3. **WhatsApp share** — `https://wa.me/?text=<url-encoded text>` in a new tab or deep link.
+   Works on desktop (WhatsApp Web) and mobile (native app) without an extra dependency.
+4. **PDF export** — explicitly *later* per the PRD, not part of this.
 
-**Waar in de code (voor later):** een nieuwe util in `app/utils/planning/`
-(bijv. `formatWeekPlanningText.ts`) + een component/knop in
-`app/components/planning/header/`.
+**Where in the code:** a new util in `app/utils/planning/` (for example
+`formatWeekPlanningText.ts`) plus a component or button in `app/components/planning/header/`.
 
-**Open vraag voor jou:** moet de gedeelde tekst per medewerker gegroepeerd zijn (zoals
-PRD-voorbeeld) of per dag met alle medewerkers onder elkaar (zoals het andere
-PRD-voorbeeld)? Beide voorbeelden staan er in, dus even kiezen.
+**Open question:** should the shared text be grouped per employee (as in one PRD example) or
+per day with all employees underneath (as in the other)? Both examples are in the PRD, so this
+needs a choice.
 
----
-
-## 3. Notities — verificatie, geen bouwwerk
-
-Backend en frontend zijn er al. Enige actiepunt: samen kort testen of het UX-genoeg is
-(waar kun je een notitie toevoegen/zien tijdens het plannen — is dat duidelijk genoeg
-zonder uitleg, gezien de PRD-eis "planner snapt het binnen 5 minuten"). Geen
-codewijziging verwacht, tenzij de test iets anders uitwijst.
+See [decision 0003](../decisions/0003-sharing-a-planning-frontend-only.md).
 
 ---
 
-## Volgorde-voorstel
+## 3. Notes — verification, nothing to build
 
-1. Open diensten (backend + frontend) — grootste wijziging, ontgrendelt ook het
-   dashboard-cijfer.
-2. Planning delen — kleine, losstaande frontend-feature, kan gelijktijdig of erna.
-3. Notities-UX-check — 15 minuten samen testen, geen aparte sprint nodig.
+Backend and frontend already exist. The only action is a short test together: where can you add
+and see a note while planning, and is that clear enough without explanation, given the PRD
+requirement that "a planner understands it within five minutes"? No code change expected unless
+the test says otherwise.
 
-Zodra je akkoord bent op dit plan (en de twee open vragen), kunnen we per feature een
-losse coding-sessie doen.
+See [decision 0004](../decisions/0004-shift-notes-no-build-needed.md).
+
+---
+
+## Suggested order
+
+1. Open shifts (backend + frontend) — the largest change, and it unlocks the dashboard figure.
+2. Sharing a planning — a small, standalone frontend feature; can run alongside or after.
+3. The notes UX check — fifteen minutes together, no separate sprint needed.
+
+## Where this stands (2026-09-14)
+
+Points 1 and 3 are settled; only point 2 is left, and its open question about grouping is still
+open. That makes this document almost finished: once sharing is built and its decision recorded,
+it can go.

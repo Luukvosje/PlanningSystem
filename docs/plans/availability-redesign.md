@@ -1,172 +1,176 @@
-# Beschikbaarheid — Herontwerp (plan, geen code)
+# Availability — redesign (plan, no code)
 
-Status: **concept, wacht op akkoord**. Geen bestanden aangepast.
+Status: **draft, awaiting agreement.** No files changed.
 
-Dit plan reageert op een brainstorm-idee (unified patroon+uitzondering-model, drie UI-plekken
-i.p.v. één beschikbaarheid-pagina). Onderstaand: wat er al bestaat, waar het idee klopt, waar
-het een echte architectuurwijziging is (niet alleen UI), en waar het afwijkt van de PRD/MVP-
-scope.
-
----
-
-## 1. Wat er nu al is (bevindingen, geen aannames)
-
-Het is **geen** twee losse features op databaseniveau. Er is al één entity:
-`AvailabilityRule` (`Planning.Domain/Availability/AvailabilityRule.cs`) met een discriminator
-`Type` (`Weekly` / `OneTime`). Beide typen delen dezelfde tabel, dezelfde repository, dezelfde
-service. Het "voelt" als twee features omdat de UI ze als twee losse lijsten op één pagina
-rendert (`RulesEditor.vue` → weekly-sectie + one-time-sectie, elk met eigen "toevoegen"-knop),
-niet omdat het model gesplitst is.
-
-Belangrijker: de manier waarop een uitzondering vandaag met het patroon samenwerkt is **puur
-optellen (union), niet overschrijven**:
-
-- `AvailabilityRuleStatus` kent `Unavailable`, `Preferred`, `Available` — maar de entity
-  blokkeert alles behalve `Unavailable` hard
-  (`AvailabilityRule.cs:173-179`: *"Only unavailable rules are supported at this time."*),
-  en de validator herhaalt die regel op applicatieniveau.
-- Dat betekent: het model is vandaag een **blocklist**. Iedereen is standaard beschikbaar;
-  regels (weekly of onetime) prikken alleen gaten van *on*beschikbaarheid.
-- `AvailabilityPeriodExpander.ExpandForDate` (Application-laag) voegt voor een gegeven datum
-  gewoon alle matchende Weekly- én OneTime-periodes samen tot één lijst
-  (`AvailabilityPeriodExpander.cs:8-41`) — er is geen precedence-logica. Een OneTime-regel
-  "overschrijft" een Weekly-regel niet; hij komt er gewoon bovenop.
-- Er bestaat een `AvailabilityOverlapChecker` voor server-side overlap-detectie, maar die wordt
-  nergens automatisch aangeroepen als een uitzondering wordt toegevoegd na een al ingeplande
-  dienst — dat scenario geeft vandaag geen enkele waarschuwing.
-
-Planner-zichtbaarheid tijdens roosteren **bestaat al**, deels zoals het brainstorm-idee
-voorstelt: een achtergrondlaag in de planningskalender (`showAvailability`-toggle,
-default **uit**, alleen visueel — geen click-to-edit, geen "namens iemand aanmaken" vanuit
-de kalender). Punt 3 van het idee is dus grotendeels al gebouwd, niet nieuw.
-
-De medewerker heeft **geen** gecombineerde kalender van rooster + eigen uitzonderingen. De
-"Mijn planning"-view (`PlanningMyView.vue` → `PlanningMyDayStrip.vue` +
-`PlanningMyDayDetail.vue`) toont alleen diensten; beschikbaarheid komt daar nergens in voor.
-Punt 2 van het idee is dus wél nieuw werk.
-
-Backend-autorisatie voor "namens iemand anders" bestaat al voor **beide** regeltypen:
-`CanManageForEmployeeAsync` in `AvailabilityRuleService` staat een Planner/Admin/Owner al toe
-om elke medewerker se regels te beheren, niet alleen de eigen. Dit is dus geen nieuwe
-beslissing voor de backend — wel een UI-keuze (waar in de planner-flow bied je dat aan).
-
-Ten slotte: `RuleSheet.vue` (het aanmaak/edit-formulier) is een volledig los, hand-geschreven
-formulier — niet gebouwd op de generieke `Form`/`useCreate`/`useEdit`-stack die de rest van de
-app net naar toe migreert (zie de vele gewijzigde form-bestanden in de huidige git-status). En
-`useAvailabilityApi.ts` praat met een handgeschreven `availabilityClient.ts` die zelf
-PascalCase/camelCase normaliseert, terwijl er al een gegenereerde Orval-client voor
-`availability` bestaat die niet gebruikt wordt. Dit is exact het patroon dat `CLAUDE.md`
-al benoemt als legacy-symptoom (vergelijkbaar met `planningClient.ts`) — "niet imiteren in
-nieuwe code, migreer richting de generated client als je dit aanraakt."
+This plan responds to a brainstorm idea: a unified pattern-plus-exception model, spread over
+three places in the UI instead of one availability page. Below: what already exists, where the
+idea is right, where it is a genuine architecture change rather than a UI change, and where it
+departs from the PRD and MVP scope.
 
 ---
 
-## 2. Waar het brainstorm-idee klopt — en waar het een architectuurwijziging is, geen UI-wijziging
+## 1. What already exists (findings, not assumptions)
 
-**Klopt, en is vooral een UI-herschikking (laag risico):**
-- "Eén model" — is al zo op databaseniveau. Het echte werk is de UI zo laten *voelen*.
-- Planner-achtergrondlaag in de bestaande planningskalender — bestaat al, kleine uitbreiding.
-- Basispatroon verplaatsen naar instellingen/profiel — puur een kwestie van de weekly-sectie
-  van `RulesEditor.vue` een andere plek geven; het model verandert niet.
+At database level these are **not** two separate features. There is already one entity,
+`AvailabilityRule` (`Planning.Domain/Availability/AvailabilityRule.cs`), with a `Type`
+discriminator (`Weekly` / `OneTime`). Both types share the same table, repository and service.
+It *feels* like two features because the UI renders them as two separate lists on one page
+(`RulesEditor.vue` → a weekly section and a one-time section, each with its own "add" button),
+not because the model is split.
 
-**Klopt conceptueel, maar is een echte modelwijziging (hoger risico), niet "gewoon UI":**
-- "Een uitzondering overschrijft het patroon altijd, in beide richtingen" — dit vereist:
-  1. `Status.Available` uitpakken uit de huidige hard-block (`ValidateStatus` aanpassen), zodat
-     een uitzondering kan zeggen "ik ben deze dag wél beschikbaar" ondanks een weekly-blok.
-  2. `AvailabilityPeriodExpander` herschrijven van "optellen" naar "patroon toepassen, dan
-     OneTime-regels met voorrang over de overlappende tijdvakken heen leggen" — een
-     interval-vervang/aftrek-algoritme, geen simpele lijst meer.
-  3. Dezelfde logica bestaat **ook client-side** (`availabilityMath.ts`, ter voorkoming van een
-     extra round-trip voor conflict-checks tijdens het inplannen) — die moet dan in lockstep
-     mee veranderen, anders raken server en client het oneens over wat "beschikbaar" betekent
-     op een gegeven dag. Dat is precies het soort gedupliceerde-logica-risico dat er al is
-     (client mirrort server), en dit voorstel maakt die logica complexer, niet simpeler.
+More importantly, the way an exception combines with the pattern today is **pure union, not
+override**:
 
-Dit tweede stuk is de kern van waarom ik dit niet als "klein uitgangspunt" zou behandelen: het
-raakt Domain (invariant loslaten), Application (expander-algoritme), én twee synchrone
-implementaties (server + client) van dezelfde regel.
+- `AvailabilityRuleStatus` knows `Unavailable`, `Preferred` and `Available` — but the entity
+  hard-blocks everything except `Unavailable` (`ValidateStatus`: *"Only unavailable rules are
+  supported at this time."*), and the validator repeats that rule at application level.
+- So today the model is a **blocklist**. Everyone is available by default; rules (weekly or
+  one-time) only punch holes of *un*availability.
+- `AvailabilityPeriodExpander.ExpandForDate` (Application layer) simply merges every matching
+  Weekly and OneTime period for a given date into one list — there is no precedence logic. A
+  OneTime rule does not "override" a Weekly rule; it is added on top.
 
----
+Planner visibility while scheduling **already exists**, partly as the brainstorm proposes: a
+background layer in the planning calendar (`showAvailability` toggle, default **off**, purely
+visual — no click-to-edit, no "create on somebody's behalf" from the calendar). Point 3 of the
+idea is therefore largely built, not new.
 
-## 3. Toetsing aan MVP-principe / architectuur (../collaboration.md, ../../CLAUDE.md)
+The employee has **no** combined calendar of roster plus their own exceptions. The "My
+planning" view (`PlanningMyView.vue` → `PlanningMyDayStrip.vue` + `PlanningMyDayDetail.vue`)
+shows shifts only; availability does not appear there at all. Point 2 of the idea *is* new work.
 
-Twee dingen die ik expliciet wil benoemen, geen showstoppers maar wel relevant voor de
-volgorde:
+Backend authorization for "on somebody else's behalf" already exists for **both** rule types:
+`CanManageForEmployeeAsync` in `AvailabilityRuleService` already lets a Planner, Admin or Owner
+manage any employee's rules, not only their own. So that is not a new backend decision — only a
+UI choice about where in the planner flow to offer it.
 
-1. **Beschikbaarheid staat in de PRD als Fase 2**, en de Fase 1-gaten uit `mvp-gaps.md`
-   (open diensten, planning delen) staan nog open. Beschikbaarheid *bestaat* al functioneel
-   (zij het imperfect) — dit is dus een verbetering van iets dat al werkt, niet het dichten van
-   een gat dat de eerste klant blokkeert. Geen bezwaar om er nu aan te werken als jij dat wilt,
-   maar ik wil de prioriteits-afweging zichtbaar maken in plaats van hem te negeren.
-2. **De "in beide richtingen"-uitbreiding staat niet in de PRD.** Het PRD-voorbeeld
-   (`Vrijdag: Niet beschikbaar 19:00-22:00`) is één-richting: het patroon is de default-
-   beschikbaarheid, een uitzondering blokkeert een stuk extra. Het scenario "ik ben normaal
-   niet beschikbaar op maandagavond, maar deze ene maandag wél" is een uitbreiding die jij
-   nu toevoegt vanuit de brainstorm, niet iets dat de sportschool-klant gevraagd heeft. Getoetst
-   aan "sneller plannen, minder fouten, beter overzicht, minder WhatsApp": het voorkomt mogelijk
-   een WhatsApp-appje ("ik kan toch wel maandag"), maar het is de duurste wijziging in dit hele
-   plan qua risico/complexiteit voor een scenario dat nog niet bevestigd is als een echt
-   probleem. Zie open vraag 1 hieronder.
-
-Verder geen conflicten met de architectuur — het bestaande model (TenantEntity, Result-pattern,
-FluentValidation, module-policy op de controller) volgt de conventions al correct; dit plan
-stelt niet voor daar iets aan te veranderen.
+Finally, `RuleSheet.vue` (the create/edit form) is a completely separate, hand-written form —
+not built on the generic `Form`/`useCreate`/`useEdit` stack the rest of the app has been
+migrating to.
 
 ---
 
-## 4. Voorgestelde aanpak (mijn advies)
+## 2. Where the idea is right — and where it is an architecture change, not a UI change
 
-Ik zou dit in twee onafhankelijke stappen splitsen, zodat je na stap 1 al waarde hebt en stap 2
-alleen doet als er echt een reden voor is:
+**Right, and mostly a UI rearrangement (low risk):**
 
-### Stap 1 — UI-herschikking, model blijft "optellen" (blocklist), geen backend-risico
-- Basispatroon-editor verhuist naar instellingen/profiel (weekly-sectie van `RulesEditor.vue`
-  loskoppelen van de one-time-sectie, geen datamodelwijziging).
-- Medewerker: `PlanningMyDayStrip.vue`/`PlanningMyDayDetail.vue` uitbreiden zodat eigen
-  uitzonderingen (en evt. patroon-indicatie) samen met diensten getoond worden op dezelfde
-  dag-as. Nieuw aanmaken van een uitzondering kan hier ook een plek krijgen (in plaats van op
-  een losse pagina).
-- Planner: bestaande `showAvailability`-overlay behouden, evt. default aanzetten en/of een
-  mogelijkheid toevoegen om vanuit de kalender een uitzondering namens een medewerker aan te
-  maken (backend-autorisatie hiervoor bestaat al).
-- Terwijl we hier toch in zitten: `RuleSheet.vue` migreren naar de generieke `Form`/
-  `useCreate`/`useEdit`-stack, en `useAvailabilityApi.ts` naar de gegenereerde Orval-client i.p.v.
-  de handgeschreven normalizer — dit is opportunistisch meeliften op conventies die de rest van
-  de app al volgt, geen apart project.
+- "One model" — already true at database level. The real work is making the UI *feel* that way.
+- The planner background layer in the existing planning calendar — exists already, a small
+  extension.
+- Moving the base pattern to settings or the profile — purely a matter of giving the weekly
+  section of `RulesEditor.vue` a different home; the model does not change.
 
-### Stap 2 — "overschrijft in beide richtingen" (alleen als je dat echt wilt), los in te plannen
-- `Status.Available` uitpakken, expander herschrijven met precedence, client-side mirror-logica
-  in lockstep meenemen. Dit doe ik pas als stap 1 er staat en jij bevestigt dat dit scenario
-  (normaal niet beschikbaar → deze ene dag wél) echt voorkomt bij de sportschool-klant.
+**Conceptually right, but a genuine model change (higher risk), not "just UI":**
 
-Dit scheidt "veilig en snel" (stap 1) van "risicovol en duur" (stap 2), in plaats van ze als
-één brainstorm-pakket te behandelen.
+- "An exception always overrides the pattern, in both directions" — this requires:
+  1. Unlocking `Status.Available` from the current hard block (changing `ValidateStatus`), so an
+     exception can say "I *am* available this day" despite a weekly block.
+  2. Rewriting `AvailabilityPeriodExpander` from "merge" to "apply the pattern, then lay OneTime
+     rules over the overlapping time slots with precedence" — an interval replace/subtract
+     algorithm, no longer a simple list.
+  3. The same logic **also exists client-side** (`availabilityMath.ts`, to avoid an extra round
+     trip for conflict checks while scheduling) — it would have to change in lockstep, or server
+     and client will disagree about what "available" means on a given day. That is exactly the
+     duplicated-logic risk that already exists, and this proposal makes that logic more complex,
+     not simpler.
 
----
-
-## 5. Open vragen (jouw beslissing)
-
-1. **Is de "in beide richtingen"-uitbreiding (stap 2) nu al nodig**, of is de bestaande
-   blocklist-richting (patroon + extra blokkades) voorlopig genoeg? Dit bepaalt of we stap 2
-   überhaupt inplannen.
-2. **Dagdeel-precisie**: er is nooit een DayPart-enum geweest in de huidige code (die is
-   bewust verwijderd in een eerdere iteratie, git-historie toont dit) — vandaag is alles vrije
-   `TimeOnly`-start/eind met UI-presets (hele dag / tot / vanaf / aangepast). Wil je alsnog
-   ochtend/middag/avond als vaste blokken terug, of blijft vrije tijd + presets de norm?
-3. **Wie mag een uitzondering aanmaken?** Backend staat al "planner namens medewerker" toe voor
-   beide regeltypen. Vraag is puur UX: bied je dat expliciet aan vanuit de planningskalender
-   (stap 1), of blijft het alleen mogelijk via de medewerker-kalender/instellingen met
-   `?userId=`-achtige omweg zoals nu?
-4. **Conflict-afhandeling**: als een uitzondering wordt toegevoegd ná een al ingeplande dienst
-   op die datum, wil je (a) niets — planner ontdekt het pas via de overlay, (b) een zachte
-   waarschuwing (toast/dashboard-melding) op het moment van aanmaken, of (c) hard blokkeren tot
-   het is opgelost? De bestaande `AvailabilityOverlapChecker` bestaat al server-side maar wordt
-   nergens voor dit scenario aangeroepen — (b) is de kleinste toevoeging die aansluit bij
-   "minder fouten" zonder een blokkerende flow te introduceren.
-5. **Prioriteit**: dit oppakken nu, of eerst de Fase 1-gaten uit `mvp-gaps.md` (open
-   diensten, planning delen) afronden? Geen technische blocker, puur een volgorde-vraag.
+This second part is why I would not treat it as a "small starting point": it touches Domain
+(releasing an invariant), Application (the expander algorithm) *and* two synchronised
+implementations of the same rule.
 
 ---
 
-Zodra je hierop reageert (akkoord op de aanpak in §4, antwoorden op §5), lever ik pas concrete
-code — per de afspraak in `../collaboration.md` §2 en §5.
+## 3. Testing it against the MVP principle and the architecture
+
+Two things worth naming explicitly. Neither is a showstopper, but both matter for ordering.
+
+1. **Availability is Phase 2 in the PRD**, and the Phase 1 gaps from
+   [mvp-gaps.md](mvp-gaps.md) are still open. Availability already *works*, if imperfectly —
+   this is an improvement to something that functions, not the closing of a gap that blocks the
+   first customer. No objection to doing it now if you want to, but the priority trade-off
+   should be visible rather than ignored.
+2. **The "both directions" extension is not in the PRD.** The PRD example
+   (`Friday: unavailable 19:00–22:00`) is one-directional: the pattern is the default
+   availability and an exception blocks an extra piece. The scenario "I am normally unavailable
+   on Monday evenings, but *this* Monday I am" is an extension coming out of the brainstorm, not
+   something the gym customer asked for. Tested against "planning faster, fewer mistakes, better
+   overview, less WhatsApp": it might prevent one WhatsApp message, but it is the most expensive
+   change in this whole plan in risk and complexity, for a scenario not yet confirmed as a real
+   problem. See open question 1.
+
+No other conflicts with the architecture — the existing model (TenantEntity, the Result pattern,
+FluentValidation, a module policy on the controller) already follows the conventions, and this
+plan proposes no change there.
+
+---
+
+## 4. Suggested approach
+
+Split this into two independent steps, so that step 1 delivers value on its own and step 2
+happens only if there is a real reason.
+
+### Step 1 — UI rearrangement, the model stays a blocklist, no backend risk
+
+- Move the base-pattern editor to settings or the profile (decouple the weekly section of
+  `RulesEditor.vue` from the one-time section; no data model change).
+- Employee: extend `PlanningMyDayStrip.vue` / `PlanningMyDayDetail.vue` so that their own
+  exceptions (and optionally a pattern indication) are shown alongside shifts on the same day
+  axis. Creating a new exception could live here too, instead of on a separate page.
+- Planner: keep the existing `showAvailability` overlay, possibly default it on, and optionally
+  add a way to create an exception on an employee's behalf from the calendar (the backend
+  authorization already exists).
+- While we are in there: migrate `RuleSheet.vue` to the generic `Form`/`useCreate`/`useEdit`
+  stack. That is opportunistically riding along with conventions the rest of the app already
+  follows, not a separate project.
+
+### Step 2 — "overrides in both directions" (only if you really want it), scheduled separately
+
+Unlock `Status.Available`, rewrite the expander with precedence, and carry the client-side
+mirror logic along in lockstep. Only worth starting once step 1 is in place and you confirm
+that this scenario (normally unavailable → available this one day) genuinely occurs at the gym
+customer.
+
+This separates "safe and quick" from "risky and expensive", instead of treating them as one
+brainstorm package.
+
+---
+
+## 5. Open questions (your call)
+
+1. **Is the "both directions" extension (step 2) needed now**, or is the existing blocklist
+   direction (pattern plus extra blocks) enough for the time being? This decides whether step 2
+   gets scheduled at all.
+2. **Day-part precision**: there has never been a DayPart enum in the current code — it was
+   deliberately removed in an earlier iteration. Today everything is free `TimeOnly` start/end
+   with UI presets (all day / until / from / custom). Do you want morning/afternoon/evening back
+   as fixed blocks, or do free times plus presets stay the norm?
+3. **Who may create an exception?** The backend already allows "planner on behalf of employee"
+   for both rule types. The question is purely UX: do you offer that explicitly from the
+   planning calendar (step 1), or does it stay available only through the employee
+   calendar/settings with a `?userId=` style detour as now?
+4. **Conflict handling**: when an exception is added *after* a shift has already been scheduled
+   on that date, do you want (a) nothing — the planner finds out through the overlay, (b) a soft
+   warning (toast or dashboard notice) at creation time, or (c) a hard block until it is
+   resolved? Option (b) is the smallest addition that serves "fewer mistakes" without
+   introducing a blocking flow.
+5. **Priority**: pick this up now, or finish the Phase 1 gaps from [mvp-gaps.md](mvp-gaps.md)
+   (open shifts, sharing a planning) first? No technical blocker, purely a question of order.
+
+---
+
+## Where this stands (2026-09-14)
+
+Parts of step 1 have happened on their own since this was written, but the plan itself was never
+agreed and step 2 is untouched:
+
+- **Done:** the hand-written `availabilityClient.ts` and the server-side
+  `AvailabilityOverlapChecker` are both gone. Conflict detection now runs through
+  `utils/planning/availabilityMath.ts` and `usePlanningAvailabilityPeriods`.
+- **Not done:** `RuleSheet.vue` is still a hand-written form on `UFormField`, not on the
+  `Form`/`useCreate`/`useEdit` stack. The base-pattern editor has not moved. The employee still
+  has no combined roster-plus-availability view.
+- **Step 2 untouched:** `ValidateStatus` still throws on anything but `Unavailable`, so the
+  model is still a blocklist, and `AvailabilityPeriodExpander` still merges rather than
+  overrides.
+
+The five open questions are still open.

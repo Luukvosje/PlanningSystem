@@ -1,249 +1,252 @@
-# Ontwerptaal — Planning.Web
+# Visual language — Planning.Web
 
-Dit beschrijft wat er **daadwerkelijk gebouwd is**, niet wat we ooit van plan waren. De tijdlijn
-is de maatstaf: dat is het scherm waar het meeste denkwerk in zit, en de rest is daarnaartoe
-getrokken. Wijk je hiervan af, pas dan dit document aan — een spec die de code tegenspreekt is
-erger dan geen spec.
+This describes what has **actually been built**, not what we once intended. The timeline is the
+benchmark: it is the screen with the most thought in it, and everything else has been pulled
+towards it. If you deviate, update this document — a spec that contradicts the code is worse
+than no spec.
 
-Code-conventies (data-flow, formulier-composables, query-keys) staan in
-[frontend.md](frontend.md). Hier gaat het alleen over hoe het eruitziet.
+Code conventions (data flow, form composables, query keys) live in [frontend.md](frontend.md).
+This document is only about how it looks.
 
-## De negen regels
+## The nine rules
 
-1. **Semantische tokens, bijna dogmatisch.** `bg-default` / `bg-muted` / `bg-elevated` /
+1. **Semantic tokens, almost dogmatically.** `bg-default` / `bg-muted` / `bg-elevated` /
    `bg-accented`, `text-default` / `text-muted` / `text-dimmed` / `text-toned` /
-   `text-highlighted`, `border-default`. Geen `gray-*`, `slate-*` of `zinc-*` in componenten —
-   die staan er op dit moment nul keer. De enige uitzonderingen zijn statussignalen (de rode
-   punt van `CurrentTimeIndicator`) en overlays bovenop een door de gebruiker gekozen
-   blokkleur, waar een token per definitie niet kan contrasteren.
-2. **1px hairlines, hiërarchie via opacity.** `/8`–`/25` voor het fijnste raster, `/40`–`/70`
-   voor rij- en dagscheiding. Een primaire grens is het enige dat 2px mag zijn:
-   `border-r-2 border-default/70` tussen de resourcekolom en het raster. Nooit dikker.
-3. **Eén radius-ladder.** `main.css` zet `--ui-radius: 0.375rem` (6px, waar Nuxt UI zelf
-   0.25rem gebruikt) en Nuxt UI leidt de hele Tailwind-schaal daaruit af — `sm` = ×1,
-   `md` = ×1.5, `lg` = ×2, `xl` = ×3:
+   `text-highlighted`, `border-default`. No `gray-*`, `slate-*` or `zinc-*` in components —
+   there are currently zero of those. The only exceptions are status signals (the red dot in
+   `CurrentTimeIndicator`) and overlays on top of a user-chosen block colour, where a token
+   cannot contrast by definition.
+2. **1px hairlines, hierarchy through opacity.** `/8`–`/25` for the finest grid, `/40`–`/70`
+   for row and day separation. A primary boundary is the only thing allowed to be 2px:
+   `border-r-2 border-default/70` between the resource column and the grid. Never thicker.
+3. **One radius ladder.** `main.css` sets `--ui-radius: 0.375rem` (6px, where Nuxt UI itself
+   uses 0.25rem) and Nuxt UI derives the whole Tailwind scale from it — `sm` = ×1, `md` = ×1.5,
+   `lg` = ×2, `xl` = ×3:
 
-   | Klasse | Waarde | Waarvoor |
+   | Class | Value | For |
    |---|---|---|
-   | `rounded-sm` | 6px | het kleinste grut: sleeptooltip, beschikbaarheidsoverlay, badge in een label |
-   | `rounded-md` | 9px | bedieningselementen en tijdlijnobjecten: knop, input, blok |
-   | `rounded-lg` | 12px | containers: kaart, tabel, contextmenu |
-   | `rounded-xl` | 18px | app-shells, modals, het nav-paneel |
-   | `rounded-full` | — | alleen echte cirkels: kleurkeuze, statusstip, dag-pil |
+   | `rounded-sm` | 6px | the smallest things: drag tooltip, availability overlay, badge inside a label |
+   | `rounded-md` | 9px | controls and timeline objects: button, input, block |
+   | `rounded-lg` | 12px | containers: card, table, context menu |
+   | `rounded-xl` | 18px | app shells, modals, the nav panel |
+   | `rounded-full` | — | true circles only: colour picker, status dot, day pill |
 
-   Zet geen radius-klasse op een component-slot in `app.config.ts` — dat omzeilt `--ui-radius`
-   en is precies hoe knoppen ooit scherper werden dan de blokken ernaast.
-4. **`truncate` + `min-w-0` op elke tekstnode.** Bij krappe ruimte verbergen we regels
-   progressief in plaats van ze te laten teruglopen. `timeline/Block.vue` is het voorbeeld:
-   vijf tekstnodes, alle vijf `min-w-0 … truncate shrink-0`.
-5. **Wat zweeft is glas; schaduw zegt "je kunt me oppakken".** Zie [Glas](#glas) hieronder.
-   Schaduw is daarnaast bewust schaars en betekent precies één ding — dit object ligt los op
-   het raster: `shadow-sm` op een blok, `hover:shadow-md`, `shadow-lg` tijdens slepen. Verder
-   alleen op chrome die echt over de pagina hangt (contextmenu, uitgeklapt nav-paneel) en als
-   `shadow-sm ring ring-default` op de app-shell zelf.
-6. **Selectie is een ring, geen kleurwissel.** `ring-2 ring-brand ring-offset-1` plus z-index.
-   Het object zelf verandert niet van kleur. Een droptarget krijgt de zachte variant:
-   `ring-1 ring-inset ring-brand/40` met een `bg-brand/10` wash.
-7. **Knop-idioom.** Inactief `variant="outline"`; in menu's en op iconen `ghost`. `subtle` is
-   de derde vaste variant en staat voor "informatief, niet aanklikbaar-belangrijk": badges,
-   statuslabels, de alert-default. De primaire actie laat props wég en erft `solid` in de
-   accentkleur uit `nuxt.config.ts` — daarom zie je nergens een expliciete
-   `variant="solid"`. Icon-only knoppen krijgen altijd een `aria-label`.
-8. **Animatie alleen waar iets van plaats verandert.** Een handvol `transition-colors` en
-   `transition-shadow` zonder `duration-*`, plus `transition-transform` op de twee dingen die
-   opschalen bij hover. De enige plek met expliciete timing is het uitklappende nav-paneel in
-   `layouts/default.vue` (`duration-150 ease-out` in, `duration-100 ease-in` uit) — en die
-   staat achter `motion-reduce:transition-none`. Tijdens slepen wordt de transitie bewust
-   uitgezet.
-9. **Kaarten zijn er om in te typen, niet om mee te groeperen.** De content-area van de
-   app-shell is al een omrande, afgeronde panel; een `LayoutCard` om een lijst of een grafiek
-   is een doos in een doos — twee randen, twee radii, dubbele padding. Dus:
+   Do not put a radius class on a component slot in `app.config.ts` — that bypasses
+   `--ui-radius`, and it is exactly how buttons once ended up sharper than the blocks next to
+   them.
+4. **`truncate` + `min-w-0` on every text node.** When space is tight we hide lines
+   progressively rather than letting them wrap. `timeline/Block.vue` is the example: five text
+   nodes, all five `min-w-0 … truncate shrink-0`.
+5. **What floats is glass; a shadow says "you can pick me up".** See [Glass](#glass) below.
+   Shadow is otherwise deliberately scarce and means exactly one thing — this object sits loose
+   on the grid: `shadow-sm` on a block, `hover:shadow-md`, `shadow-lg` while dragging. Beyond
+   that, only on chrome that genuinely hangs over the page (context menu, expanded nav panel)
+   and as `shadow-sm ring ring-default` on the app shell itself.
+6. **Selection is a ring, not a colour change.** `ring-2 ring-brand ring-offset-1` plus a
+   z-index. The object itself does not change colour. A drop target gets the soft variant:
+   `ring-1 ring-inset ring-brand/40` with a `bg-brand/10` wash.
+7. **Button idiom.** Inactive is `variant="outline"`; in menus and on icons, `ghost`. `subtle`
+   is the third fixed variant and means "informative, not click-me-important": badges, status
+   labels, the alert default. The primary action leaves its props off and inherits `solid` in
+   the accent colour from `nuxt.config.ts` — which is why an explicit `variant="solid"` appears
+   nowhere. Icon-only buttons always get an `aria-label`.
+8. **Animation only where something changes place.** A handful of `transition-colors` and
+   `transition-shadow` without `duration-*`, plus `transition-transform` on the two things that
+   scale up on hover. The only place with explicit timing is the expanding nav panel in
+   `layouts/default.vue` (`duration-150 ease-out` in, `duration-100 ease-in` out) — and it sits
+   behind `motion-reduce:transition-none`. While dragging, the transition is deliberately
+   switched off.
+9. **Cards are for typing into, not for grouping.** The app shell's content area is already a
+   bordered, rounded panel; a `LayoutCard` around a list or a chart is a box inside a box — two
+   borders, two radii, double padding. So:
 
-   - **`LayoutSection`** voor alles wat je alleen leest: lijsten, tegels, lege staten. Kop,
-     omschrijving, `gap-6` ertussen, geen rand.
-   - **`LayoutCard`** voor alles waar je in typt — dat is wat `FormEditableSection` eromheen
-     zet — en voor wat écht op zichzelf zweeft: de auth-schermen en de dashboard-tegels.
+   - **`LayoutSection`** for anything you only read: lists, tiles, empty states. Heading,
+     description, `gap-6` between them, no border.
+   - **`LayoutCard`** for anything you type into — which is what `FormEditableSection` wraps
+     around it — and for what genuinely floats on its own: the auth screens and the dashboard
+     tiles.
 
-   Deze regel is ooit strenger geformuleerd ("geen kaarten binnen een pagina"). Dat klopte niet
-   meer zodra formulieren de kaart kregen; de doc-comment in `layout/Section.vue` houdt de
-   huidige formulering.
+   This rule was once phrased more strictly ("no cards inside a page"). That stopped being true
+   the moment forms got the card; the doc comment in `layout/Section.vue` carries the current
+   wording.
 
-## Glas
+## Glass
 
-Alles wat over de pagina hangt is uit hetzelfde materiaal gesneden, gedefinieerd in `main.css`:
+Everything that hangs over the page is cut from the same material, defined in `main.css`:
 
-| Token | Wat het is |
+| Token | What it is |
 |---|---|
-| `--glass-bg` | de vulling: `color-mix` van `--ui-bg` met transparant, 62% licht / 72% dark |
+| `--glass-bg` | the fill: a `color-mix` of `--ui-bg` with transparent, 62% light / 72% dark |
 | `--glass-filter` | `blur(20px) saturate(180%) brightness(105%)`; dark: 24px / 150% / 115% |
-| `--overlay-blur` | 6px — waas over de pagina die een scrim bedekt |
+| `--overlay-blur` | 6px — the haze over a page a scrim covers |
 
-Drie utilities, en welke je pakt hangt af van waar het op ligt:
+Three utilities, and which one you reach for depends on what it sits on:
 
-| Utility | Gebruik |
+| Utility | Use |
 |---|---|
-| `glass` | een zwevend paneel: eigen vulling **plus** materiaal. Het nav-paneel, de tijdlijn-ruler |
-| `glass-fill` | alleen vulling, voor iets dat op een paneel staat dat al blurt — de headercellen van de resourcekolom, die daardoor op ~86% uitkomen en als één strook onder de ruler doorlopen |
-| `glass-material` | alleen materiaal, voor een Nuxt UI-slot. De vulling moet daar als `bg-[var(--glass-bg)]` geschreven worden: tailwind-merge herkent dát als background en gooit de eigen `bg-default` van het component weg, terwijl het `glass` niet kent en beide vullingen laat staan |
+| `glass` | a floating panel: its own fill **plus** material. The nav panel, the timeline ruler |
+| `glass-fill` | fill only, for something standing on a panel that already blurs — the resource column's header cells, which land at roughly 86% and so read as one strip running under the ruler |
+| `glass-material` | material only, for a Nuxt UI slot. The fill has to be written as `bg-[var(--glass-bg)]` there: tailwind-merge recognises *that* as a background and drops the component's own `bg-default`, whereas it does not know `glass` and would leave both fills standing |
 
-Modal, slideover, popover, select, selectMenu, inputMenu, dropdownMenu en contextMenu zijn in
-`app.config.ts` allemaal op `glass-material` gezet. Hun scrim is `bg-elevated/25
-backdrop-blur-(--overlay-blur)` — bewust licht, want bij `/75` is er niets meer achter het
-paneel te zien en is het glas zinloos.
+Modal, slideover, popover, select, selectMenu, inputMenu, dropdownMenu and contextMenu are all
+set to `glass-material` in `app.config.ts`. Their scrim is
+`bg-elevated/25 backdrop-blur-(--overlay-blur)` — deliberately light, because at `/75` there is
+nothing left to see behind the panel and the glass is pointless.
 
-Saturatie staat hoog omdat blur kleur uitwast, en de gekleurde blokken die onder de ruler
-doorschuiven zijn precies wat je wilt blijven herkennen terwijl je er een versleept.
+Saturation is pushed up because blur washes colour out, and the coloured blocks sliding under
+the ruler are exactly what you want to keep recognising while dragging one.
 
-`@media (prefers-reduced-transparency: reduce)` zet alles terug naar volledig dekkend. Dat
-mag niet sneuvelen.
+`@media (prefers-reduced-transparency: reduce)` returns everything to fully opaque. That must
+not be lost.
 
-## Kleur
+## Colour
 
-`nuxt.config.ts` bepaalt welke aliassen bestaan (`ui.theme.colors`), `app.config.ts` koppelt ze
-aan een palet:
+`nuxt.config.ts` decides which aliases exist (`ui.theme.colors`); `app.config.ts` maps them to
+a palette:
 
-- **`brand`** = teal — de accentkleur, en de default voor elk Nuxt UI-component. Exacte tinten
-  worden in `main.css` overschreven: `--color-teal-500: #0d9488`, `--color-teal-600: #006a61`.
-- **`neutral`** = gray — draagt alle semantische grijstinten.
+- **`brand`** = teal — the accent colour, and the default for every Nuxt UI component. The
+  exact shades are overridden in `main.css`: `--color-teal-500: #0d9488`,
+  `--color-teal-600: #006a61`.
+- **`neutral`** = gray — carries all the semantic greys.
 
-> Ze heetten ooit `secondary` en `primary`, met de merkkleur onder "secondary" en grijs onder
-> "primary". Daardoor renderde alles wat als `text-primary` geschreven was grijs, inclusief de
-> links op de inlogpagina. Nuxt UI kent nog steeds een ingebouwde `primary`-alias waar niets aan
-> gekoppeld is — gebruik die niet; hij geeft geen fout maar een ongedefinieerde kleur.
+> They were once named the other way round, with the brand colour under "secondary" and grey
+> under "primary". Everything written as `text-primary` therefore rendered grey, including the
+> links on the login page. Nuxt UI still knows a built-in `primary` alias that nothing maps to —
+> do not use it; it gives an undefined colour rather than an error.
 
-`--ui-border` wordt ongelayerd overschreven (neutral-300 licht, neutral-700 dark). Dat moet
-buiten een `@layer` blijven staan: Nuxt UI declareert het in `@layer theme`, en een override
-vanuit een layer wint alleen vanaf een latere layer.
+`--ui-border` is overridden unlayered (neutral-300 light, neutral-700 dark). That has to stay
+outside an `@layer`: Nuxt UI declares it in `@layer theme`, and an override from inside a layer
+only wins from a later layer.
 
-Dark mode wordt volledig door de tokens gedragen en moet werkend blijven.
+Dark mode is carried entirely by the tokens and has to keep working.
 
-## Dichtheid
+## Density
 
-Twee schalen, bewust verschillend.
+Two scales, deliberately different.
 
-**Tijdlijn** — de rijhoogte volgt uit de laanhoogte (`utils/planning/timelineMath.ts`) plus
-2 × `BLOCK_PADDING` (4px). Een rij met overlappende diensten stapelt lanen:
+**Timeline** — row height follows from the lane height
+(`utils/planning/timelineMath.ts`) plus 2 × `BLOCK_PADDING` (4px). A row with overlapping
+shifts stacks lanes:
 
-| Modus | Laanhoogte | Rij met één laan |
+| Mode | Lane height | Row with one lane |
 |---|---|---|
 | `compact` | 36px | 44px |
 | default | 52px | 60px |
-| default op detail-zoom (`15m`–`day`) | 80px | 88px |
+| default at detail zoom (`15m`–`day`) | 80px | 88px |
 | `spacious` | 96px | 104px |
 
-Blokpadding is `px-2 py-0.5`, in `spacious` `py-2`. Tekst in een blok: `text-xs font-semibold`
-voor de titel, `text-[10px]` voor alles daaronder.
+Block padding is `px-2 py-0.5`, and `py-2` in `spacious`. Text inside a block: `text-xs
+font-semibold` for the title, `text-[10px]` for everything below it.
 
-**Beheer en formulieren** — de tabel is in `app.config.ts` dichter gezet dan de Nuxt
-UI-default (`th px-4 py-3.5` / `td p-4`): `th px-3 py-2`, `td px-3 py-4 text-sm text-muted`,
-wat op ~44px rijhoogte uitkomt in plaats van ~56. Kaartslots zijn `p-3 sm:p-4`. Het
-paginaritme is `gap-6`.
+**Management screens and forms** — the table is set denser in `app.config.ts` than the Nuxt UI
+default (`th px-4 py-3.5` / `td p-4`): `th px-3 py-2`, `td px-3 py-4 text-sm text-muted`, which
+comes out at roughly 44px row height instead of 56. Card slots are `p-3 sm:p-4`. The page
+rhythm is `gap-6`.
 
-Een tijdlijn scan je, een formulier vul je in. Beheer is daarom iets ruimer, maar gebruikt
-dezelfde tokens en hetzelfde kop-recept: `text-xs font-semibold uppercase tracking-wide
-text-muted` — dat is letterlijk de `th` van de tabel, en het staat ook boven de secties in het
-dashboard, de zijbalk en het persoonlijke weekoverzicht.
+You scan a timeline; you fill in a form. Management is therefore slightly roomier, but uses the
+same tokens and the same heading recipe: `text-xs font-semibold uppercase tracking-wide
+text-muted` — literally the table's `th`, and also what sits above the sections in the
+dashboard, the sidebar and the personal week overview.
 
-## Pagina-anatomie
+## Page anatomy
 
-De app-chrome (`layouts/default.vue`) is de enige plek met een paginakop. Een pagina rendert
-daarin via drie slots en zet er geen tweede balk onder.
+The app chrome (`layouts/default.vue`) is the only place with a page header. A page renders into
+it through three slots and does not put a second bar underneath.
 
-| Slot | Wat erin gaat |
+| Slot | What goes in |
 |---|---|
-| `#title` | alleen als de standaardtitel niet klopt — op detailpagina's een `UBreadcrumb` |
-| `#actions` | de acties van de pagina: aanmaken, verwijderen, periodenavigatie |
-| `#tabs` | een `LayoutPageTabs`, direct onder de kop |
+| `#title` | only when the default title is wrong — on detail pages a `UBreadcrumb` |
+| `#actions` | the page's actions: create, delete, period navigation |
+| `#tabs` | a `LayoutPageTabs`, directly under the header |
 
-Een pagina die een slot vult zet `definePageMeta({ layout: false })` en wikkelt zichzelf in
-`<NuxtLayout name="default">`. Pagina's zonder acties laten dat achterwege en houden de
-standaardkop.
+A page that fills a slot sets `definePageMeta({ layout: false })` and wraps itself in
+`<NuxtLayout name="default">`. Pages without actions skip that and keep the default header.
 
-### Lijstpagina
+### List page
 
-`UiDataTable` in een `LayoutPageContainer fill`, zoekveld erboven, de primaire actie
-("Klant toevoegen") in `#actions` achter een rechtencheck. Een rij klikt door naar de
-detailpagina. `LayoutPageContainer` knoopt zich alleen bij `fill` aan de vensterhoogte — zonder
-dat zou een langere kaart eruit hangen en zijn `ring` (een outset box-shadow) op de scrollrand
-weggeknipt worden.
+`UiDataTable` inside a `LayoutPageContainer fill`, a search field above it, the primary action
+("Add customer") in `#actions` behind a permission check. A row navigates to the detail page.
+`LayoutPageContainer` only ties itself to the viewport height with `fill` — without that a
+taller card would hang out of it and have its `ring` (an outset box-shadow) clipped at the
+scroll edge.
 
-### Detailpagina
+### Detail page
 
-- **Titel is een kruimelpad**: `Klanten › Acme B.V.`, waarvan alleen de eerste kruimel klikbaar
-  is. Tijdens het laden staat er `Laden...` in plaats van een lege kruimel. Geen losse
-  terug-knop — dat is wat het kruimelpad al doet.
-- **Tabs verdelen de pagina**, niet kaarten naast elkaar: overzicht / gegevens / planning. Elke
-  tab is een ander deel van de pagina, geen panel — vandaar `:content="false"` in
-  `LayoutPageTabs`.
-- **De gegevens-tab ís het formulier.** `FormEditableSection` toont het levende formulier aan
-  wie mag bewerken en `FormDisplay` met dezelfde velden aan wie niet. Geen leesmodus met een
-  Bewerken-knop ertussen, geen bewerk-modal: die verbergt de context die je net aan het lezen
-  was, en een wisselstap kost een klik voor iets dat je toch al mag. De `Bewerken`-knop die op
-  de klantpagina in `#actions` staat is dan ook geen modus-schakelaar maar een snelkoppeling
-  naar die tab, en verdwijnt zodra je er bent.
-- **Zonder rechten** blijft het bij lezen. Een invoerveld tonen dat bij opslaan een 403
-  oplevert is erger dan het veld niet tonen; `can-edit` komt uit `utils/userRole.ts`.
-- **Verwijderen** staat in `#actions` en gaat via `UiConfirmModal` — daar omdat de klantpagina
-  voortgang wil tonen terwijl het verwijderen loopt. Elders is de standaard de
-  `UiDeleteConfirm` die één keer in `app.vue` hangt. Er wordt niets verwijderd zonder te vragen.
+- **The title is a breadcrumb**: `Customers › Acme B.V.`, of which only the first crumb is
+  clickable. While loading it says `Loading...` rather than showing an empty crumb. No separate
+  back button — that is what the breadcrumb already does.
+- **Tabs divide the page**, not cards side by side: overview / details / planning. Each tab is a
+  different part of the page, not a panel — hence `:content="false"` in `LayoutPageTabs`.
+- **The details tab *is* the form.** `FormEditableSection` shows the live form to anyone who may
+  edit and `FormDisplay` with the same fields to anyone who may not. No read mode with an Edit
+  button in between and no edit modal: a modal hides the very context you were reading, and a
+  mode switch costs a click for something you are allowed to do anyway. The `Edit` button on the
+  customer page in `#actions` is therefore not a mode switch but a shortcut to that tab, and it
+  disappears once you are there.
+- **Without permission** it stays read-only. Showing an input that returns 403 on save is worse
+  than not showing the field; `can-edit` comes from `utils/userRole.ts`.
+- **Deleting** sits in `#actions` and goes through `UiConfirmModal` — there, because the
+  customer page wants to show progress while the delete runs. Elsewhere the default is the
+  `UiDeleteConfirm` mounted once in `app.vue`. Nothing is deleted without asking first.
 
-Dit geldt voor elke entiteit met een detailpagina — klanten, gebruikers, de organisatie, en wat
-er nog bij komt. Modals blijven over voor **aanmaken** (`useCreate`), waar nog geen record is om
-naartoe te navigeren.
+This holds for every entity with a detail page — customers, users, the organization, and
+whatever comes next. Modals are left for **creating** (`useCreate`), where there is no record to
+navigate to yet.
 
-### Formulieren
+### Forms
 
-**Een formulierdefinitie staat nooit in een `.vue`-bestand.** Waar hij wél staat hangt af van
-hoe hij verschijnt:
+**A form definition never lives in a `.vue` file.** Where it *does* live depends on how it
+appears:
 
-| Composable | Map | Verschijnt als |
+| Composable | Folder | Appears as |
 |---|---|---|
-| `useForm` | `composables/forms/` | wat de pagina met `form.render` doet |
-| `useEdit` | `composables/edit/` | een `FormEditableSection` |
-| `useCreate` | `composables/create/` | een `FormCreateModal` via de Nuxt UI-overlay |
+| `useForm` | `composables/forms/` | whatever the page does with `form.render` |
+| `useEdit` | `composables/edit/` | a `FormEditableSection` |
+| `useCreate` | `composables/create/` | a `FormCreateModal` through the Nuxt UI overlay |
 
-Wat er in zo'n definitie hoort: het zod-schema, de controls, `onSubmit` inclusief
-cache-invalidatie, toasts en navigatie, en voor `useEdit` de `toState` die de entiteit op het
-formulier afbeeldt. Wat de pagina houdt: laadstatus, rechten, en de vraag wanneer het formulier
-zichtbaar is.
+What belongs in such a definition: the zod schema, the controls, `onSubmit` including cache
+invalidation, toasts and navigation, and for `useEdit` the `toState` that maps the entity onto
+the form. What the page keeps: loading state, permissions, and the question of when the form is
+visible.
 
-Zo blijft een pagina leesbaar als een pagina: data laden, staat kiezen, renderen. `grid: true`
-levert de label-links/veld-rechts opmaak en de route-leave-guard.
+That keeps a page readable as a page: load data, pick a state, render. `grid: true` provides the
+label-left/field-right layout and the route-leave guard.
 
-De knoppen horen in de **`#footer`-slot van `form.render`**, niet in een slot van de omliggende
-container. Alleen daar staan ze binnen het `<form>`-element, en alleen daar doet `type="submit"`
-wat het belooft. Buiten het formulier is de opslaan-knop een knop die nergens op aangesloten is.
+The buttons belong in the **`#footer` slot of `form.render`**, not in a slot of the surrounding
+container. Only there do they sit inside the `<form>` element, and only there does
+`type="submit"` do what it promises. Outside the form, the save button is a button wired to
+nothing.
 
-## Gedeelde bouwstenen
+## Shared building blocks
 
-Gebruik deze in plaats van het patroon opnieuw te schrijven:
+Use these instead of writing the pattern again:
 
-| Component | Waarvoor |
+| Component | For |
 |---|---|
-| `LayoutPageContainer` | paginawrapper, `gap-6`-ritme; `fill` voor volledige hoogte |
-| `LayoutSection` | leesblok binnen een pagina: kop, omschrijving, `#actions`, content — zie regel 9 |
-| `LayoutSectionHeader` | alleen die kop, of een losse omschrijving. **Rendert nooit de paginatitel** — die staat al in de chrome |
-| `LayoutCard` | iets waar je in typt, of wat op zichzelf zweeft: auth-schermen, dashboard-tegels |
-| `LayoutPageTabs` | de tabrij onder de paginakop |
-| `LayoutHeaderActions` | een `#actions`-groep die uit een `HeaderAction[]` wordt opgebouwd en onder 1024px inklapt tot een dropdown. Nu alleen op de planningspagina, die er de meeste heeft |
-| `FormEditableSection` | de standaard voor de velden van een entiteit: formulier of leesweergave, één kaart |
-| `FormDisplay` | leesweergave van dezelfde controls, los te gebruiken voor velden die de API niet bijwerkt |
-| `FormCreateModal` | aanmaken, geopend door `useCreate` |
-| `UiDataTable` | lijstweergave met zoekfilter, lege staat en klikbare rijen |
-| `UiQueryState` | fout → laden → content, in die volgorde |
-| `UiEmptyState` | "hier staat nog niets" |
-| `UiLoadingIndicator` | losse laadindicator |
-| `UiStatTile` | één getal op een detailpagina — `rounded-lg p-4 ring ring-default`, geen kaart. Zonder `value` een streepje plus placeholder, zodat een onaffe KPI-rij bewust oogt |
-| `UiEntitySelect` | de kiezer voor élke soort entiteit — medewerker, klant, wat er nog bij komt. Zoeken, actief/inactief en A-Z/Recent zitten hier één keer; wát een entiteit is staat in `useEntitySource` |
-| `UiConfirmModal` | bevestiging met eigen voortgang, voor een component dat die zelf wil sturen |
-| `UiDeleteConfirm` | de ene verwijderdialoog, hangt in `app.vue`, aangeroepen via `useDeleteConfirm` |
-| `AvailabilityRuleRow` | één regel in een lijst met bewerk- en verwijderacties |
-| `AuthFooterLink` | "nog geen account? Registreren" onder een auth-kaart |
+| `LayoutPageContainer` | page wrapper, `gap-6` rhythm; `fill` for full height |
+| `LayoutSection` | a read-only block within a page: heading, description, `#actions`, content — see rule 9 |
+| `LayoutSectionHeader` | just that heading, or a loose description. **Never renders the page title** — that is already in the chrome |
+| `LayoutCard` | something you type into, or something that floats on its own: auth screens, dashboard tiles |
+| `LayoutPageTabs` | the tab row under the page header |
+| `LayoutHeaderActions` | an `#actions` group built from a `HeaderAction[]` that collapses to a dropdown below 1024px. Currently only on the planning page, which has the most of them |
+| `FormEditableSection` | the standard for an entity's fields: form or read-only view, one card |
+| `FormDisplay` | read-only view of the same controls, usable on its own for fields the API cannot update |
+| `FormCreateModal` | creating, opened by `useCreate` |
+| `UiDataTable` | list view with search filter, empty state and clickable rows |
+| `UiQueryState` | error → loading → content, in that order |
+| `UiEmptyState` | "nothing here yet" |
+| `UiLoadingIndicator` | a standalone loading indicator |
+| `UiStatTile` | one number on a detail page — `rounded-lg p-4 ring ring-default`, not a card. Without a `value` it shows a dash plus placeholder, so an unfinished KPI row still reads as deliberate |
+| `UiEntitySelect` | the picker for *every* kind of entity — employee, customer, whatever comes next. Search, active/inactive and A-Z/Recent live here once; what an entity *is* lives in `useEntitySource` |
+| `UiConfirmModal` | a confirmation with its own progress, for a component that wants to drive it |
+| `UiDeleteConfirm` | the one delete dialog, mounted in `app.vue`, reached through `useDeleteConfirm` |
+| `AvailabilityRuleRow` | one row in a list with edit and delete actions |
+| `AuthFooterLink` | "no account yet? Register" under an auth card |
 
-Knopgroottes: de default (`md`) voor pagina-acties in de header, `sm` binnen kaarten en rijen.
+Button sizes: the default (`md`) for page actions in the header, `sm` inside cards and rows.
 
-## Wat hier bewust níet staat
+## What deliberately is not here
 
-Een kleurenpalet met vijftig tinten, een typografische schaal met acht niveaus, een
-grid-specificatie. Dat hadden we, en de code deed er niets mee. Wat er staat, staat er omdat het
-in de app terug te vinden is.
+A colour palette with fifty shades, a type scale with eight levels, a grid specification. We had
+those, and the code did nothing with them. What is written here is written because it can be
+found back in the app.
