@@ -9,18 +9,9 @@ export default defineNuxtConfig({
     appManifest: false,
   },
 
-  app: {
-    head: {
-      link: [
-        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
-        {
-          rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-        },
-      ],
-    },
-  },
+  // Inter is not linked here: @nuxt/fonts ships with @nuxt/ui and already self-hosts it under
+  // /_fonts with metric-adjusted fallbacks. A Google Fonts <link> on top of that was two
+  // render-blocking third-party connections for a font that is served locally.
 
   modules: ['@pinia/nuxt', '@nuxt/ui', '@nuxt/eslint', '@nuxtjs/i18n'],
 
