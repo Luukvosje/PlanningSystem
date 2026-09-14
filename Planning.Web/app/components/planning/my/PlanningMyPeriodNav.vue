@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { DateValue } from '@internationalized/date';
 import { fromDate, getLocalTimeZone, toCalendarDate } from '@internationalized/date';
-import { getMonday } from '~/utils/planning/dateUtils';
 
 const props = withDefaults(defineProps<{
   label: string
@@ -31,7 +30,7 @@ function onCalendarDateSelect(
   if (!value || Array.isArray(value) || !('day' in value)) {
     return;
   }
-  emit('selectDate', getMonday(value.toDate(getLocalTimeZone())));
+  emit('selectDate', value.toDate(getLocalTimeZone()));
   calendarOpen.value = false;
 }
 
