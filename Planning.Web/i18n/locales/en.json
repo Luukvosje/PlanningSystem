@@ -37,8 +37,8 @@
       "title": "Unsaved changes",
       "description": "You have unsaved changes on this page. Do you want to save them before leaving?",
       "save": "Save and leave",
-      "discard": "Discard and leave",
-      "cancel": "Stay on page"
+      "discard": "Continue",
+      "cancel": "Cancel"
     },
     "yes": "Yes",
     "no": "No",

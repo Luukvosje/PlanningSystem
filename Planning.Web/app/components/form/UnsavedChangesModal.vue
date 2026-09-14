@@ -37,9 +37,6 @@ function choose(choice: 'save' | 'discard' | 'cancel') {
 				>
 					{{ t('common.unsavedChanges.discard') }}
 				</UButton>
-				<UButton @click="choose('save')">
-					{{ t('common.unsavedChanges.save') }}
-				</UButton>
 			</div>
 		</template>
 	</UModal>

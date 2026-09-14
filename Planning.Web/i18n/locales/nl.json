@@ -37,8 +37,8 @@
       "title": "Niet-opgeslagen wijzigingen",
       "description": "Je hebt niet-opgeslagen wijzigingen op deze pagina. Wil je deze opslaan voordat je verdergaat?",
       "save": "Opslaan en doorgaan",
-      "discard": "Wijzigingen negeren en doorgaan",
-      "cancel": "Op pagina blijven"
+      "discard": "Doorgaan",
+      "cancel": "Annuleren"
     },
     "yes": "Ja",
     "no": "Nee",
