@@ -32,6 +32,12 @@ const NL_TRANSLATIONS: Record<string, string> = {
   // generic placeholder" check matches regardless of which code path produced it.
   'One or more validation errors occurred.': 'Er zijn een of meer validatiefouten opgetreden.',
 
+  // Team members without an account
+  'Only owners and admins can add team members.': 'Alleen eigenaren en beheerders kunnen teamleden toevoegen.',
+  'A team member with this email already exists.': 'Er bestaat al een teamlid met dit e-mailadres.',
+  'This team member already has an account.': 'Dit teamlid heeft al een account.',
+  'Member is already linked to an account.': 'Dit teamlid is al aan een account gekoppeld.',
+
   // Cross-cutting / auth
   'Organization context is required.': 'Organisatiecontext is vereist.',
   'No organization context. Set the X-Organization-Id header or create an organization first.':

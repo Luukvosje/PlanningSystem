@@ -6,6 +6,7 @@ definePageMeta({ layout: false });
 
 const auth = useAuthStore();
 const inviteCreate = useInviteCreate();
+const userCreate = useUserCreate();
 const { t } = useI18n();
 
 onMounted(async () => {
@@ -42,6 +43,11 @@ const columns = computed<TableColumn<UserResponse>[]>(() => [
     header: t('users.columns.status'),
     accessorFn: (row) => (row.isActive ? t('users.active') : t('users.inactive')),
   },
+  {
+    id: 'account',
+    header: t('users.columns.account'),
+    accessorFn: (row) => (row.hasAccount ? t('users.account.linked') : t('users.account.none')),
+  },
 ]);
 
 function matchesUserFilter(user: UserResponse, filter: string) {
@@ -74,13 +80,22 @@ function openUser(user: UserResponse) {
 <template>
 	<NuxtLayout name="default">
 		<template #actions>
-			<UButton
-				v-if="canInvite"
-				icon="i-lucide-user-plus"
-				@click="inviteCreate.open()"
-			>
-				{{ t('nav.invites') }}
-			</UButton>
+			<template v-if="canInvite">
+				<UButton
+					icon="i-lucide-ticket"
+					variant="outline"
+					color="neutral"
+					@click="inviteCreate.open()"
+				>
+					{{ t('users.inviteWithCode') }}
+				</UButton>
+				<UButton
+					icon="i-lucide-user-plus"
+					@click="userCreate.open()"
+				>
+					{{ t('users.addMember') }}
+				</UButton>
+			</template>
 		</template>
 
 		<LayoutPageContainer fill>
@@ -109,9 +124,10 @@ function openUser(user: UserResponse) {
 						<template #empty-action>
 							<UButton
 								v-if="canInvite"
-								@click="inviteCreate.open()"
+								icon="i-lucide-user-plus"
+								@click="userCreate.open()"
 							>
-								{{ t('nav.invites') }}
+								{{ t('users.addMember') }}
 							</UButton>
 						</template>
 
@@ -124,6 +140,17 @@ function openUser(user: UserResponse) {
 						<template #status-cell="{ row }">
 							<div @click.stop>
 								<UsersStatusToggle :user="row.original" />
+							</div>
+						</template>
+
+						<template #account-cell="{ row }">
+							<div @click.stop>
+								<UsersAccountState
+									:user="row.original"
+									:can-invite="canInvite"
+									size="xs"
+									@invite="inviteCreate.openFor(row.original)"
+								/>
 							</div>
 						</template>
 					</UiDataTable>

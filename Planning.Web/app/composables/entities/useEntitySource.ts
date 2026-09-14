@@ -41,8 +41,8 @@ export function useEntitySource(kind: MaybeRefOrGetter<EntityKind>): EntitySourc
   function toUserOption(user: UserResponse): EntityOption {
     return {
       id: user.id,
-      label: `${user.firstName} ${user.lastName}`.trim() || user.email,
-      description: user.email,
+      label: `${user.firstName} ${user.lastName}`.trim() || user.email || t('common.unknown'),
+      description: user.email ?? null,
       isActive: user.isActive,
     };
   }

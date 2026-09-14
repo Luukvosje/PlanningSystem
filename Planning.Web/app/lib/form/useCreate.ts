@@ -41,7 +41,8 @@ export interface CreateInstance<TSchema extends z.ZodType = z.ZodType> {
   modalUi: ComputedRef<Record<string, unknown>>
   bodyExtra: ComputedRef<Component | undefined>
   extensions: ComputedRef<Record<string, Ref<unknown>>>
-  open: () => void
+  /** Opens on a fresh form; `overrides` prefill fields on top of the initial state. */
+  open: (overrides?: Partial<z.infer<TSchema>>) => void
   close: () => void
 }
 
@@ -94,8 +95,8 @@ export function useCreate<TSchema extends z.ZodType>(
     optionsRef.value.onClose?.();
   }
 
-  function open() {
-    form.reset();
+  function open(overrides?: Partial<z.infer<TSchema>>) {
+    form.reset(overrides ? { ...options.initialState, ...overrides } : undefined);
     optionsRef.value.onOpen?.();
     modal.open({ create: instance as CreateInstance }).then(handleClosed);
   }

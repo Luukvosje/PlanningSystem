@@ -6,9 +6,9 @@
  * OpenAPI spec version: v1
  */
 
-export interface CreateInviteRequest {
+export interface CreateUserRequest {
+  firstName: string;
+  lastName: string;
   /** @nullable */
   email?: string | null;
-  /** @nullable */
-  userId?: string | null;
 }
