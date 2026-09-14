@@ -42,7 +42,8 @@ export function useJoinForm() {
       await queryClient.invalidateQueries();
 
       toast.add({ title: t('invites.accepted'), color: 'success' });
-      await router.push('/users');
+      // A new member's first screen is their own dashboard, not the team list of Beheer.
+      await router.push('/dashboard');
     },
   });
 }

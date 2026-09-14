@@ -28,9 +28,7 @@
     "colorMode": {
       "group": "Color mode",
       "light": "Light",
-      "lightMode": "Light mode",
-      "dark": "Dark",
-      "darkMode": "Dark mode"
+      "dark": "Dark"
     },
     "unsavedChanges": {
       "text": "You have unsaved changes",
@@ -72,6 +70,8 @@
     "createAccount": "Create account",
     "alreadyHaveAccount": "Already have an account?",
     "landingTagline": "Plan your team simply and clearly.",
+    "landingStartBusiness": "Start with your business",
+    "landingInvited": "I've been invited",
     "forgotPasswordTitle": "Forgot password",
     "forgotPasswordDescription": "Enter your email address. If an account exists, we will send a link to set a new password.",
     "forgotPasswordLink": "Forgot your password?",

@@ -34,14 +34,14 @@ if (auth.isAuthenticated) {
 				block
 				size="lg"
 			>
-				{{ t('auth.createAccount') }}
+				{{ t('auth.landingStartBusiness') }}
 			</UButton>
 			<UButton
 				to="/join"
 				variant="ghost"
 				block
 			>
-				{{ t('invites.enterCode') }}
+				{{ t('auth.landingInvited') }}
 			</UButton>
 		</div>
 	</LayoutCard>

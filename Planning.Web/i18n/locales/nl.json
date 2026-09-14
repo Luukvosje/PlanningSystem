@@ -28,9 +28,7 @@
     "colorMode": {
       "group": "Kleurmodus",
       "light": "Licht",
-      "lightMode": "Lichte modus",
-      "dark": "Donker",
-      "darkMode": "Donkere modus"
+      "dark": "Donker"
     },
     "unsavedChanges": {
       "text": "Je hebt niet-opgeslagen wijzigingen",
@@ -72,6 +70,8 @@
     "createAccount": "Account aanmaken",
     "alreadyHaveAccount": "Al een account?",
     "landingTagline": "Plan je team eenvoudig en overzichtelijk.",
+    "landingStartBusiness": "Start met je bedrijf",
+    "landingInvited": "Ik ben uitgenodigd",
     "forgotPasswordTitle": "Wachtwoord vergeten",
     "forgotPasswordDescription": "Vul je e-mailadres in. Bestaat er een account, dan sturen we een link om een nieuw wachtwoord in te stellen.",
     "forgotPasswordLink": "Wachtwoord vergeten?",

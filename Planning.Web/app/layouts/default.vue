@@ -6,13 +6,8 @@ const auth = useAuthStore();
 const route = useRoute();
 const { t, locale, setLocale } = useI18n();
 
-const languageOptions = [
-  { code: 'nl' as const, label: 'Nederlands', icon: 'i-circle-flags-nl' },
-  { code: 'en' as const, label: 'English', icon: 'i-circle-flags-gb' },
-];
-
 const currentLanguageIcon = computed(() =>
-  languageOptions.find((option) => option.code === locale.value)?.icon ?? languageOptions[0].icon,
+  LANGUAGE_OPTIONS.find((option) => option.code === locale.value)?.icon ?? LANGUAGE_OPTIONS[0].icon,
 );
 
 const colorMode = useColorMode();
@@ -126,7 +121,7 @@ const userItems = computed<DropdownMenuItem[][]>(() => [
     {
       label: t('layout.userMenu.language'),
       icon: currentLanguageIcon.value,
-      children: languageOptions.map((option) => ({
+      children: LANGUAGE_OPTIONS.map((option) => ({
         label: option.label,
         icon: option.icon,
         type: 'checkbox' as const,
