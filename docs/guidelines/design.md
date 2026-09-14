@@ -40,8 +40,10 @@ This document is only about how it looks.
 5. **What floats is glass; a shadow says "you can pick me up".** See [Glass](#glass) below.
    Shadow is otherwise deliberately scarce and means exactly one thing — this object sits loose
    on the grid: `shadow-sm` on a block, `hover:shadow-md`, `shadow-lg` while dragging. Beyond
-   that, only on chrome that genuinely hangs over the page (context menu, expanded nav panel)
-   and as `shadow-sm ring ring-default` on the app shell itself.
+   that, only on chrome that genuinely hangs over the page (context menu, expanded nav panel).
+   The rail and the content panel used to carry one too; it came off in
+   [decision 0011](../decisions/0011-design-system-werkbank-licht.md), because there it was
+   decoration and it diluted the one thing a shadow is allowed to say here.
 6. **Selection is a ring, not a colour change.** `ring-2 ring-brand ring-offset-1` plus a
    z-index. The object itself does not change colour. A drop target gets the soft variant:
    `ring-1 ring-inset ring-brand/40` with a `bg-brand/10` wash.
@@ -110,14 +112,42 @@ a palette:
   theme variables a utility references, nothing here writes `teal-500`, and without `static`
   the two declarations are dropped and Nuxt UI's own `var(--color-teal-500, <default>)`
   fallback renders #14b8a6 instead. Silently.
-- **`neutral`** = gray — carries all the semantic greys.
+- **`neutral`** = gray — carries all the semantic greys, and the gray ramp itself is
+  overridden in the same `@theme static` block. That is the single lever: `neutral` maps to
+  `gray`, so rewriting eleven shades moves every surface, border and text token at once
+  instead of a dozen `--ui-*` names one by one.
+
+  **Warm paper, cool ink.** Shades 50–300 carry a touch of red so the page behind a panel
+  reads as paper; 400–950 lean towards the brand's teal so text and borders belong to the
+  same family as the accent. Tailwind's own gray is uniformly blue, which is exactly why
+  three near-identical surfaces used to be impossible to tell apart and every boundary needed
+  a hairline to exist at all.
+
+  | Shade | Value | Lands as |
+  |---|---|---|
+  | 50 | `#faf9f8` | `bg-muted` |
+  | 100 | `#f5f4f2` | `bg-elevated` — **the shell's ground** |
+  | 200 | `#e6e4e1` | `bg-accented` |
+  | 300 | `#d6d3ce` | `border-default` (light) |
+  | 400 | `#9aa0a1` | `text-dimmed` |
+  | 500 | `#646c6e` | `text-muted` |
+  | 600 | `#4b5254` | `text-toned` |
+  | 700 | `#2c3537` | `text-default` (light), `border-default` (dark) |
+  | 800 | `#1d2628` | `bg-muted` / `bg-elevated` (dark) |
+  | 900 | `#121b1c` | `text-highlighted`, `bg-inverted`, `bg-default` (dark) |
+  | 950 | `#0b1112` | — |
+
+  The ground is the darkest surface in the light stack and panels float lighter on it — the
+  shell and the auth screens both use `bg-elevated` for it. It used to be a
+  `bg-linear-to-r from-neutral-50 to-neutral-200` gradient, which reached past the palette
+  into Tailwind's own *neutral* scale and so never moved with the theme.
 
 > They were once named the other way round, with the brand colour under "secondary" and grey
 > under "primary". Everything written as `text-primary` therefore rendered grey, including the
 > links on the login page. Nuxt UI still knows a built-in `primary` alias that nothing maps to —
 > do not use it; it gives an undefined colour rather than an error.
 
-Three tokens are overridden unlayered, and all three have to stay outside an `@layer`: Nuxt UI
+Two tokens are overridden unlayered, and both have to stay outside an `@layer`: Nuxt UI
 declares them in `@layer theme`, and an override from inside a layer only wins from a later
 layer. Because unlayered beats every layer, each one also has to be **restated in `.dark`** —
 otherwise the light value leaks into dark mode.
@@ -126,16 +156,38 @@ otherwise the light value leaks into dark mode.
 |---|---|---|---|
 | `--ui-border` | neutral-300 | neutral-700 | — |
 | `--ui-brand` | brand-**600** | brand-400 (Nuxt UI default) | Shade 500 puts white button labels at 3.7:1, below AA for the 14px text buttons and links use. 600 is 6.5:1. Dark sits under near-black labels and already has the contrast. |
-| `--ui-text` | neutral-**800** | neutral-200 (Nuxt UI default) | Shade 700 is 7.6:1 — legible, but it reads as grey and leaves screens washed. 800 is 14.7:1 and stays a step below `text-highlighted` on 900. |
 
-Measured on white: `text-default` #1e2939 14.7:1, `text-highlighted` #101828 17.8:1,
-`text-muted` #6a7282 4.8:1, accent #006a61 under white 6.5:1.
+There used to be a third, `--ui-text` on neutral-800, to drag the default text out of grey.
+The ramp above made it unnecessary — shade 700 now carries 12.6:1 on its own.
+
+Measured in the running app. Light: text #2c3537 **12.6:1**, highlighted #121b1c **17.5:1**,
+muted #646c6e **5.4:1**, the brand button under white **6.5:1**. Dark: bg #121b1c, text
+#e6e4e1 **13.8:1**, the brand button **9.4:1**.
+
+**Ink is action, teal is state.** Teal is the brand and it carries selection, "today" and
+confirmed — not every button. The primary action is the ink-filled button (`bg-inverted`).
+This is what keeps the accent legible as a signal; see
+[decision 0011](../decisions/0011-design-system-werkbank-licht.md).
 
 Dark mode is carried entirely by the tokens and has to keep working.
 
-`body` carries `font-variant-numeric: lining-nums tabular-nums`. Nearly every number in this
-app is compared against the one above it — shift times in a block, hours in a week header,
-counts in a table column — and proportional digits make those columns jitter as data changes.
+## Type
+
+One family, Inter, on its **variable axis** — `nuxt.config.ts` asks Google for `'400 700'`
+rather than a list of weights. That is load-bearing: a first attempt listing weights
+individually silently collapsed the family to 400 only, and 510/590 are not on the static
+ladder at all.
+
+| Setting | Value | Why |
+|---|---|---|
+| `--font-weight-medium` | **510** | Moves every `font-medium` in the app without touching a component. |
+| `--font-weight-semibold` | **590** | Same for `font-semibold`. The band caps here — 600 and 700 read as shouting at 13px, which is most of this interface. |
+| `font-feature-settings` | `"cv01", "ss03"` | Inter's own alternates. They are what stops it looking like the default it is. |
+| `letter-spacing` | −0.011em body, −0.018em headings, **0** on `text-[10px]` | Tracking is a function of size. Every reading size here sits between 11 and 15px, where Inter is drawn loose; at 10px negative tracking closes the counters and a timeline block stops being scannable. |
+| `font-variant-numeric` | `lining-nums tabular-nums` | Nearly every number here is compared against the one above it — shift times in a block, hours in a week header, counts in a table column — and proportional digits make those columns jitter as data changes. |
+
+Do not reach for `font-bold`. If something needs more emphasis than 590, it needs more size
+or more space, not more weight.
 
 ## Density
 

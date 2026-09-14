@@ -19,6 +19,7 @@ Keep it short; the reasoning lives in the individual files.
 | [0008](0008-hosting-vps-docker-compose.md) | A VPS with Docker Compose and Caddy, not Azure. The database is PostgreSQL | final, built |
 | [0009](0009-no-ai-companion.md) | No LLM in the planning flow. Conflict detection stays deterministic rules | final |
 | [0010](0010-timeline-is-a-planner-tool.md) | `/timeline` requires a planner role; an employee sees only their own week | final, built |
+| [0011](0011-design-system-werkbank-licht.md) | Werkbank Licht: Linear's rules on a light ground, a neutral ramp with hue, weights capped at 590, ink is action and teal is state | final, built |
 
 ## Still open — no decision here yet
 
