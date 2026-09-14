@@ -88,12 +88,12 @@ implementaties (server + client) van dezelfde regel.
 
 ---
 
-## 3. Toetsing aan MVP-principe / architectuur (CLAUDE_COLLABORATION.md, CLAUDE.md)
+## 3. Toetsing aan MVP-principe / architectuur (../collaboration.md, ../../CLAUDE.md)
 
 Twee dingen die ik expliciet wil benoemen, geen showstoppers maar wel relevant voor de
 volgorde:
 
-1. **Beschikbaarheid staat in de PRD als Fase 2**, en de Fase 1-gaten uit `MVP_GAPS_PLAN.md`
+1. **Beschikbaarheid staat in de PRD als Fase 2**, en de Fase 1-gaten uit `mvp-gaps.md`
    (open diensten, planning delen) staan nog open. Beschikbaarheid *bestaat* al functioneel
    (zij het imperfect) — dit is dus een verbetering van iets dat al werkt, niet het dichten van
    een gat dat de eerste klant blokkeert. Geen bezwaar om er nu aan te werken als jij dat wilt,
@@ -163,10 +163,10 @@ Dit scheidt "veilig en snel" (stap 1) van "risicovol en duur" (stap 2), in plaat
    het is opgelost? De bestaande `AvailabilityOverlapChecker` bestaat al server-side maar wordt
    nergens voor dit scenario aangeroepen — (b) is de kleinste toevoeging die aansluit bij
    "minder fouten" zonder een blokkerende flow te introduceren.
-5. **Prioriteit**: dit oppakken nu, of eerst de Fase 1-gaten uit `MVP_GAPS_PLAN.md` (open
+5. **Prioriteit**: dit oppakken nu, of eerst de Fase 1-gaten uit `mvp-gaps.md` (open
    diensten, planning delen) afronden? Geen technische blocker, puur een volgorde-vraag.
 
 ---
 
 Zodra je hierop reageert (akkoord op de aanpak in §4, antwoorden op §5), lever ik pas concrete
-code — per de afspraak in `CLAUDE_COLLABORATION.md` §2 en §5.
+code — per de afspraak in `../collaboration.md` §2 en §5.

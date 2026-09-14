@@ -17,7 +17,7 @@ Status: definitief | voorlopig
 ```
 
 Open vragen die nog niet beslist zijn horen NIET hier — die blijven in het bijbehorende
-plan-document (bv. `MVP_GAPS_PLAN.md`) totdat er een keuze is, en verhuizen dan hierheen.
+plan-document (bv. `plans/mvp-gaps.md`) totdat er een keuze is, en verhuizen dan hierheen.
 
 ---
 
@@ -68,7 +68,7 @@ medewerker-modus staat er bovenaan een rij "Open diensten" zodra er minstens é�
 dienst naar die rij slepen haalt de medewerker eraf, eruit slepen wijst iemand toe. In het
 formulier is "Open dienst" de eerste optie in de medewerker-keuzelijst. De API stuurt
 `assignedUserName: null` in plaats van de tekst "Open dienst" (afwijking van
-`MVP_GAPS_PLAN.md` §1): het label komt uit i18n, zodat de backend geen UI-tekst bevat.
+`plans/mvp-gaps.md` §1): het label komt uit i18n, zodat de backend geen UI-tekst bevat.
 Waarom: de gestreepte rand leest als "nog niet ingevuld" zonder een kleur te claimen die ook
 een echte dienstkleur kan zijn; de rij spiegelt de bestaande "Zonder klant"-rij, dus geen
 nieuw patroon om uit te leggen.
@@ -86,7 +86,7 @@ onderstaand punt).
 Alternatief overwogen: credits per dienst/actie — verworpen, want dat zet een prikkel neer
 om de tool minder te gebruiken, wat tegen het doel ingaat (minder WhatsApp, meer overzicht).
 Status: voorlopig — exacte bedragen en de precieze medewerkersgrens (10 vs 15) staan nog
-open, zie `CLAUDE_COLLABORATION.md` §3.
+open, zie `collaboration.md` §3.
 
 ### 2026-08-16 — Marketingkanaal: Meta Ads als eerste richting
 Besluit: starten met smal getargete Meta Ads (interesse/gedrag + geo-radius), kleine
@@ -116,7 +116,7 @@ om de API uit te breiden voor een puur presentatie-probleem. `wa.me` werkt op de
 Alternatief overwogen: losse PDF-export nu al meenemen — verworpen, staat expliciet als
 *later* in de PRD.
 Status: voorlopig — open vraag (nog niet beslist): tekst per medewerker gegroepeerd, of
-per dag met alle medewerkers onder elkaar? Zie `MVP_GAPS_PLAN.md` §2. Locatie in code
+per dag met alle medewerkers onder elkaar? Zie `plans/mvp-gaps.md` §2. Locatie in code
 zodra gebouwd: `app/utils/planning/formatWeekPlanningText.ts` +
 `app/components/planning/header/`.
 
@@ -132,7 +132,7 @@ via null-check.
 Status: definitief voor het datamodel. Bewust NIET nu: de "medewerker accepteert open
 dienst"-flow (aparte actie/endpoint, hoort bij een latere fase). Open vraag (nog niet
 beslist): aparte kleur/stijl voor open diensten in de tijdlijn, of grijs/leeg? Zie
-`MVP_GAPS_PLAN.md` §1 voor de volledige impact-analyse (Domain/Infrastructure/
+`plans/mvp-gaps.md` §1 voor de volledige impact-analyse (Domain/Infrastructure/
 Application/Frontend).
 
 ### 2026-08-16 — Product-scope / niet-doelen
@@ -143,7 +143,7 @@ overzicht, minder WhatsApp?
 Waarom: focus op de kernbelofte (binnen 5 minuten een weekplanning maken en delen) voor
 de eerste klant (sportschoolketen); scope-kruip is het grootste risico voor een MVP.
 Alternatief overwogen: n.v.t. — dit is een grens, geen keuze tussen opties.
-Status: definitief, niet aanpassen zonder expliciet gesprek (zie `CLAUDE_COLLABORATION.md`
+Status: definitief, niet aanpassen zonder expliciet gesprek (zie `collaboration.md`
 §1). Wel een bewuste toekomstrichting (niet-belofte): groei naar bredere bedrijfs-SaaS via
 het bestaande `Modules`-systeem, plus een aparte medewerker-app — niet op vooruitlopen in
 code of marketing totdat expliciet aangegeven.

@@ -1,6 +1,6 @@
 # MVP-gaten — Plan (geen code, alleen besluiten)
 
-Status van de 3 punten uit `Planning_PRD.md`, gecheckt tegen de huidige codebase (16 aug 2026):
+Status van de 3 punten uit `../prd.md`, gecheckt tegen de huidige codebase (16 aug 2026):
 
 | Feature | Status |
 |---|---|
@@ -39,7 +39,7 @@ mogelijk maken van open diensten zelf.
 
 **Beslist (22 aug 2026):** gestreepte rand in de omtrek-stijl, label "Open dienst" in het
 blok, en een rij "Open diensten" bovenaan de medewerker-modus waar je naartoe kunt slepen om
-iemand van een dienst af te halen. Zie `DECISIONS.md`.
+iemand van een dienst af te halen. Zie `../decisions.md`.
 
 ---
 
