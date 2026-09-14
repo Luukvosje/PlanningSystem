@@ -88,7 +88,7 @@ anything under `app/generated/`.
 `.github/workflows/ci.yml` runs on every PR and on pushes to `test`: backend build + test,
 frontend lint + test + build. `.github/workflows/deploy.yml` runs the same checks on a push
 to `main` and then ships images to ghcr.io and onto the VPS. **`main` is production.** The
-first-deploy runbook is `deploy/VPS-SETUP.md`.
+first-deploy runbook is [docs/runbooks/first-deploy.md](docs/runbooks/first-deploy.md).
 
 ## Architecture
 
@@ -120,15 +120,27 @@ the only extra edge. `Planning.Domain` references nothing.
 
 `docs/` is organised by the kind of question it answers — see [docs/README.md](docs/README.md).
 
-- **Decisions go in [docs/decisions.md](docs/decisions.md)**, newest first, in the format
-  that file describes. If you are about to write "we besloten om…" anywhere else, write it
-  there instead. Read it before changing something that looks arbitrary — it probably is not.
-- Open questions that are not yet decided stay in their plan document under `docs/plans/`
-  until there is a choice, then move to `docs/decisions.md`.
-- `docs/guidelines/` for conventions, `docs/plans/` for work not yet built,
-  `deploy/VPS-SETUP.md` for the production runbook.
+| Map | Beantwoordt |
+|---|---|
+| [docs/decisions/](docs/decisions/) | waarom is dit zo — genomen keuzes |
+| [docs/architecture/](docs/architecture/) | hoe zit het in elkaar — tenancy, modules, productie |
+| [docs/guidelines/](docs/guidelines/) | hoe schrijf ik hier code |
+| [docs/references/](docs/references/) | configuratie, policies, foutcodes |
+| [docs/runbooks/](docs/runbooks/) | live zetten, deployen, terugrollen |
+| [docs/help/](docs/help/) | voor de klant, Nederlands |
+| [docs/plans/](docs/plans/) | werk dat nog niet bestaat |
+
+- **Decisions go in [docs/decisions/](docs/decisions/)** — one file per decision, one row in
+  its README. If you are about to write "we besloten om…" anywhere else, write it there
+  instead. **Do not work around a decision; revise it.** That index is injected at every
+  session start by a `SessionStart` hook in `.claude/settings.json`, so keep it short.
+- When the code overtakes a decision, add a `## Stand van zaken (datum)` section rather than
+  rewriting what was decided.
+- Open questions that are not yet decided stay in their plan document under
+  [docs/plans/](docs/plans/) until there is a choice, then move to `docs/decisions/`.
 - Documentation is Dutch where it is about the product or the business, English where it is
-  about the code. Code, commits, identifiers and log messages are always English.
+  about the code. `docs/help/` is always Dutch. Code, commits, identifiers and log messages
+  are always English.
 
 ## Conventions
 

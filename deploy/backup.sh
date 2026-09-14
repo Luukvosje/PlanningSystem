@@ -4,7 +4,7 @@
 # uploaded organization logos. Run from cron:
 #   0 3 * * * /opt/planning/backup.sh >> /var/log/planning-backup.log 2>&1
 #
-# A backup that has never been restored is a guess. deploy/VPS-SETUP.md has the restore drill;
+# A backup that has never been restored is a guess. docs/runbooks/first-deploy.md has the restore drill;
 # do it once before the first customer, not after the first incident.
 
 set -euo pipefail
