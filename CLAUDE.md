@@ -1,160 +1,258 @@
-# Planning SaaS — Guidance for Claude Code
+# CLAUDE.md
 
-Multi-tenant Planning SaaS. .NET 10 (Clean Architecture) backend + Nuxt/Vue 3 frontend.
-Read this before making changes. If a rule here conflicts with something you observe in
-the code, the code that most recently touched the same area wins — but flag the conflict
-instead of silently picking one.
+Guidance for Claude Code (claude.ai/code) when working in this repository.
 
-## Architecture — don't break the layering
+## Project
+
+Planning is a multi-tenant planning SaaS for small businesses: create a week's planning,
+assign people to customers, confirm shifts, handle availability and absence requests. One
+codebase, per-organization modules. .NET 10 backend in Clean Architecture (no CQRS) plus a
+Nuxt 4 frontend.
+
+Product context — who this is for, what is deliberately out of scope, and the current
+quarter's goal — lives in `my-company.md`, included at the bottom of this file. Read it
+before making a scope decision.
+
+## Repository layout
 
 ```
-Planning.Api           Controllers, middleware, JWT, authorization policies
-Planning.Application   DTOs, application services, FluentValidation validators, Result<T>
-Planning.Domain        Entities, enums, repository interfaces (no EF Core, no framework refs)
-Planning.Infrastructure EF Core, repository implementations, SQL Server
-Planning.Web           Nuxt/Vue 3 frontend
+Planning.Api/             Controllers, middleware, JWT, authorization policies, Swagger
+Planning.Application/     DTOs, application services, FluentValidation validators, Result<T>
+Planning.Domain/          Entities, enums, repository interfaces (no EF Core, no framework refs)
+Planning.Infrastructure/  EF Core, repository implementations, PostgreSQL, SMTP, BCrypt
+Planning.Tests/           xUnit + NSubstitute, unit tests only
+Planning.Web/             Nuxt 4 / Vue 3 frontend (pnpm)
+deploy/                   Production docker-compose, Caddyfile, backup script, VPS runbook
+docs/                     Documentation — see docs/README.md
 ```
 
-Flow: `Api → Application → Domain ← Infrastructure`. Concretely:
+`Planning.slnx` at the root spans the five .NET projects. `Planning.Web` is not in the
+solution; it has its own toolchain.
 
-- Domain must not reference Application, Infrastructure, or Api. No EF Core attributes on
-  domain entities — mapping lives in `Planning.Infrastructure/*/`*Configuration.cs`.
-- Repository **interfaces** live in Domain (`I*Repository`); **implementations** live in
-  Infrastructure. Don't add a repository interface directly in Infrastructure.
-- Controllers stay thin: validate → call one application service method → translate
-  `Result`/`Result<T>` to an `IActionResult` via `ResultExtensions`. No business logic,
-  no direct repository/DbContext access in a controller.
-- Business rules and invariants belong in the Domain entity (private setters, static
-  `Create(...)` factory, methods like `Update`/`Move`/`Confirm` that throw
-  `ArgumentException` on violation — see `PlanningRecord`). Don't re-implement invariant
-  checks in the Application service; call the domain method and translate the exception.
-- Application services orchestrate: load entities, check tenant ownership, call domain
-  methods, call repositories, map to response DTOs. No CQRS/MediatR/event sourcing —
-  don't introduce them.
+## Commands
 
-## Multi-tenancy is the #1 correctness/security concern
+### Backend (.NET 10, from the repo root)
 
-Every tenant-owned entity derives from `TenantEntity` (`OrganizationId`, `CreatedAtUtc`,
-`UpdatedAtUtc`). Repositories fetch by id **without** filtering by organization, so the
-application service is the enforcement point. Any new query/mutation on a tenant entity
-must:
+```bash
+dotnet restore Planning.slnx
+dotnet build Planning.slnx
+dotnet run --project Planning.Api          # http://localhost:5264, Swagger at /swagger
 
-1. Resolve the organization from `ICurrentUserContext` (server-trusted, derived from the
-   JWT claim + `OrganizationContextMiddleware`) — **never** from a client-supplied
-   `organizationId` in the request body/query for authorization decisions.
-2. After loading an entity by id, verify it belongs to the current organization before
-   returning or mutating it (see `BelongsToCurrentOrganization` in `PlanningService`).
-   Return `NOT_FOUND`, not `FORBIDDEN` — don't confirm existence of another tenant's data.
-3. Validate any foreign reference (customer id, assigned user id, etc.) also belongs to
-   the same organization before persisting.
+dotnet test Planning.Tests                 # the whole suite; no external dependencies
+dotnet test Planning.Tests --filter FullyQualifiedName~PlanningServiceTests
+dotnet test Planning.Tests --filter FullyQualifiedName~PlanningServiceTests.GetById_hides_a_record_from_another_organization
+```
 
-When you add a new entity/endpoint, replicate this pattern. If you find a query that
-skips the ownership check, treat it as a bug, not a style nit.
+`dotnet test Planning.slnx` and `dotnet test Planning.Tests` are the same thing today —
+`Planning.Tests` is the only test project, and it needs no database and no configuration.
 
-## Backend conventions
+Local secrets come from `dotnet user-secrets` (`Planning.Api` owns the secret store):
 
-- **Result pattern, not exceptions, for expected failures.** Application services return
-  `Result` / `Result<T>` (`Success`, `Failure(message, errorCode)`). Reserve thrown
-  exceptions for domain invariant violations (caught as `ArgumentException` at the
-  service boundary) and truly unexpected failures (caught by `GlobalExceptionMiddleware`).
-- **FluentValidation** validates request DTOs. Every new request type gets a validator
-  registered in DI; controllers run it via `ApiControllerBase.ValidateAndExecuteAsync`.
-  Don't hand-roll null/range checks in the controller.
-- **Authorization policies, not bare `[Authorize]`.** Endpoints declare a module policy
-  (e.g. `RequirePlanningModule`) at the controller level and an action policy (e.g.
-  `CanManagePlanning`) on mutating actions. A new mutating endpoint without an explicit
-  policy is a red flag — ask before shipping it.
-- Keep DTOs immutable records where the existing code already uses them; match the
-  surrounding file's style rather than introducing a new pattern in one file.
-- Async all the way through; always accept and pass `CancellationToken`.
+```bash
+dotnet user-secrets set "Jwt:Key" "<32+ random chars>" --project Planning.Api
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=PlanningDb;Username=planning;Password=planning_dev" --project Planning.Api
+```
 
-## Frontend conventions (Planning.Web)
+### Database (PostgreSQL)
 
-- API access goes through the **orval-generated client** (`app/generated/**`) wrapped by
-  a `composables/api/use*Api.ts` composable, combined with TanStack Vue Query
-  (`composables/queries/*`) for server state. This is the target pattern — prefer it for
-  new code.
-- `utils/planningClient.ts` is a legacy hand-written client with manual
-  PascalCase/camelCase normalization (`normalizeRecord`). That dual-casing is a symptom
-  of an API contract mismatch, not something to imitate — don't copy this pattern into
-  new modules. If you touch planning API code, prefer migrating toward the generated
-  client over extending the manual normalizer.
-- **Editable entity fields always live in a form inside a card.** Declare the fields once in
-  a `composables/edit/use*Edit.ts` (`useEdit` + a zod schema), then render them with
-  `FormEditableSection`: it wraps the form in a `LayoutCard` and falls back to `FormDisplay`
-  for users without edit rights. No read-only-then-click-Edit step and no edit modal. Fields
-  the API can't update stay read-only (`FormDisplay`, e.g. `useUserFields`) — but anything
-  that *is* editable belongs in the form, one Save for the whole card, not per-field widgets
-  that save on change.
-- `LayoutSection` is for read-only blocks (lists, charts, empty states); `LayoutCard` for
-  anything you can type into.
-- **Nothing is deleted without asking first.** Every delete in the app confirms - a planning
-  record, an availability rule or exception, a customer, whatever comes next. A bare
-  `await api.remove.mutateAsync(id)` behind a trash icon is a bug, not a shortcut. The default way
-  is the one-line guard from `composables/useDeleteConfirm.ts`, which drives the single dialog
-  mounted in `app.vue` (`UiDeleteConfirm`):
+```bash
+docker compose -f docker-compose.dev.yml up -d     # local dev database on 127.0.0.1:5432
+dotnet ef migrations add <Name> --project Planning.Infrastructure --startup-project Planning.Api
+dotnet ef database update --project Planning.Infrastructure --startup-project Planning.Api
+```
 
-  ```ts
-  if (!await confirmDelete({ title: t('planning.deleteTitle') })) {
-    return;
-  }
-  await deleteRecord(id);
-  ```
+**The API migrates itself on boot** in every environment except `Test` (`Program.cs`). A
+migration merged to `main` is applied by the next deploy without anyone running a command —
+so a destructive migration ships silently. Ask before adding one that drops or retypes a
+column, and before running `database update` against anything but the local database.
 
-  A component that already owns a `UiConfirmModal` of its own is fine too - the customer page needs
-  the dialog to show progress while the delete runs, the availability sheet asks from inside a
-  slideover. The requirement is the confirm; the helper is only the cheapest way to get one.
-- TypeScript `strict: true`, and ESLint enforces `no-explicit-any: 'error'` — don't use
-  `any` or `as any` to route around a type error; fix the type.
-- Respect the existing ESLint config (`eslint.config.mjs`) instead of reformatting around
-  it — tabs for Vue template indentation, single quotes, always-multiline trailing
-  commas, one attribute per line in templates. Run the linter rather than guessing.
-- Auth/session state lives in `stores/auth.ts` (Pinia) using `useCookie` for
-  `planning_access_token` / `planning_refresh_token` / `planning_organization_id`. Route
-  gating lives in `middleware/*.global.ts`. Don't add a second, parallel auth-state
-  mechanism (e.g. localStorage) — extend the store.
+### Frontend (`Planning.Web`, pnpm 10.33.0 / Node 22)
 
-## Security checklist (apply to every change, not just "security work")
+```bash
+pnpm install                     # from Planning.Web
+pnpm dev                         # http://localhost:3000
+pnpm lint                        # eslint .
+pnpm lint:fix
+pnpm test                        # vitest run
+pnpm exec vitest run test/timelineMath.spec.ts
+pnpm build
+pnpm generate:api                # orval, against a running API's swagger.json
+```
 
-- **Tenant isolation**: see the multi-tenancy section above — this is the most common way
-  a bug becomes a data leak in this codebase.
-- **Secrets never go in `appsettings.json`/`appsettings.*.json` or any file that's
-  committed.** Use `dotnet user-secrets`, environment variables, or a secret manager for
-  `Jwt:Key`, connection strings with credentials, and any API key. If you need a local
-  value for development, put it in a git-ignored file and document the variable name in
-  README, not the value.
-- **Never log secrets, tokens, or full request/response bodies containing PII.**
-  `GlobalExceptionMiddleware` already avoids leaking exception details outside
-  Development — keep that behavior when touching error handling.
-- **Auth tokens are stored in a JS-readable cookie (`useCookie`, not httpOnly)** — that
-  means any XSS is a full account takeover. Treat unsanitized rendering of user-provided
-  content (`v-html`, `innerHTML`, dynamically constructed URLs) as high severity. Prefer
-  plain interpolation; if `v-html` is ever necessary, sanitize first and say so in review.
-- **Validate on both sides.** Client-side validation (schemas in `app/schemas/*`) is UX
-  only — the FluentValidation validator on the API is the actual security boundary. Don't
-  skip the server-side validator because the client already checks it.
-- **EF Core queries stay parameterized** (LINQ / `DbContext` APIs) — never build SQL via
-  string concatenation with user input. If raw SQL is ever unavoidable, use parameters.
-- **New endpoints need an explicit authorization policy** (module + action). Don't ship
-  an endpoint that's reachable by any authenticated user unless that's genuinely intended
-  and stated as such.
-- **Don't weaken CORS, JWT validation, or the exception middleware "no detail leak in
-  prod" behavior** to make local debugging easier, without reverting before commit.
+`pnpm generate:api` reads `http://localhost:5264/swagger/v1/swagger.json` (override with
+`OPENAPI_URL`) and rewrites `app/generated/**`. Start the API first, and never hand-edit
+anything under `app/generated/`.
 
-## Workflow
+### CI and deployment
 
-- Build: `dotnet build` from the repo root or a specific `*.csproj`/`Planning.slnx`.
-- Migrations: `dotnet ef database update --project Planning.Infrastructure --startup-project Planning.Api`.
-  Ask before running this against anything but a local/dev database, and before adding a
-  new migration that alters existing columns (data loss risk).
-- Frontend dev server / lint / build run from `Planning.Web` via the existing npm scripts.
-- Don't add new top-level abstractions (mediator, CQRS, generic repository base beyond
-  what exists) without discussing it first — this codebase deliberately keeps that layer
-  simple.
+`.github/workflows/ci.yml` runs on every PR and on pushes to `test`: backend build + test,
+frontend lint + test + build. `.github/workflows/deploy.yml` runs the same checks on a push
+to `main` and then ships images to ghcr.io and onto the VPS. **`main` is production.** The
+first-deploy runbook is `deploy/VPS-SETUP.md`.
+
+## Architecture
+
+```
+Planning.Api → Planning.Application → Planning.Domain ← Planning.Infrastructure
+```
+
+`Planning.Infrastructure` also references `Planning.Application`, because it implements the
+ports declared there (`IEmailSender`, `IPasswordHasher`, `IOrganizationLogoStorage`). That is
+the only extra edge. `Planning.Domain` references nothing.
+
+- **Application services, not CQRS.** One service per feature area
+  (`PlanningService`, `CustomerService`, …), registered in
+  `Planning.Application/DependencyInjection.cs`. No MediatR, no commands/queries, no event
+  sourcing — do not introduce them.
+- **Repository interfaces live in Domain** (`I*Repository`), implementations in
+  Infrastructure next to their `*Configuration.cs`. Repositories call `SaveChangesAsync`
+  themselves; there is no unit-of-work.
+- **Controllers are thin**: validate → one service call → `Result`/`Result<T>` translated to
+  an `IActionResult` by `Planning.Api/Extensions/ResultExtensions.cs`.
+- **Modules** (`AppModule.Planning` / `Klant` / `Beheer`) are enabled per organization and
+  per user. `ModuleAuthorizationHandler` resolves them for the `Require*Module` policies;
+  `Planning.Web/app/utils/modules.ts` mirrors the route side.
+- **Frontend state**: TanStack Vue Query for server state (`composables/queries/*`), Pinia
+  for the session only (`stores/auth.ts`), all HTTP through the orval-generated client
+  behind `composables/api/use*Api.ts`.
+
+## Documentation
+
+`docs/` is organised by the kind of question it answers — see [docs/README.md](docs/README.md).
+
+- **Decisions go in [docs/decisions.md](docs/decisions.md)**, newest first, in the format
+  that file describes. If you are about to write "we besloten om…" anywhere else, write it
+  there instead. Read it before changing something that looks arbitrary — it probably is not.
+- Open questions that are not yet decided stay in their plan document under `docs/plans/`
+  until there is a choice, then move to `docs/decisions.md`.
+- `docs/guidelines/` for conventions, `docs/plans/` for work not yet built,
+  `deploy/VPS-SETUP.md` for the production runbook.
+- Documentation is Dutch where it is about the product or the business, English where it is
+  about the code. Code, commits, identifiers and log messages are always English.
+
+## Conventions
+
+The detailed, code-anchored conventions live in two documents. They are **not** included
+here — together they are ~30 KB and a frontend session has no use for the backend half.
+Load the one you need:
+
+| Working on | Skill | Document |
+|---|---|---|
+| `Planning.Api` / `Application` / `Domain` / `Infrastructure` / `Tests` | `backend-conventions` | [docs/guidelines/api.md](docs/guidelines/api.md) |
+| `Planning.Web` | `frontend-conventions` | [docs/guidelines/frontend.md](docs/guidelines/frontend.md) |
+| Visual language, page anatomy, shared components | `frontend-conventions` | [docs/guidelines/design.md](docs/guidelines/design.md) |
+
+Read the relevant one **before** writing code in that area.
+
+There are also task skills for procedures the documents do not spell out step by step:
+`tenant-endpoint`, `db-schema-change`, `form-card`, `query-slice`. Prefer one of those over
+re-deriving the procedure.
+
+### The non-negotiables, in short
+
+These are the rules most often got wrong, so they stay here rather than behind a skill.
+
+**Multi-tenancy — the #1 correctness and security concern**
+
+Every tenant-owned entity derives from `TenantEntity`. Repositories fetch by id **without**
+filtering on organization, so the application service is the only enforcement point. Any new
+query or mutation on a tenant entity must:
+
+1. Resolve the organization from `ICurrentUserContext` (server-trusted: JWT claim +
+   `OrganizationContextMiddleware`) — **never** from a client-supplied `organizationId`.
+   `TenantServiceBase.TryGetOrganizationId` is the way.
+2. After loading by id, check `Owns(entity)` before returning or mutating. Return
+   `NOT_FOUND`, not `FORBIDDEN` — confirming another tenant's id exists is already a leak.
+3. Validate every foreign reference (customer id, assigned user id) against the same
+   organization before persisting.
+
+A query that skips the ownership check is a bug, not a style nit.
+
+**Backend**
+
+- **`Result` / `Result<T>` for expected failures, exceptions for invariants.** Services
+  return `Result.Failure(message, errorCode)`; domain entities throw `ArgumentException`,
+  which `TenantServiceBase.TranslateDomainErrorsAsync` converts to `VALIDATION_ERROR`.
+  Anything else is genuinely unexpected and belongs to `GlobalExceptionMiddleware`.
+- **Error codes are `SCREAMING_SNAKE_CASE`** and must exist in the `switch` in
+  `ResultExtensions.MapFailure`, or they fall through to a 400. Prefer the constants on
+  `Failures`.
+- **Every request DTO gets a FluentValidation validator**, run by
+  `ApiControllerBase.ValidateAndExecuteAsync`. No hand-rolled null/range checks in a
+  controller.
+- **Every endpoint declares its policies explicitly** — a module policy on the controller
+  (`RequirePlanningModule` / `RequireKlantModule` / `RequireBeheerModule`) and an action
+  policy on anything mutating (`CanManagePlanning` / `RequireOwnerOrAdmin`). A new mutating
+  endpoint without one is a red flag; ask before shipping it.
+- **Async all the way, `CancellationToken` threaded through** every layer. Controllers pass
+  `HttpContext.RequestAborted`.
+- Business rules live in the domain entity (private setters, static `Create`, methods like
+  `Update`/`Move`/`Confirm`). Do not re-implement an invariant check in the service.
+
+**Frontend**
+
+- **All HTTP goes through the orval client** (`app/generated/**`) wrapped in
+  `composables/api/use*Api.ts`. No `$fetch` or `useFetch` against the API anywhere else.
+- **Editable entity fields live in a form inside a card**, declared once in
+  `composables/edit/use*Edit.ts` and rendered by `FormEditableSection`. No
+  read-only-then-click-Edit step, no edit modal. Fields the API cannot update stay read-only
+  (`FormDisplay`). Create flows use `composables/create/use*Create.ts` + a modal.
+- **A `useForm(...)` definition never lives in a `.vue` file** — it goes in
+  `composables/forms/`, `composables/edit/` or `composables/create/`.
+- **Nothing is deleted without asking first.** The one-liner from
+  `composables/useDeleteConfirm.ts`, or a component's own `UiConfirmModal`. A bare
+  `await api.delete(id)` behind a trash icon is a bug.
+- **`strict: true` and `@typescript-eslint/no-explicit-any: 'error'`.** Fix the type; never
+  route around it with `any` or `as any`.
+- **Every user-facing string through `$t()` / `t()`**, with entries in both
+  `i18n/locales/nl.json` and `i18n/locales/en.json`. `nl` is the default locale.
+- Session state lives in `stores/auth.ts` with `useCookie`. Do not add a second, parallel
+  auth mechanism (localStorage, a plugin, a second store) — extend the store.
+- Respect `eslint.config.mjs` rather than reformatting around it: tabs in Vue templates,
+  single quotes, always-multiline trailing commas, one attribute per line. Run the linter
+  instead of guessing.
+
+**Security — apply to every change, not just "security work"**
+
+- Tenant isolation, as above. This is how a bug becomes a data leak here.
+- **Secrets never land in `appsettings*.json` or any committed file.** `dotnet user-secrets`
+  locally, environment variables in production (`Jwt__Key`, `ConnectionStrings__DefaultConnection`,
+  `Cors__AllowedOrigins__0`). Document the variable name, never the value.
+- **Auth tokens sit in JS-readable cookies** (`useCookie`, not httpOnly) — any XSS is a full
+  account takeover. Treat `v-html`, `innerHTML` and dynamically built URLs carrying user
+  content as high severity.
+- **Validate on both sides.** The zod schemas in `app/schemas/` are UX; the FluentValidation
+  validator on the API is the security boundary.
+- **EF Core queries stay parameterized** (LINQ / DbContext APIs). No string-concatenated SQL.
+- **Never log secrets, tokens or PII-bearing bodies.** `GlobalExceptionMiddleware` only
+  leaks exception detail in Development — keep it that way.
+- Do not weaken CORS, JWT validation or the exception middleware to make local debugging
+  easier. If you do it temporarily, revert before committing.
+
+## Scope
+
+These guidelines cover the five .NET projects and `Planning.Web`. `docs/prd.md` describes
+the product; `my-company.md` describes what is and is not in the current quarter. Anything
+outside the four MVP points in `my-company.md` is **not now** — say so instead of building it.
+
+## Verification
+
+Do not run tests, lint, typecheck or builds by default. Decide per change:
+
+**Tests** — run the narrowest relevant test file when you changed logic, control flow or a
+public interface. Never the full suite unless asked, or unless you touched something shared.
+
+**Lint / format** — only on files you actually edited, never repo-wide. Do not fix
+pre-existing violations in a file you touched for another reason; mention them instead.
+
+**Build** — when you changed a signature, a DI registration, a project reference or a
+package. A backend change that compiles is the minimum bar for "done".
+
+**Always skip all of the above** for docs, comments, markdown, config and renames.
+
+Beyond that: something is done when it has been built and run, not when it "should work".
+If part of the task is not finished, say which part and why.
 
 ## Bedrijfscontext
-
-De kern van het bedrijf, het doel voor dit kwartaal en de focus van deze week staan in
-`my-company.md`. Lees het mee voordat je scope-keuzes maakt.
 
 @my-company.md
