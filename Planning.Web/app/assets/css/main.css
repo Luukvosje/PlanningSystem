@@ -1,7 +1,11 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
 
-@theme {
+/* `static` is load-bearing: Tailwind only emits theme variables a utility actually uses, and
+   nothing here writes `teal-500`. Without it these two declarations vanish, Nuxt UI's
+   `--ui-color-brand-500: var(--color-teal-500, <default>)` falls through to Tailwind's own
+   teal, and the app renders #14b8a6 instead of the shades below - silently, no error. */
+@theme static {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --color-teal-500: #0d9488;
