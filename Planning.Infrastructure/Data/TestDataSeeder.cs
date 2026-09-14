@@ -35,18 +35,18 @@ public sealed class TestDataSeeder : ITestDataSeeder
         ("Anna", "Hendriks", UserRole.Employee),
     ];
 
-    private static readonly (string Name, string Email, string Address)[] Customers =
+    private static readonly (string Name, string Email, string Address, string Color)[] Customers =
     [
-        ("Bakkerij Van Dijk", "contact@bakkerij-vandijk.nl", "Hoofdstraat 12, Utrecht"),
-        ("Groen & Co Tuincentrum", "info@groenenco.nl", "Kerkweg 45, Amersfoort"),
-        ("TechFix IT Solutions", "support@techfix.nl", "Innovatielaan 8, Eindhoven"),
-        ("Restaurant De Haven", "reserveren@dehaven.nl", "Havenkade 3, Rotterdam"),
-        ("AutoService Peeters", "werkplaats@peetersauto.nl", "Industrieweg 22, Breda"),
-        ("Kapsalon Style", "afspraak@kapsalonstyle.nl", "Markt 7, Den Bosch"),
-        ("FitLife Sportschool", "info@fitlife.nl", "Sportlaan 19, Arnhem"),
-        ("Boekhandel Pagina", "bestellingen@boekhandelpagina.nl", "Schoolstraat 31, Zwolle"),
-        ("Dierenartspraktijk Noord", "info@dierenartsnoord.nl", "Dorpsweg 14, Groningen"),
-        ("Schilderbedrijf Kleur", "offerte@schilderkleur.nl", "Ambachtsstraat 6, Haarlem"),
+        ("Bakkerij Van Dijk", "contact@bakkerij-vandijk.nl", "Hoofdstraat 12, Utrecht", "#F97316"),
+        ("Groen & Co Tuincentrum", "info@groenenco.nl", "Kerkweg 45, Amersfoort", "#22C55E"),
+        ("TechFix IT Solutions", "support@techfix.nl", "Innovatielaan 8, Eindhoven", "#3B82F6"),
+        ("Restaurant De Haven", "reserveren@dehaven.nl", "Havenkade 3, Rotterdam", "#EF4444"),
+        ("AutoService Peeters", "werkplaats@peetersauto.nl", "Industrieweg 22, Breda", "#64748B"),
+        ("Kapsalon Style", "afspraak@kapsalonstyle.nl", "Markt 7, Den Bosch", "#EC4899"),
+        ("FitLife Sportschool", "info@fitlife.nl", "Sportlaan 19, Arnhem", "#8B5CF6"),
+        ("Boekhandel Pagina", "bestellingen@boekhandelpagina.nl", "Schoolstraat 31, Zwolle", "#EAB308"),
+        ("Dierenartspraktijk Noord", "info@dierenartsnoord.nl", "Dorpsweg 14, Groningen", "#14B8A6"),
+        ("Schilderbedrijf Kleur", "offerte@schilderkleur.nl", "Ambachtsstraat 6, Haarlem", "#6366F1"),
     ];
 
     private readonly ApplicationDbContext _context;
@@ -116,6 +116,7 @@ public sealed class TestDataSeeder : ITestDataSeeder
                 entry.Name,
                 entry.Email,
                 entry.Address,
+                entry.Color,
                 utcNow))
             .ToList();
 
