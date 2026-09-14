@@ -22,8 +22,8 @@ Deze index wordt bij elke sessiestart ingeladen (`SessionStart`-hook in
 
 ## Nog open — hier is nog géén besluit over
 
-- Exacte pricing-bedragen en de medewerkersgrens (10 of 15). Drie documenten spreken elkaar
-  nu tegen, zie [0006](0006-pricing-model.md).
+- Exacte pricing-bedragen, de medewerkersgrens (10 of 15), en of de pakkettarieven blijven
+  staan nu er een seat-model naast komt. Zie [0006](0006-pricing-model.md).
 - Tekstformat voor "Planning delen": per medewerker of per dag gegroepeerd?
 - Merknaam, domeinnaam, tone-of-voice en een concurrentievergelijking voor marketing-copy.
 

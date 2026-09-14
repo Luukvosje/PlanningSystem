@@ -21,8 +21,9 @@ bespreken — vanuit dezelfde context en principes vertrekt.
   code is hier al op voorbereid), plus een aparte medewerker-app. Dit is een richting,
   geen belofte — niet op vooruitlopen in code of marketing-teksten totdat je dat expliciet
   aangeeft.
-- **Verdienmodel:** Starter (~15 medewerkers, €19-29/mnd), Groei (€49-69/mnd), Premium
-  (€99+/mnd, meerdere vestigingen).
+- **Verdienmodel:** hybride — planner-seats zijn de kernprijs, medewerker-seats gratis tot
+  een grens, plus Starter/Groei/Premium als alles-in-één-optie. Bedragen staan nog open.
+  Zie [besluit 0006](decisions/0006-pricing-model.md).
 
 ## 2. Hoe ik met dev omga
 
@@ -61,33 +62,18 @@ Nog open (vul in zodra bekend):
   kosten/beleid kunnen gedateerd zijn) — check actuele CPM/targeting-opties bij
   Meta zelf voor je gaat schalen.
 
-### Pricing (voorstel, 16 aug 2026)
+### Pricing
 
-**Besluit (voorlopig):** hybride model — planner-seats zijn de kernprijs, medewerker-
-seats zijn gratis/goedkoop, plus een "totaalpakket" als eenvoudig alternatief.
+Het model en de afweging staan in [besluit 0006](decisions/0006-pricing-model.md): hybride,
+planner-seats als kernprijs, medewerkers gratis tot een grens, pakketten ernaast, geen credits
+voor het plannen zelf.
 
-| Onderdeel | Richting |
-|---|---|
-| Planner-seat (maakt/wijzigt roosters) | Hoofdprijs — hier zit de waarde |
-| Medewerker-seat (bekijkt eigen rooster, geeft beschikbaarheid door) | Gratis tot een grens (bv. 10-15), daarna klein bedrag per stuk |
-| Totaalpakket (Starter/Groei/Premium, huidige PRD) | Blijft bestaan als alles-in-één-optie voor wie niet wil puzzelen |
+Dat stond hier ooit uitgeschreven én in `my-company.md` én in de PRD, met drie verschillende
+uitkomsten. Eén bron nu — vul hem daar aan, niet hier.
 
-**Waarom geen credits voor de kernfunctie:** credits passen bij sporadisch gebruik
-(bv. AI-beeldgeneratie). Bij een planningstool wil je juíst frequent gebruik — credits
-per dienst/actie zetten een prikkel neer om de tool minder te gebruiken, wat ingaat
-tegen het doel (minder WhatsApp, meer overzicht). Credits zijn wel een optie voor latere,
-optionele extra's (AI-suggesties, extra WhatsApp-verstuurmomenten) — niet voor plannen
-zelf.
-
-**Nog te valideren (jouw kant, niet iets ik kan invullen):**
-
-- Exacte bedragen per planner-seat en per medewerker-seat.
-- Vanaf welk medewerkers-aantal begint de kleine toeslag (10? 15?).
-- Of huidige Starter/Groei/Premium-bedragen (€19-29 / €49-69 / €99+) blijven staan als
-  totaalpakket-tarief, of aangepast worden nu er een los seat-model naast bestaat.
-- Test bij een paar potentiële klanten of €19-29 "te goedkoop om serieus te nemen"
-  aanvoelt of juist "eindelijk betaalbaar" — bij B2B-tools is ondergeprijsd zijn vaker
-  het probleem dan overgeprijsd.
+Wat er aan jouw kant nog moet gebeuren voordat de prijs vastligt, staat als "Nog open" in dat
+besluit. Het punt dat ik niet voor je kan invullen: toets bij een paar potentiële klanten hoe
+€19–29 landt. Bij B2B-tools is ondergeprijsd vaker het probleem dan overgeprijsd.
 
 ## 4. Beslissingenlogboek
 

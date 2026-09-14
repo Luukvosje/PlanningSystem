@@ -49,9 +49,14 @@ Alles wat hier niet in staat is **niet nu**.
 
 ## Verdienmodel
 
-Nog niet bepaald. Open keuzes: per organisatie per maand, per gebruiker per maand, of
-abonnement + betaald maatwerk. Te beslissen vóór het eerste klantgesprek over prijs —
-niet eerder, wel op tijd.
+Hybride: **planner-seats zijn de kernprijs**, medewerker-seats gratis tot een grens en
+daarboven een klein bedrag per stuk, met Starter/Groei/Premium ernaast als alles-in-één-optie.
+Geen credits voor het plannen zelf — die zetten een prikkel om de tool minder te gebruiken.
+
+De bedragen en de medewerkersgrens (10 of 15) staan nog open. Te beslissen vóór het eerste
+prijsgesprek met een klant — niet eerder, wel op tijd.
+
+Volledige afweging: [besluit 0006](docs/decisions/0006-pricing-model.md).
 
 ## Bewaken
 
@@ -85,7 +90,7 @@ maandelijks bijwerken.
 
 **Bewust niet deze week:**
 - Hosting en deployment (MVP-punt 4, staat op 0%) — schuift naar volgende week.
-- Verdienmodel bepalen — pas relevant vóór het eerste prijsgesprek.
+- Pricing-bedragen bepalen — het model staat (besluit 0006), alleen de bedragen nog niet.
 
 **Stand van de code bij aanvang (woensdag 2026-08-19):**
 - Backend bouwt schoon (0 warnings, 0 errors).

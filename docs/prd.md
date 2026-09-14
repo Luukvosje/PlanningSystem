@@ -373,6 +373,10 @@ We bouwen de snelste en eenvoudigste planner voor kleine bedrijven.
 
 # Verdienmodel
 
+> Dit zijn de pakkettarieven: de alles-in-één-helft van het model. De kernprijs zijn
+> planner-seats — zie [besluit 0006](decisions/0006-pricing-model.md) voor het geheel.
+> De bedragen hieronder liggen nog niet vast.
+
 Starter
 
 - ±15 medewerkers
