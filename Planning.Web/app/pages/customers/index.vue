@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui';
+import type { TableColumn, TableRow } from '@nuxt/ui';
 import type { CustomerResponse } from '~/generated/models';
 
 definePageMeta({ layout: false });
@@ -92,6 +92,18 @@ function openCustomer(customer: CustomerResponse) {
 						:no-results-title="t('customers.noResults')"
 						@select="openCustomer"
 					>
+						<template #name-cell="{ row }: { row: TableRow<CustomerResponse> }">
+							<div class="flex items-center gap-3">
+								<UAvatar
+									:text="initialsFromName(row.original.name)"
+									size="sm"
+									class="shrink-0"
+									:style="{ backgroundColor: row.original.color, color: readableTextColor(row.original.color) }"
+								/>
+								<span class="font-medium">{{ row.original.name }}</span>
+							</div>
+						</template>
+
 						<template #empty-action>
 							<UButton
 								v-if="canManage"

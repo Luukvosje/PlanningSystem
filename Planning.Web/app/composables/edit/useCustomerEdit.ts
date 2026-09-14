@@ -1,7 +1,9 @@
 import { useQueryClient } from '@tanstack/vue-query';
+import UiColorPicker from '~/components/ui/ColorPicker.vue';
 import type { CustomerResponse } from '~/generated/models';
 import { useEdit } from '~/lib/form/useEdit';
 import { createCustomerSchema } from '~/schemas/customer.schema';
+import { DEFAULT_PLANNING_COLOR } from '~/types/planning';
 import { queryKeys } from '~/utils/queryKeys';
 
 const CUSTOMER_EDIT_KEY = Symbol('customer-edit');
@@ -11,6 +13,7 @@ function customerToState(customer: CustomerResponse) {
     name: customer.name ?? '',
     email: customer.email ?? '',
     address: customer.address ?? '',
+    color: customer.color || DEFAULT_PLANNING_COLOR,
   };
 }
 
@@ -26,6 +29,13 @@ export function useCustomerEdit() {
       { name: 'name', label: t('customers.fields.name'), type: 'input', required: true },
       { name: 'email', label: t('customers.fields.email'), type: 'email', required: true },
       { name: 'address', label: t('customers.fields.address'), type: 'textarea', props: { rows: 3 } },
+      {
+        name: 'color',
+        label: t('customers.fields.color'),
+        description: t('customers.colorDescription'),
+        component: UiColorPicker,
+        display: (value) => (typeof value === 'string' ? value : null),
+      },
     ]),
     toState: customerToState,
     onSubmit: async (customer, data) => {
@@ -37,6 +47,7 @@ export function useCustomerEdit() {
         name: data.name,
         email: data.email,
         address: data.address || null,
+        color: data.color,
       });
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });

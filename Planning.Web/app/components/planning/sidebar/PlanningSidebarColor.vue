@@ -1,57 +1,29 @@
 <script setup lang="ts">
-import { PLANNING_COLORS } from '~/types/planning';
-
-const props = defineProps<{
-  color: string;
-}>();
-
-const emit = defineEmits<{
-  'update:color': [value: string];
-}>();
+const color = defineModel<string>('color', { required: true });
 
 const { t } = useI18n();
 const { canManage } = usePlanning();
-const isHovered = ref(false);
 </script>
 
 <template>
-	<UPopover
-		:arrow="true"
-		:content="{ side: 'bottom', align: 'center', sideOffset: 8 }"
+	<UiColorPicker
+		v-model="color"
+		:disabled="!canManage"
 	>
-		<UTooltip
-			:title="t('planning.chooseColor')"
-		>
-			<UButton
-				variant="ghost"
-				color="neutral"
-				class="group size-7 rounded-sm transition-transform hover:scale-110 p-0 m-0 flex items-center justify-center"
-				:style="{ backgroundColor: props.color }"
-				:disabled="!canManage"
-				:ui="{ leadingIcon: 'group-hover:block hidden bg-default' }"
-				leading-icon="i-lucide-palette"
-				@mouse-leave="() => { isHovered = false }"
-				@mouse-enter="() => { isHovered = true }"
-			/>
-		</UTooltip>
-
-		<template #content>
-			<div
-				class="flex flex-wrap gap-2 p-2"
-				style="max-width: 152px;"
+		<template #trigger>
+			<UTooltip
+				:title="t('common.color.choose')"
 			>
-				<button
-					v-for="c in PLANNING_COLORS"
-					:key="c"
-					type="button"
-					class="size-5 rounded-full ring-2 ring-offset-2 transition-transform hover:scale-110 focus:outline-none"
-					:class="c === props.color ? 'ring-brand' : 'ring-transparent'"
-					:style="{ backgroundColor: c }"
+				<UButton
+					variant="ghost"
+					color="neutral"
+					class="group size-7 rounded-sm transition-transform hover:scale-110 p-0 m-0 flex items-center justify-center"
+					:style="{ backgroundColor: color }"
 					:disabled="!canManage"
-					:aria-label="`${t('planning.color')} ${c}`"
-					@click="emit('update:color', c)"
+					:ui="{ leadingIcon: 'group-hover:block hidden bg-default' }"
+					leading-icon="i-lucide-palette"
 				/>
-			</div>
+			</UTooltip>
 		</template>
-	</UPopover>
+	</UiColorPicker>
 </template>

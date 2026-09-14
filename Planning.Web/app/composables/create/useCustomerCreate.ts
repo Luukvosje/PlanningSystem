@@ -1,6 +1,8 @@
 import { useQueryClient } from '@tanstack/vue-query';
+import UiColorPicker from '~/components/ui/ColorPicker.vue';
 import { useCreate } from '~/lib/form/useCreate';
 import { createCustomerSchema } from '~/schemas/customer.schema';
+import { DEFAULT_PLANNING_COLOR } from '~/types/planning';
 import { queryKeys } from '~/utils/queryKeys';
 
 const CUSTOMER_CREATE_KEY = Symbol('customer-create');
@@ -16,11 +18,17 @@ export function useCustomerCreate() {
     title: computed(() => t('customers.create.title')),
     description: computed(() => t('customers.create.description')),
     schema: createCustomerSchema(t),
-    initialState: { name: '', email: '', address: '' },
+    initialState: { name: '', email: '', address: '', color: DEFAULT_PLANNING_COLOR },
     controls: computed(() => [
       { name: 'name', label: t('customers.fields.name'), type: 'input', required: true },
       { name: 'email', label: t('customers.fields.email'), type: 'email', required: false },
       { name: 'address', label: t('customers.fields.address'), type: 'textarea', props: { rows: 3 } },
+      {
+        name: 'color',
+        label: t('customers.fields.color'),
+        description: t('customers.colorDescription'),
+        component: UiColorPicker,
+      },
     ]),
     submitLabel: computed(() => t('customers.create.submit')),
     onSubmit: async (data) => {
@@ -28,6 +36,7 @@ export function useCustomerCreate() {
         name: data.name,
         email: data.email,
         address: data.address || null,
+        color: data.color,
       });
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.customers.all });

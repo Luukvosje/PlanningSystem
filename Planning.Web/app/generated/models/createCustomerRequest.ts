@@ -12,4 +12,6 @@ export interface CreateCustomerRequest {
   email?: string | null;
   /** @nullable */
   address?: string | null;
+  /** @nullable */
+  color?: string | null;
 }
