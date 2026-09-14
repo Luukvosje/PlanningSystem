@@ -33,5 +33,17 @@
   },
   "enabledMcpjsonServers": [
     "context7"
-  ]
+  ],
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"try{process.stdout.write(require('fs').readFileSync('docs/decisions/README.md','utf8'))}catch(e){}\""
+          }
+        ]
+      }
+    ]
+  }
 }
