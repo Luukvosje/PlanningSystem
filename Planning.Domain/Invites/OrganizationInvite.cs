@@ -10,6 +10,11 @@ public class OrganizationInvite : BaseEntity
     public string Code { get; private set; } = string.Empty;
     public UserRole Role { get; private set; }
     public Guid CreatedByUserId { get; private set; }
+    /// <summary>
+    /// The member this invite links a login to. Null for an open invite, which creates a new
+    /// member for whoever accepts it.
+    /// </summary>
+    public Guid? UserId { get; private set; }
     public DateTime ExpiresAtUtc { get; private set; }
     public DateTime? UsedAtUtc { get; private set; }
     public Guid? UsedByUserId { get; private set; }
@@ -24,6 +29,7 @@ public class OrganizationInvite : BaseEntity
         string code,
         UserRole role,
         Guid createdByUserId,
+        Guid? userId,
         DateTime expiresAtUtc,
         DateTime utcNow)
         : base(id, utcNow, utcNow)
@@ -32,6 +38,7 @@ public class OrganizationInvite : BaseEntity
         Code = code;
         Role = role;
         CreatedByUserId = createdByUserId;
+        UserId = userId;
         ExpiresAtUtc = expiresAtUtc;
     }
 
@@ -41,7 +48,8 @@ public class OrganizationInvite : BaseEntity
         UserRole role,
         Guid createdByUserId,
         DateTime utcNow,
-        TimeSpan validity)
+        TimeSpan validity,
+        Guid? userId = null)
     {
         if (string.IsNullOrWhiteSpace(code))
         {
@@ -54,6 +62,7 @@ public class OrganizationInvite : BaseEntity
             code.Trim().ToUpperInvariant(),
             role,
             createdByUserId,
+            userId,
             utcNow.Add(validity),
             utcNow);
     }

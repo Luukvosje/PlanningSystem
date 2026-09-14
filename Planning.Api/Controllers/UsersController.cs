@@ -15,6 +15,7 @@ namespace Planning.Api.Controllers;
 public class UsersController : ApiControllerBase
 {
     private readonly IUserService _userService;
+    private readonly IValidator<CreateUserRequest> _createValidator;
     private readonly IValidator<UpdateUserRoleRequest> _updateRoleValidator;
     private readonly IValidator<UpdateUserStatusRequest> _updateStatusValidator;
     private readonly IValidator<UpdateUserApprovalRequest> _updateApprovalValidator;
@@ -22,12 +23,14 @@ public class UsersController : ApiControllerBase
 
     public UsersController(
         IUserService userService,
+        IValidator<CreateUserRequest> createValidator,
         IValidator<UpdateUserRoleRequest> updateRoleValidator,
         IValidator<UpdateUserStatusRequest> updateStatusValidator,
         IValidator<UpdateUserApprovalRequest> updateApprovalValidator,
         IValidator<UpdateModulesRequest> updateModulesValidator)
     {
         _userService = userService;
+        _createValidator = createValidator;
         _updateRoleValidator = updateRoleValidator;
         _updateStatusValidator = updateStatusValidator;
         _updateApprovalValidator = updateApprovalValidator;
@@ -50,6 +53,20 @@ public class UsersController : ApiControllerBase
         var result = await _userService.GetByOrganizationAsync(HttpContext.RequestAborted);
         return result.ToActionResult(this);
     }
+
+    [HttpPost]
+    [Authorize(Policy = "RequireOwnerOrAdmin")]
+    [Authorize(Policy = "RequireBeheerModule")]
+    [ProducesResponseType(typeof(UserResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status409Conflict)]
+    public Task<IActionResult> Create([FromBody] CreateUserRequest request) =>
+        ValidateAndExecuteAsync(request, _createValidator, async () =>
+        {
+            var result = await _userService.CreateAsync(request, HttpContext.RequestAborted);
+            return result.ToCreatedActionResult(this, nameof(GetById), value => new { id = value!.Id });
+        });
 
     [HttpPut("{id:guid}/role")]
     [Authorize(Policy = "RequireOwnerOrAdmin")]

@@ -63,6 +63,47 @@ public class UserService : TenantServiceBase, IUserService
         return Result<IReadOnlyList<UserResponse>>.Success(response);
     }
 
+    public async Task<Result<UserResponse>> CreateAsync(
+        CreateUserRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (!TryGetOrganizationId(out var organizationId))
+        {
+            return Failures.NoOrganizationContext<UserResponse>();
+        }
+
+        if (CurrentUser.Role is not (UserRole.Owner or UserRole.Admin))
+        {
+            return Failures.ForbiddenFor<UserResponse>("Only owners and admins can add team members.");
+        }
+
+        // The same rule the unique index enforces, answered as a validation error instead of a 500.
+        if (!string.IsNullOrWhiteSpace(request.Email)
+            && await _userRepository.ExistsWithEmailAsync(organizationId, request.Email, cancellationToken))
+        {
+            return Result<UserResponse>.Failure(
+                "A team member with this email already exists.",
+                "CONFLICT");
+        }
+
+        return await TranslateDomainErrorsAsync(async () =>
+        {
+            var user = User.CreateWithoutAccount(
+                organizationId,
+                request.FirstName,
+                request.LastName,
+                request.Email,
+                UserRole.Employee,
+                DateTime.UtcNow);
+
+            await _userRepository.AddAsync(user, cancellationToken);
+            await _moduleService.InitializeUserModulesFromOrganizationAsync(user.Id, organizationId, cancellationToken);
+
+            var modules = await _moduleService.GetUserModulesAsync(user.Id, cancellationToken);
+            return Result<UserResponse>.Success(UserMapper.ToResponse(user, modules));
+        });
+    }
+
     public async Task<Result<UserResponse>> UpdateRoleAsync(
         Guid id,
         UpdateUserRoleRequest request,

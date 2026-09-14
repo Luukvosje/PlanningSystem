@@ -11,4 +11,5 @@ public interface IUserRepository
     Task AddAsync(User user, CancellationToken cancellationToken = default);
     Task UpdateAsync(User user, CancellationToken cancellationToken = default);
     Task<bool> ExistsInOrganizationAsync(Guid accountId, Guid organizationId, CancellationToken cancellationToken = default);
+    Task<bool> ExistsWithEmailAsync(Guid organizationId, string email, CancellationToken cancellationToken = default);
 }

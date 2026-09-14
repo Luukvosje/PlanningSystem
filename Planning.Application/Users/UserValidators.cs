@@ -3,6 +3,19 @@ using Planning.Domain.Enums;
 
 namespace Planning.Application.Users;
 
+public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
+{
+    public CreateUserRequestValidator()
+    {
+        RuleFor(x => x.FirstName).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.LastName).NotEmpty().MaximumLength(100);
+        RuleFor(x => x.Email)
+            .EmailAddress()
+            .MaximumLength(320)
+            .When(x => !string.IsNullOrWhiteSpace(x.Email));
+    }
+}
+
 public class UpdateUserRoleRequestValidator : AbstractValidator<UpdateUserRoleRequest>
 {
     public UpdateUserRoleRequestValidator()

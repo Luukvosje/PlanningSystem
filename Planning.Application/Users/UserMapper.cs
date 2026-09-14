@@ -16,6 +16,7 @@ internal static class UserMapper
             user.Email,
             user.Role,
             user.IsActive,
+            user.HasAccount,
             user.RequiresApproval,
             user.CreatedAtUtc,
             user.UpdatedAtUtc,

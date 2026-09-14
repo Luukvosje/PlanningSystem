@@ -17,8 +17,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(x => x.OrganizationId)
             .IsRequired();
 
-        builder.Property(x => x.AccountId)
-            .IsRequired();
+        // Null until the member links a login - see User.AccountId.
+        builder.Property(x => x.AccountId);
 
         builder.Property(x => x.FirstName)
             .IsRequired()
@@ -29,7 +29,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(100);
 
         builder.Property(x => x.Email)
-            .IsRequired()
             .HasMaxLength(320);
 
         builder.Property(x => x.Role)
@@ -53,6 +52,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(x => x.AccountId);
 
+        // Members without an e-mail all store NULL, which PostgreSQL treats as distinct values.
         builder.HasIndex(x => new { x.OrganizationId, x.Email })
             .IsUnique();
 
