@@ -106,7 +106,10 @@ a palette:
 
 - **`brand`** = teal — the accent colour, and the default for every Nuxt UI component. The
   exact shades are overridden in `main.css`: `--color-teal-500: #0d9488`,
-  `--color-teal-600: #006a61`.
+  `--color-teal-600: #006a61`. That block is `@theme static` on purpose — Tailwind only emits
+  theme variables a utility references, nothing here writes `teal-500`, and without `static`
+  the two declarations are dropped and Nuxt UI's own `var(--color-teal-500, <default>)`
+  fallback renders #14b8a6 instead. Silently.
 - **`neutral`** = gray — carries all the semantic greys.
 
 > They were once named the other way round, with the brand colour under "secondary" and grey
@@ -114,11 +117,25 @@ a palette:
 > links on the login page. Nuxt UI still knows a built-in `primary` alias that nothing maps to —
 > do not use it; it gives an undefined colour rather than an error.
 
-`--ui-border` is overridden unlayered (neutral-300 light, neutral-700 dark). That has to stay
-outside an `@layer`: Nuxt UI declares it in `@layer theme`, and an override from inside a layer
-only wins from a later layer.
+Three tokens are overridden unlayered, and all three have to stay outside an `@layer`: Nuxt UI
+declares them in `@layer theme`, and an override from inside a layer only wins from a later
+layer. Because unlayered beats every layer, each one also has to be **restated in `.dark`** —
+otherwise the light value leaks into dark mode.
+
+| Token | Light | Dark | Why |
+|---|---|---|---|
+| `--ui-border` | neutral-300 | neutral-700 | — |
+| `--ui-brand` | brand-**600** | brand-400 (Nuxt UI default) | Shade 500 puts white button labels at 3.7:1, below AA for the 14px text buttons and links use. 600 is 6.5:1. Dark sits under near-black labels and already has the contrast. |
+| `--ui-text` | neutral-**800** | neutral-200 (Nuxt UI default) | Shade 700 is 7.6:1 — legible, but it reads as grey and leaves screens washed. 800 is 14.7:1 and stays a step below `text-highlighted` on 900. |
+
+Measured on white: `text-default` #1e2939 14.7:1, `text-highlighted` #101828 17.8:1,
+`text-muted` #6a7282 4.8:1, accent #006a61 under white 6.5:1.
 
 Dark mode is carried entirely by the tokens and has to keep working.
+
+`body` carries `font-variant-numeric: lining-nums tabular-nums`. Nearly every number in this
+app is compared against the one above it — shift times in a block, hours in a week header,
+counts in a table column — and proportional digits make those columns jitter as data changes.
 
 ## Density
 
