@@ -46,20 +46,20 @@ function dayBorderClass(day: TimelineDayHeader) {
 <template>
 	<div
 		v-if="currentTimeIndicator"
-		class="absolute top-0 bottom-0 w-0.5 bg-red-500 z-10 pointer-events-none"
+		class="absolute top-0 bottom-0 w-0.5 bg-error z-10 pointer-events-none"
 		:style="{ left: `${rowLabelWidth + currentTimeIndicator.px}px` }"
 	>
-		<div class="absolute -top-1 -left-1.5 size-3 rounded-full bg-red-500 animate-pulse" />
+		<div class="absolute -top-1 -left-1.5 size-3 rounded-full bg-error animate-pulse" />
 		<div
 			v-if="currentTimeIndicator.clamped === 'before'"
-			class="absolute top-3 -left-2 text-[10px] font-bold text-red-500 leading-none"
+			class="absolute top-3 -left-2 text-[10px] font-semibold text-error leading-none"
 			aria-hidden="true"
 		>
 			◀
 		</div>
 		<div
 			v-else-if="currentTimeIndicator.clamped === 'after'"
-			class="absolute top-3 -left-2 text-[10px] font-bold text-red-500 leading-none"
+			class="absolute top-3 -left-2 text-[10px] font-semibold text-error leading-none"
 			aria-hidden="true"
 		>
 			▶

@@ -144,8 +144,8 @@ function onContextMenu(event: MouseEvent) {
 		:class="[
 			selected ? 'ring-2 ring-brand ring-offset-1 z-30' : '',
 			isDragging || isResizing ? 'opacity-90 shadow-lg z-50 cursor-grabbing' : 'transition-shadow',
-			record.hasOverlap ? 'border-l-2 border-red-400' : '',
-			availabilityWarning.hasConflict ? 'border-r-2 border-amber-400' : '',
+			record.hasOverlap ? 'border-l-2 border-error' : '',
+			availabilityWarning.hasConflict ? 'border-r-2 border-warning' : '',
 		]"
 		:style="{
 			left: `${displayLayout.leftPx}px`,
@@ -183,7 +183,7 @@ function onContextMenu(event: MouseEvent) {
 			<div
 				v-if="availabilityWarning.hasConflict"
 				class="absolute top-0.5 right-0.5 z-20 pointer-events-none"
-				:class="store.showBlockColor ? 'text-amber-200' : 'text-amber-500'"
+				:class="store.showBlockColor ? 'text-amber-200' : 'text-warning'"
 				:title="t('availability.unavailable')"
 			>
 				<UIcon
@@ -201,7 +201,7 @@ function onContextMenu(event: MouseEvent) {
 				v-if="canManage"
 				data-resize="start"
 				class="absolute left-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 z-10"
-				:class="store.showBlockColor ? 'bg-black/40' : 'bg-neutral-400/40'"
+				:class="store.showBlockColor ? 'bg-black/40' : 'bg-inverted/30'"
 				@pointerdown.stop="startResize($event, record, 'start', layout, rowId)"
 			/>
 
@@ -209,7 +209,7 @@ function onContextMenu(event: MouseEvent) {
 				v-if="canManage"
 				data-resize="end"
 				class="absolute right-0 top-0 bottom-0 w-1.5 cursor-ew-resize opacity-0 group-hover:opacity-100 z-10"
-				:class="store.showBlockColor ? 'bg-black/40' : 'bg-neutral-400/40'"
+				:class="store.showBlockColor ? 'bg-black/40' : 'bg-inverted/30'"
 				@pointerdown.stop="startResize($event, record, 'end', layout, rowId)"
 			/>
 		</div>
