@@ -6,7 +6,7 @@ export function readableTextColor(hexColor: string): string {
   const hex = hexColor.replace('#', '');
 
   if (hex.length !== 6) {
-    return '#FFFFFF';
+    return '#fff';
   }
 
   const red = parseInt(hex.slice(0, 2), 16);
@@ -16,7 +16,7 @@ export function readableTextColor(hexColor: string): string {
   // Rec. 709 luma: the cheap version of "is this colour light".
   const luma = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255;
 
-  return luma > 0.6 ? '#111827' : '#FFFFFF';
+  return luma > 0.6 ? '#111827' : '#fff';
 }
 
 /** Up to two initials for an entity that has one name field instead of a first and last name. */

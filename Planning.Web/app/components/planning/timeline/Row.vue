@@ -23,8 +23,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
-const { toPx, toIso, timelineWidth, rowLabelWidth, dateRange, dayWidth } = useTimeline();
-const { importantWorkTimes } = usePlanningSettings();
+const { toPx, toIso, timelineWidth, rowLabelWidth, dateRange, dayWidth, importantSnapPoints } = useTimeline();
 const store = usePlanningStore();
 const { canManage } = usePlanningPermissions();
 const { dragHoverRowId } = useDragPlanning();
@@ -95,7 +94,7 @@ const selectionPreview = computed(() => {
   return { left, width };
 });
 
-const blockSnapPoints = computed(() =>
+const snapPoints = computed(() =>
   mergeSnapPoints(
     collectBlockSnapPoints(getRowBlockBounds(props.records, toPx)),
     getRowAvailabilitySnapPoints(
@@ -106,14 +105,14 @@ const blockSnapPoints = computed(() =>
       dayWidth.value,
       store.rowMode,
     ),
+    importantSnapPoints.value,
   ),
 );
 
 function snapTimelinePx(px: number): number {
   return snapPxToTimeline(px, dayWidth.value, {
     snapToBlocks: store.snapToBlocks,
-    blockSnapPoints: blockSnapPoints.value,
-    importantTimes: importantWorkTimes.value,
+    snapPoints: snapPoints.value,
   });
 }
 
@@ -220,7 +219,7 @@ function onRowPointerDown(event: PointerEvent) {
 		:style="{ height: `${rowHeight}px` }"
 	>
 		<div
-			class="sticky left-0 z-1000 shrink-0 border-r border-default glass px-3 flex items-center"
+			class="sticky left-0 z-1000 shrink-0 border-r border-default bg-default px-3 flex items-center"
 			:style="{ width: `${rowLabelWidth}px` }"
 		>
 			<span class="text-sm font-medium truncate">{{ label }}</span>

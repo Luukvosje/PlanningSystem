@@ -20,8 +20,6 @@ export {
   weekdayFromDate,
 } from '~/utils/planning/timeOfDay';
 
-export const SMART_SNAP_TOLERANCE_MINUTES = 5;
-
 /** Plain time-of-day fallback, used by consumers that only care about grid/snap positions. */
 export const DEFAULT_IMPORTANT_WORK_TIMES = ['06:00', '09:00', '13:00', '17:00', '21:00'];
 
@@ -98,57 +96,6 @@ export function getOutsideOpeningOverlaysCompact(
   }
 
   return overlays;
-}
-
-export function getImportantTimePxInDay(time: string, dayWidth: number): number {
-  return minutesToDayPx(parseTimeToMinutes(time), dayWidth);
-}
-
-export function collectImportantTimeSnapPoints(
-  importantTimes: string[],
-  dayCount: number,
-  dayWidth: number,
-): number[] {
-  const points: number[] = [];
-
-  for (let dayIndex = 0; dayIndex < dayCount; dayIndex++) {
-    const dayOffset = dayIndex * dayWidth;
-    for (const time of importantTimes) {
-      points.push(dayOffset + getImportantTimePxInDay(time, dayWidth));
-    }
-  }
-
-  return points;
-}
-
-export function snapPxToImportantTime(
-  px: number,
-  dayWidth: number,
-  importantTimes: string[],
-  toleranceMinutes = SMART_SNAP_TOLERANCE_MINUTES,
-): number | null {
-  if (importantTimes.length === 0 || dayWidth <= 0) {
-    return null;
-  }
-
-  const dayIndex = Math.floor(px / dayWidth);
-  const pxInDay = px - dayIndex * dayWidth;
-  const minutesInDay = (pxInDay / dayWidth) * 24 * 60;
-
-  let nearestPx: number | null = null;
-  let nearestDistance = Infinity;
-
-  for (const time of importantTimes) {
-    const targetMinutes = parseTimeToMinutes(time);
-    const distance = Math.abs(minutesInDay - targetMinutes);
-
-    if (distance <= toleranceMinutes && distance < nearestDistance) {
-      nearestDistance = distance;
-      nearestPx = dayIndex * dayWidth + getImportantTimePxInDay(time, dayWidth);
-    }
-  }
-
-  return nearestPx;
 }
 
 export function isImportantTimeSlot(

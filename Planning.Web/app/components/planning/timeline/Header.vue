@@ -46,7 +46,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 			class="flex border-b border-default"
 		>
 			<div
-				class="sticky left-0 z-30 shrink-0 border-r border-default glass-fill px-3 py-2"
+				class="sticky left-0 z-30 shrink-0 border-r border-default bg-default px-3 py-2"
 				:style="{ width: `${rowLabelWidth}px` }"
 			/>
 
@@ -81,17 +81,12 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 			</div>
 		</div>
 
-		<!--
-			The day labels used to carry a near-opaque fill, which is what set this band apart from
-			the ruler under it. On glass they read as one surface, so the separation is a real border
-			now — only when the slot ruler follows, or it doubles up with the header's own bottom edge.
-		-->
 		<div
 			class="flex"
 			:class="showTimeSlots ? 'border-b border-default' : ''"
 		>
 			<div
-				class="sticky left-0 z-30 flex shrink-0 items-center border-r border-default glass px-3 py-2"
+				class="sticky left-0 z-30 flex shrink-0 items-center border-r border-default bg-default px-3 py-2"
 				:style="{ width: `${rowLabelWidth}px` }"
 			>
 				<span class="text-xs font-medium text-muted uppercase tracking-wide">{{ store.rowMode === 'resource' ? t('nav.team') : t('planning.fields.customer') }}</span>
@@ -153,7 +148,7 @@ function dayBorderClass(isPrimaryBorderEnd: boolean) {
 			class="flex"
 		>
 			<div
-				class="sticky left-0 z-30 shrink-0 border-r border-default glass"
+				class="sticky left-0 z-30 shrink-0 border-r border-default bg-default "
 				:style="{ width: `${rowLabelWidth}px` }"
 			/>
 

@@ -133,6 +133,8 @@ function onUpdate(next: unknown) {
 		:size="size"
 		:clear="clearable"
 		class="w-full"
+		:content="{side: 'bottom', align: 'end', position: 'popper'}"
+		:ui="{content: 'min-w-96'}"
 		@update:model-value="onUpdate"
 	>
 		<template #item-trailing="{ item }">

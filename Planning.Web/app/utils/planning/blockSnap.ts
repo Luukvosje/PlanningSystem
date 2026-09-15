@@ -1,7 +1,6 @@
 import type { UnavailablePeriod } from '~/types/availability';
 import type { PlanningRecord } from '~/types/planning';
 import { getUnavailableOverlaysForMatrix } from '~/utils/planning/availabilityMath';
-import { snapPxToImportantTime } from '~/utils/planning/planningSettings';
 import { SNAP_MINUTES, snapPx } from '~/utils/planning/timelineMath';
 
 export interface BlockBounds {
@@ -12,8 +11,14 @@ export interface BlockBounds {
 
 export interface BlockSnapOptions {
   snapToBlocks?: boolean
-  blockSnapPoints?: number[]
-  importantTimes?: string[]
+  /**
+   * Every pixel a dragged edge may land on when snapping is on: block edges, availability
+   * boundaries and the organization's important work times. They arrive as pixels rather than
+   * times because a compact day window maps pixels to time non-linearly - recomputing an
+   * important time from minutes-of-day would put the magnet somewhere other than the line the
+   * planner sees.
+   */
+  snapPoints?: number[]
   snapMinutes?: number
 }
 
@@ -92,6 +97,21 @@ function getSnapThreshold(dayWidth: number, snapMinutes = SNAP_MINUTES): number 
   return (snapMinutes / (24 * 60)) * dayWidth;
 }
 
+function nearestSnapPoint(px: number, points: number[], threshold: number): number | null {
+  let nearest: number | null = null;
+  let nearestDistance = Infinity;
+
+  for (const point of points) {
+    const distance = Math.abs(px - point);
+    if (distance <= threshold && distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = point;
+    }
+  }
+
+  return nearest;
+}
+
 export function snapPxToTimeline(
   px: number,
   dayWidth: number,
@@ -99,31 +119,14 @@ export function snapPxToTimeline(
 ): number {
   const {
     snapToBlocks = false,
-    blockSnapPoints = [],
-    importantTimes = [],
+    snapPoints = [],
     snapMinutes = SNAP_MINUTES,
   } = options;
 
-  const importantSnap = snapPxToImportantTime(px, dayWidth, importantTimes);
-  if (importantSnap !== null) {
-    return importantSnap;
-  }
-
-  if (snapToBlocks && blockSnapPoints.length > 0) {
-    const threshold = getSnapThreshold(dayWidth, snapMinutes);
-    let nearestBlockPx: number | null = null;
-    let nearestBlockDistance = Infinity;
-
-    for (const point of blockSnapPoints) {
-      const distance = Math.abs(px - point);
-      if (distance <= threshold && distance < nearestBlockDistance) {
-        nearestBlockDistance = distance;
-        nearestBlockPx = point;
-      }
-    }
-
-    if (nearestBlockPx !== null) {
-      return nearestBlockPx;
+  if (snapToBlocks && snapPoints.length > 0) {
+    const nearest = nearestSnapPoint(px, snapPoints, getSnapThreshold(dayWidth, snapMinutes));
+    if (nearest !== null) {
+      return nearest;
     }
   }
 
@@ -138,44 +141,32 @@ export function snapDragLeftPx(
 ): number {
   const {
     snapToBlocks = false,
-    blockSnapPoints = [],
-    importantTimes = [],
+    snapPoints = [],
     snapMinutes = SNAP_MINUTES,
   } = options;
 
-  const importantSnap = snapPxToImportantTime(rawLeftPx, dayWidth, importantTimes);
-  if (importantSnap !== null) {
-    return importantSnap;
-  }
-
-  const importantRightSnap = snapPxToImportantTime(rawLeftPx + widthPx, dayWidth, importantTimes);
-  if (importantRightSnap !== null) {
-    return importantRightSnap - widthPx;
-  }
-
-  if (!snapToBlocks || blockSnapPoints.length === 0) {
+  if (!snapToBlocks || snapPoints.length === 0) {
     return snapPx(rawLeftPx, dayWidth, snapMinutes);
   }
 
   const threshold = getSnapThreshold(dayWidth, snapMinutes);
-  const blockCandidates: number[] = [];
+  // A dragged block snaps on either edge, so every point yields two candidate left positions.
+  const candidates: number[] = [];
 
-  for (const point of blockSnapPoints) {
+  for (const point of snapPoints) {
     if (Math.abs(rawLeftPx - point) <= threshold) {
-      blockCandidates.push(point);
+      candidates.push(point);
     }
-
-    const leftForRightSnap = point - widthPx;
     if (Math.abs(rawLeftPx + widthPx - point) <= threshold) {
-      blockCandidates.push(leftForRightSnap);
+      candidates.push(point - widthPx);
     }
   }
 
-  if (blockCandidates.length > 0) {
-    return blockCandidates.reduce((best, candidate) =>
-      Math.abs(candidate - rawLeftPx) < Math.abs(best - rawLeftPx) ? candidate : best,
-    );
+  if (candidates.length === 0) {
+    return snapPx(rawLeftPx, dayWidth, snapMinutes);
   }
 
-  return snapPx(rawLeftPx, dayWidth, snapMinutes);
+  return candidates.reduce((best, candidate) =>
+    Math.abs(candidate - rawLeftPx) < Math.abs(best - rawLeftPx) ? candidate : best,
+  );
 }

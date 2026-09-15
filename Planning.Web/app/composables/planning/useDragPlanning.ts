@@ -67,8 +67,7 @@ export function useDragPlanning() {
   const api = usePlanningApi();
   const toast = useToast();
   const { canManage } = usePlanningPermissions();
-  const { pxToUtcIso, dayWidth, timeToPx, dateRange } = useTimeline();
-  const { importantWorkTimes } = usePlanningSettings();
+  const { pxToUtcIso, dayWidth, timeToPx, dateRange, importantSnapPoints } = useTimeline();
   const rowRecordsMap = inject<ComputedRef<Map<string, PlanningRecord[]>>>(
     'timelineRowRecords',
     computed(() => new Map()),
@@ -78,7 +77,7 @@ export function useDragPlanning() {
     computed(() => []),
   );
 
-  function getBlockSnapPoints(rowId: string, excludeRecordId: string): number[] {
+  function getSnapPoints(rowId: string, excludeRecordId: string): number[] {
     const records = rowRecordsMap.value.get(rowId) ?? [];
     return mergeSnapPoints(
       collectBlockSnapPoints(getRowBlockBounds(records, timeToPx, excludeRecordId)),
@@ -90,6 +89,7 @@ export function useDragPlanning() {
         dayWidth.value,
         store.rowMode,
       ),
+      importantSnapPoints.value,
     );
   }
 
@@ -141,11 +141,7 @@ export function useDragPlanning() {
       const dropTarget = resolveDropTarget(e.clientX, e.clientY);
       leftPx = snapDragLeftPx(nextLeftPx, widthPx, dayWidth.value, {
         snapToBlocks: store.snapToBlocks,
-        blockSnapPoints: getBlockSnapPoints(
-          dropTarget?.rowId ?? sourceRowId,
-          record.id,
-        ),
-        importantTimes: importantWorkTimes.value,
+        snapPoints: getSnapPoints(dropTarget?.rowId ?? sourceRowId, record.id),
       });
       dragHoverRowId.value = dropTarget?.rowId ?? null;
       updatePreview(offsetY);

@@ -26,7 +26,6 @@ import {
   showsTimeSlots,
   SNAP_MINUTES,
   suppressCollidingLabels,
-  timeToPx,
   timeToPxCompact,
 } from '~/utils/planning/timelineMath';
 import {
@@ -367,78 +366,81 @@ function createTimeline(sources: TimelineSources = {}) {
     return suppressCollidingLabels(lines);
   });
 
+  /**
+   * The important work times as absolute timeline pixels, so dragging can snap to them.
+   * Derived from the very lines the grid draws rather than recomputed from minutes-of-day: a
+   * compact day window maps pixels to time non-linearly, and a magnet that does not sit on the
+   * line the planner sees is worse than no magnet at all.
+   */
+  const importantSnapPoints = computed<number[]>(() =>
+    dayHeaders.value.flatMap((day) =>
+      (day.importantGridLines ?? importantGridLines.value).map((line) => day.left + line.leftPx),
+    ),
+  );
+
   /** Coarse vertical lines for calendar zoom levels (day / week / month). */
   const coarseGridLines = computed(() => getCoarseGridLines(store.zoom, dayWidth.value, intlLocale.value));
 
   const showTimeSlots = computed(() => showsTimeSlots(store.zoom));
 
+  /**
+   * Left offset of the column a day is drawn in. Falls back to the plain index for a date
+   * outside the loaded range, which dayLeftMap does not cover.
+   */
+  function dayLeftPx(dayKey: string, dayIndex: number): number {
+    return dayLeftMap.value.get(dayKey) ?? dayIndex * dayWidth.value;
+  }
+
   function toPx(utcIso: string): number {
     const dayIndex = getDayIndexForIso(utcIso, dateRange.value.start);
     const day = addDays(dateRange.value.start, dayIndex);
     const dayKey = toDateKey(day);
+    const dayLeft = dayLeftPx(dayKey, dayIndex);
 
-    if (!store.showWeekends) {
-      // Use precomputed left offset; weekend days snap to their left edge
-      const dayLeft = dayLeftMap.value.get(dayKey) ?? 0;
-      const isWeekend = isWeekendDate(day);
-      if (isWeekend) {
-        return dayLeft;
+    // A hidden weekend column has no width; anything inside it collapses onto its left edge.
+    if (!store.showWeekends && isWeekendDate(day)) {
+      return dayLeft;
+    }
+
+    const window = dayWindows.value?.get(dayKey);
+    if (window) {
+      return dayLeft + timeToPxCompact(utcIso, window, dayWidth.value);
+    }
+
+    const fracMs = new Date(utcIso).getTime() - day.getTime();
+    return dayLeft + (fracMs / (24 * 60 * 60 * 1000)) * dayWidth.value;
+  }
+
+  /** The visible day column that contains px, with that column's own left offset. */
+  function dayColumnAtPx(px: number): { day: Date, dayKey: string, dayLeft: number } {
+    const first = dateRange.value.start;
+    let best = { day: first, dayKey: toDateKey(first), dayLeft: 0 };
+
+    for (const day of visibleDays.value) {
+      if (!store.showWeekends && isWeekendDate(day)) {
+        continue;
       }
-      const fracMs = new Date(utcIso).getTime() - day.getTime();
-      const fracPx = (fracMs / (24 * 60 * 60 * 1000)) * dayWidth.value;
-      return dayLeft + fracPx;
+      const dayKey = toDateKey(day);
+      const dayLeft = dayLeftMap.value.get(dayKey) ?? 0;
+      if (dayLeft <= px) {
+        best = { day, dayKey, dayLeft };
+      }
     }
 
-    if (!dayWindows.value) {
-      return timeToPx(utcIso, dateRange.value.start, dayWidth.value);
-    }
-
-    const window = dayWindows.value.get(dayKey);
-    if (!window) {
-      return timeToPx(utcIso, dateRange.value.start, dayWidth.value);
-    }
-
-    return dayIndex * dayWidth.value + timeToPxCompact(utcIso, window, dayWidth.value);
+    return best;
   }
 
   function toIso(px: number, snap = true): string {
-    if (!store.showWeekends) {
-      // Find which visible (non-weekend) day this px falls in
-      const entries = [...dayLeftMap.value.entries()];
-      let bestKey = entries[0]?.[0] ?? toDateKey(dateRange.value.start);
-      for (const [key, left] of entries) {
-        const date = new Date(key);
-        const isWeekend = isWeekendDate(date);
-        if (isWeekend) {
-          continue;
-        }
-        if (left <= px) {
-bestKey = key;
-}
-      }
-      const dayStart = new Date(bestKey);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayLeft = dayLeftMap.value.get(bestKey) ?? 0;
-      const pxInDay = Math.max(0, px - dayLeft);
-      const msInDay = (pxInDay / dayWidth.value) * 24 * 60 * 60 * 1000;
-      const snapMs = snap ? SNAP_MINUTES * 60 * 1000 : 1;
-      const snapped = Math.round((dayStart.getTime() + msInDay) / snapMs) * snapMs;
-      return new Date(snapped).toISOString();
+    const snapMinutes = snap ? SNAP_MINUTES : 0;
+    const { day, dayKey, dayLeft } = dayColumnAtPx(px);
+    const pxInDay = Math.max(0, px - dayLeft);
+
+    const window = dayWindows.value?.get(dayKey);
+    if (window) {
+      return pxToUtcIsoCompact(pxInDay, window, dayWidth.value, snapMinutes);
     }
 
-    if (!dayWindows.value) {
-      return pxToUtcIsoMath(px, dateRange.value.start, dayWidth.value, snap ? SNAP_MINUTES : 0);
-    }
-
-    const dayIndex = Math.floor(px / dayWidth.value);
-    const pxInDay = px - dayIndex * dayWidth.value;
-    const day = addDays(dateRange.value.start, dayIndex);
-    const window = dayWindows.value.get(toDateKey(day));
-    if (!window) {
-      return pxToUtcIsoMath(px, dateRange.value.start, dayWidth.value, snap ? SNAP_MINUTES : 0);
-    }
-
-    return pxToUtcIsoCompact(pxInDay, window, dayWidth.value, snap ? SNAP_MINUTES : 0);
+    return pxToUtcIsoMath(pxInDay, day, dayWidth.value, snapMinutes);
   }
 
   const currentTimeIndicator = computed<CompactCurrentTimeIndicator | null>(() => {
@@ -523,6 +525,7 @@ bestKey = key;
     rowLabelWidth: ROW_LABEL_WIDTH,
     currentTimePx,
     currentTimeIndicator,
+    importantSnapPoints,
     toPx,
     toIso,
     timeToPx: toPx,

@@ -67,8 +67,7 @@ export function useResizePlanning() {
   const api = usePlanningApi();
   const toast = useToast();
   const { canManage } = usePlanningPermissions();
-  const { pxToUtcIso, dayWidth, timeToPx, dateRange } = useTimeline();
-  const { importantWorkTimes } = usePlanningSettings();
+  const { pxToUtcIso, dayWidth, timeToPx, dateRange, importantSnapPoints } = useTimeline();
   const rowRecordsMap = inject<ComputedRef<Map<string, PlanningRecord[]>>>(
     'timelineRowRecords',
     computed(() => new Map()),
@@ -87,7 +86,7 @@ export function useResizePlanning() {
     const records = rowRecordsMap.value.get(rowId) ?? [];
     return {
       snapToBlocks: store.snapToBlocks,
-      blockSnapPoints: mergeSnapPoints(
+      snapPoints: mergeSnapPoints(
         collectBlockSnapPoints(getRowBlockBounds(records, timeToPx, recordId)),
         getRowAvailabilitySnapPoints(
           rowId,
@@ -97,8 +96,8 @@ export function useResizePlanning() {
           dayWidth.value,
           store.rowMode,
         ),
+        importantSnapPoints.value,
       ),
-      importantTimes: importantWorkTimes.value,
     };
   }
 

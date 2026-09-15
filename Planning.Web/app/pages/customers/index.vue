@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TableColumn, TableRow } from '@nuxt/ui';
+import { read } from 'fs';
 import type { CustomerResponse } from '~/generated/models';
 
 definePageMeta({ layout: false });
@@ -97,8 +98,9 @@ function openCustomer(customer: CustomerResponse) {
 								<UAvatar
 									:text="initialsFromName(row.original.name)"
 									size="sm"
+									:ui="{fallback: `text-[${readableTextColor(row.original.color)}]`}"
 									class="shrink-0"
-									:style="{ backgroundColor: row.original.color, color: readableTextColor(row.original.color) }"
+									:style="{ backgroundColor: row.original.color, }"
 								/>
 								<span class="font-medium">{{ row.original.name }}</span>
 							</div>
